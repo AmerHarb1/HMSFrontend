@@ -3,19 +3,13 @@ import { useEffect, useState} from 'react';
 import { Header } from '../components/Header';
 import './HomePage.css';
 
-export function HomePage(){
+export function HomePage({cart}){
     const [products, setProducts] = useState([]);  //useState has two props the first is a varial and the second is a function to update the variable
-    const [cart, setCart] = useState([]);
     
     useEffect(()=>{
         axios.get('http://localhost:3000/api/products') // we place this code inside useEffect to make it run once, useEffect controls how many time a code inside it would run
             .then((response)=> {
                 setProducts(response.data);    //set products once response has data  
-            });
-
-        axios.get('http://localhost:3000/api/cart-items') // get the cart data
-            .then((response)=> {
-                setCart(response.data);    //set cart once response has data  
             });
     },[]);  //[] this array controls the run frequenccy, empty means run once
     
