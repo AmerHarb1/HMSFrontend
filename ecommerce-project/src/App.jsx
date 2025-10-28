@@ -10,7 +10,7 @@ function App() {
   const [cart, setCart] = useState([]);
     
     useEffect(()=>{
-        axios.get('http://localhost:3000/api/cart-items') // get the cart data
+        axios.get('http://localhost:3000/api/cart-items?expand=product') // get the cart data.   ?expand=product: adds the product details to the response
             .then((response)=> {
                 setCart(response.data);    //set cart once response has data  
             });
