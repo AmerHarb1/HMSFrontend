@@ -9,15 +9,14 @@ export function CheckoutPage({cart}) {
     const [paymentSummary, setPaymentSummary] = useState(null); //null is used because paymentSummary is an object and it's easier to test null rather than empty array
     const [deliveryOptions, setDeliveryOptions] = useState([]);
     useEffect(()=>{
-        axios.get('http://localhost:3000/api/delivery-options?expand=estimatedDeliveryTime') 
-            .then((response)=> {
-                setDeliveryOptions(response.data);    //set deliveryOptions once response has data  
-            });
-
-        axios.get('http://localhost:3000/api/payment-summary') 
-            .then((response)=> {
-                setPaymentSummary(response.data);     
-            });
+        const fetchCheckoutData = async()=>{
+            let response = await axios.get('http://localhost:3000/api/delivery-options?expand=estimatedDeliveryTime');
+            setDeliveryOptions(response.data);    //set deliveryOptions once response has data 
+            
+            response = await axios.get('http://localhost:3000/api/payment-summary');
+            setPaymentSummary(paymentSummary.data);
+        };
+        fetchCheckoutData();
     },[]); 
 
     return (
