@@ -14,7 +14,7 @@ export function CheckoutPage({cart, loadCart}) {
             setDeliveryOptions(response.data);    //set deliveryOptions once response has data 
             
             response = await axios.get('http://localhost:3000/api/payment-summary');
-            setPaymentSummary(paymentSummary.data);
+            setPaymentSummary(response.data);
         };
         fetchCheckoutData();
     },[cart]); //rerun functions inside useEffect when cart changes
