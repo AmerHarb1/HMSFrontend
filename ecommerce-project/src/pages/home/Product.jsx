@@ -64,6 +64,7 @@ export function Product({product, loadCart}) {
             </div>
 
             <button className="add-to-cart-button button-primary"
+                data-testid="add-to-cart-button"
                 onClick={addToChart}>
                 Add to Cart
             </button>
