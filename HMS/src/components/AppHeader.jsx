@@ -1,4 +1,4 @@
-import './page.css';
+import './AppPage.css';
 
 export function AppHeader(){
     return(

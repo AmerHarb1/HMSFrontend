@@ -1,13 +1,9 @@
-body{
-    height: 100vh;
-    background: linear-gradient(#2A00B7, #42006C);
-}
 .container{
     display: flex;
     flex-direction: column;
     margin: auto;
     margin-top: 200px;
-    background: #fff;
+    background: linear-gradient(#c2b1f9, #a556d6);;
     padding-bottom: 30px;
     width: 600px;
     border-radius: 9px;

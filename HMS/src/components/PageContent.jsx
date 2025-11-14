@@ -1,5 +1,5 @@
 import { AppRoutes } from './AppRoutes';
-import './page.css';
+import './AppPage.css';
 
 export function PageContent(){
     return(

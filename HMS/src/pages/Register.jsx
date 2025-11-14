@@ -10,7 +10,7 @@ export function Register({ onLoginSuccess, populateUserMenu }){
     const fields = ['username','password'];
 	const link = 'http://localhost:9002/hms/login';
     const [formData, setFormData] = useState(fields);
-    const [accessToken, setAccessToken] = useState([]);
+    const [accessToken, setAccessToken] = useState(null);
     const tabData = fields;
     const headers = {'Content-Type': 'application/json','Access-Control-Allow-Origin': 'http://localhost:9002/hms/login',withCredentials: true };
     const navigate = useNavigate();
@@ -31,8 +31,12 @@ export function Register({ onLoginSuccess, populateUserMenu }){
 		axios.post(link,obj,{headers: headers}
   			).then(res => {   
                     console.log(res.data);//token
-				    localStorage.setItem('accessKey', JSON.stringify(res.data));
-				    setAccessToken(res.data);
+                    setAccessToken(res.data.token);
+				    localStorage.setItem('accessKey', JSON.stringify(res.data.token));
+				    
+                    console.log(accessToken);//token
+                    console.log(res.data.token);//token
+                    
                     onLoginSuccess();    
                     console.log('after receiving response from get token ' + obj.username + '  ' + res.data.menuStructure + '  ' + res.data.token);                
                     populateUserMenu(res.data.menuStructure);                   
@@ -41,13 +45,12 @@ export function Register({ onLoginSuccess, populateUserMenu }){
 				  })
 			  .catch((error) => {console.warn("response", error.response?.data)});		
 	};
-	
 
-/*
-	useEffect(() => {
-	  localStorage.setItem('accessKey', JSON.stringify(accessToken));
-	}, [accessToken]);
-*/
+    useEffect(() => {
+        console.log(accessToken);//token
+    }, [accessToken]);
+
+
 
     return(
         <div className="container">            	  

@@ -15,38 +15,6 @@ function App() {
     setUserMenu(userMenu);
     console.log('from app ' + userMenu);
   }
-  const items=[
-                    {
-                      label: "Dashbaord",
-                      children:[{
-                                    label: "Dashbaord1"
-                                },
-                                {
-                                    label: "Dashbaord2",
-                                    children:[{
-                                                label: "Dashbaord11",
-                                                key: '/'
-                                              },
-                                              {
-                                                label: "Register",
-                                                key: '/register'
-                                              }]
-
-                                }]
-                    },
-                    {
-                        label: "Inventory",
-                        key: '/inventory',
-                    },
-                    {
-                        label: "Orders",
-                        key: '/orders',
-                    },
-                    {
-                        label: "Customers",
-                        key: '/customers',
-                    }
-                ];
 
   return (
     <div className="App">

@@ -1,6 +1,6 @@
 import { Menu } from 'antd';
 import { useNavigate } from 'react-router';
-import './page.css';
+import './AppPage.css';
 
 export function SideMenu({menuItems}){
     const navigate = useNavigate();
