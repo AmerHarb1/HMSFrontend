@@ -20,9 +20,6 @@ export function AddTable(props){
     const [pageSize, setpPageSize] = useState(10);
     const [sortField, setSortField] = useState('id');
     const [sortOrder, setSortOrder] = useState('asc');
-    const [isUpdateModalVisible, setUpdateModalVisible] = useState(false);
-    const [isDeleteModalVisible, setDeleteModalVisible] = useState(false);
-    const [selectedRecord, setSelectedRecord] = useState(null);
     
     const headers = {'Content-Type': 'application/json', 'Authorization':'Bearer ' + accessToken,'Access-Control-Allow-Origin': 'http://localhost:5173',withCredentials: true}
 
@@ -86,29 +83,7 @@ export function AddTable(props){
                         );
                     }
 
-                    // 👇 Example: make "link" column clickable too
-                    if (key === "link") {
-                        col.render = (text) => (
-                        <a href={text} target="_blank" rel="noopener noreferrer">
-                            {text}
-                        </a>
-                        );
-                    }                    
-
-                    return col;
                 });
-
-    // 👉 Add Actions column
-            cols.push({
-                title: "Actions",
-                key: "actions",
-                render: (text, record) => (
-                    <Space>
-                        <a onClick={() => showUpdateModal(record)}>Update</a>
-                        <a onClick={() => showDeleteModal(record)}>Delete</a>
-                        </Space>
-                ),
-            });
             setTabColumns(cols);
         }
     }, [tabData, sortField, sortOrder]);
@@ -127,16 +102,6 @@ export function AddTable(props){
             .filter(val => val !== undefined && val !== null) // skip nulls
             .map(val => ({ text: String(val), value: val }));
     }
-	
-    const showUpdateModal = (record) => {
-        setSelectedRecord(record);
-        setUpdateModalVisible(true);
-    };
-
-    const showDeleteModal = (record) => {
-        setSelectedRecord(record);
-        setDeleteModalVisible(true);
-    };
 
     return(
         <div>
@@ -175,45 +140,7 @@ export function AddTable(props){
                 >
 
                 </Table>
-                <Modal
-                    title="Update Record"
-                    open={isUpdateModalVisible}
-                    onCancel={() => setUpdateModalVisible(false)}
-                    footer={null}
-                    >
-                    <Form
-                        initialValues={selectedRecord}
-                        onFinish={(values) => {    
-                            console.log(headers) ;                      
-                            axios.put(`http://localhost:9002/hms/${props.lnk}/${selectedRecord.id}`, values, { headers })
-                                .then(() => {
-                                setUpdateModalVisible(false);
-                                getData(page, pageSize, sortField, sortOrder);
-                                });
-                            }}
-                    >
-                        {Object.keys(selectedRecord || {}).map((field) => (
-                        <Form.Item name={field} label={field} key={field}>
-                            <Input />
-                        </Form.Item>
-                        ))}
-                        <Button type="primary" htmlType="submit">Save</Button>
-                    </Form>
-                </Modal>
-                <Modal
-                    title="Confirm Delete"
-                    open={isDeleteModalVisible}
-                    onCancel={() => setDeleteModalVisible(false)}
-                    onOk={() => {
-                        axios.delete(`http://localhost:9002/hms/${props.lnk}/${selectedRecord.id}`, { headers })
-                        .then(() => {
-                            setDeleteModalVisible(false);
-                            getData(page, pageSize, sortField, sortOrder);
-                        });
-                    }}
-                    >
-                    <p>Are you sure you want to delete record #{selectedRecord?.id}?</p>
-                </Modal>
+                
             </Space>
         </div>
     );
