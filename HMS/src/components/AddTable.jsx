@@ -1,18 +1,24 @@
 import { Table, Typography, Space, Modal, Form, Button, Input} from 'antd';
 import axios from 'axios';
 import React,{ useState, useEffect} from 'react';
+import { AddButton } from './AddButton';
 import '../styles/page.css';
+//import {isDate} from '../functions/isDate.js';
+import {formatDate} from '../functions/formatDateVal.js';
+import { getValueType } from '../functions/getValueType.js';
+import { PlusOutlined } from '@ant-design/icons';
 
 export function AddTable(props){
-    console.log('in Add table' +props.name);
-    console.log(props.lnk);
+//    console.log('in Add table' +props.name);
+//    console.log(props.lnk);
     const [loading, setloading ] = useState(true);
     let accessToken = useState(JSON.parse(localStorage.getItem('accessKey')));
     let amer = accessToken.indexOf(",function ()")
     accessToken = accessToken.slice(0,amer);
-    console.log('Token = ' + accessToken);
+//    console.log('Token = ' + accessToken);
 	//const axiosInstance = axios.create({baseURL: 'http://localhost:9002/hms'});
     const [tabData, setTabData] = useState([]);
+    const [tabDataNoChar, setTabDataNoChar] = useState([]);
     const [tabColumns, setTabColumns] = useState([]);
     const [totalPages, setTotalPages] = useState(0);
     const [totalRecords, setTotalRecords] = useState(0);
@@ -21,11 +27,13 @@ export function AddTable(props){
     const [sortField, setSortField] = useState('id');
     const [sortOrder, setSortOrder] = useState('asc');
     
+  	const actionLink = props.lnk+'/add';
+    
     const headers = {'Content-Type': 'application/json', 'Authorization':'Bearer ' + accessToken,'Access-Control-Allow-Origin': 'http://localhost:5173',withCredentials: true}
 
     const getData = async(page, pageSize, sortField, sortOrder, filters={}) => {
         setloading(true);
-        console.log('sortField = ' + sortField + '  sortOrder = ' + sortOrder);
+    //    console.log('sortField = ' + sortField + '  sortOrder = ' + sortOrder);
 
         // Build filter query string
         const filterParams = Object.entries(filters)
@@ -36,7 +44,7 @@ export function AddTable(props){
         const link = 'http://localhost:9002/hms/' + props.lnk + '?page=' + page + '&pageSize=' + pageSize+ '&sort=' + sortField+ ',' + sortOrder + '&filterParams=' + filterParams ;	 
         axios.get(link,{headers: headers}
   			).then(res => {                 
-                setTabData(res.data.content);
+                setTabData(res.data.content);   //res.data.content is an array of objects
                 setTotalPages(res.data.totalPages);
                 setTotalRecords(res.data.totalElements);               
                 })
@@ -54,7 +62,13 @@ export function AddTable(props){
     // build columns whenever data or sort state changes
     useEffect(() => {
         if (tabData.length > 0) {
-                const cols = Object.keys(tabData[0]).map((key) => {
+            setTabDataNoChar(tabData);
+            const cols = Object.keys(tabData[0])
+                .filter((key) => {
+                    const type = getValueType(tabData[0][key]);
+                    return type !== "other";   // 👈 exclude non simple types 
+                })
+                .map((key) => {
                     const col = {
                         title: key,
                         dataIndex: key,
@@ -68,32 +82,49 @@ export function AddTable(props){
                             : null,
                         filters: buildFilters(tabData, key),
                         onFilter: (value, record) => record[key] === value,
-                    };
+                    };  
+                    // Format dates
+                    if (getValueType(tabData[0][key]) === "date") {
+                    col.render = (text) => formatDate(text);
+                    }                   
 
                     // 👇 Add hyperlink rendering for IDs
                     if (key === "id") {
                         col.render = (text, record) => (
-                        <a
-                            href={`/details/${record.id}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                        >
-                            {text}
-                        </a>
+                            <AddButton class='AddLinkButton' btn_type='link' lnk={props.lnk}  name={record.id} bodyData={tabData} recId= {record.id} createdBy={record.createdBy} createdOn={record.createdOn} comments={record.comments}>
+                                {record.id}
+                            </AddButton>
                         );
                     }
-
-                });
+                return col;
+            });
             setTabColumns(cols);
         }
     }, [tabData, sortField, sortOrder]);
 
     useEffect(() => {
-	    console.log('totalPages =' + totalPages);
+	//    console.log('totalPages =' + totalPages);
 	  }, [totalPages]);
     useEffect(() => {
-	    console.log('totalRecords =' + totalRecords);
+	//    console.log('totalRecords =' + totalRecords);
 	  }, [totalRecords]);
+
+    useEffect(() => {
+        if (!Array.isArray(tabData)) return;
+        const cleaned = tabData.map(row => {        //Builds a new cleaned array (cleaned) by iterating over the array and then over each object’s keys
+            const newRow = {};                      
+            Object.entries(row).forEach(([key, value]) => {     //Loops through each field (key → value) in that record.
+                if (typeof value === "string" && value.includes(String.fromCharCode(31))) {
+                    newRow[key] = value.substring(0, value.indexOf(String.fromCharCode(31)));   //If the value contains ASCII 31, it strips everything after it.
+                } else {
+                    newRow[key] = value;
+                }
+        });
+        return newRow;
+    });
+
+    setTabDataNoChar(cleaned);  //Updates tabDataNoChar with the cleaned version.
+	}, [tabData]);
 
     //extracts unique values for each field from your dataset.
     function buildFilters(data, field) {
@@ -102,7 +133,7 @@ export function AddTable(props){
             .filter(val => val !== undefined && val !== null) // skip nulls
             .map(val => ({ text: String(val), value: val }));
     }
-
+	
     return(
         <div>
             <Space size={15} direction="vertical">
@@ -112,7 +143,7 @@ export function AddTable(props){
                 <Table
                     className="Tab"
                     columns={tabColumns}
-                    dataSource={tabData}
+                    dataSource={tabDataNoChar}
                     rowKey="id"
                     loading={loading}
                     pagination={{
@@ -140,7 +171,7 @@ export function AddTable(props){
                 >
 
                 </Table>
-                
+                <AddButton class="AddButton" name= 'Add' page={props.name} lnk={props.lnk} actionLink={actionLink} bodyData={tabData} icon={<PlusOutlined/>} btn_type='primary'></AddButton>
             </Space>
         </div>
     );

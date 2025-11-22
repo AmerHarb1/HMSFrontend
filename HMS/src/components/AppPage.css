@@ -5,7 +5,7 @@
   align-items: center;
   padding: 4px 20px 4px 12px;
   border-bottom: 1px solid rgba(0, 0, 0, 0.15);
-  background-color: rgb(42, 98, 98);
+  background-color: #c7c5c3;
   font-size: 40px;
 }
 
@@ -16,7 +16,7 @@
   align-items: center;
   padding: 10px;
   border-top: 1px solid rgba(0, 0, 0, 0.15);
-  background-color: rgb(42, 98, 98);
+  background-color: #b8b6b4;
   color: #fff;
   font-size: 20px;
 }
@@ -32,13 +32,20 @@
 .PageContent{
   display: flex;
   padding: 0;
+  background: linear-gradient(#eceae8, #c7c4c4);
+  width: 90vw;
 }
 
 .SideMenu{
   color: #fff;
   font-size: 18px;
   font-weight: 500;
-  background: linear-gradient(#ceb6cd, #4b2264);;
+  background: linear-gradient(#bcbcbc, #615851);
   width: 300px;
   height: 90vh;
+  border-radius: 7px;
+    border: none;
+    box-shadow: 1rem 1rem 11px rgba(0, 0, 0, 0.15);
+    
+    border-style: inherit;
 }
