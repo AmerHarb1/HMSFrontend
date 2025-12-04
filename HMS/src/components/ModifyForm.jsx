@@ -1,59 +1,105 @@
-import { Table, Typography, Space, Modal, Form, Button, Input} from 'antd';
+import { Typography, Space, message, DatePicker} from 'antd';
 import axios from 'axios';
-import { useState} from 'react';
-import { useNavigate} from 'react-router';
-import {useLocation} from 'react-router';
+import dayjs from "dayjs";
+import { useState, useEffect, useCallback} from 'react';
+import { useNavigate, useLocation} from 'react-router';
+import { getAccessToken } from "../functions/getAccessToken.js";
+import { fetchLov } from "../functions/fetchLov.js";
+import {  fetchChildLov } from "../functions/fetchChildLov.js";
+import {clearDescendants} from "../functions/clearDecendents.js";
 import '../styles/page.css';
 
 export function ModifyForm(props){
     const { state } = useLocation();
-    let accessToken = useState(JSON.parse(localStorage.getItem('accessKey')));
-    let amer = accessToken.indexOf(",function ()")
-    accessToken = accessToken.slice(0,amer);
+    const accessToken = getAccessToken();
 
-    const [formData, setFormData] = useState(state.tabData.reduce((a, v) => ({ ...a, [v]: ""}), {})); 
-    const getRowIndexById = (id) => {
-	  return state.initialData.findIndex((row) => row.id === id);
-	};
-    const apiLnk ='http://localhost:9002/hms/' +state.lnk+'/'+state.recId;
+    const lnk =state?state.lnk:props.lnk;
+    const { rec } = useLocation().state;
+    const [formData, setFormData] = useState(rec);
+    const [lovMap, setLovMap] = useState(new Map());
+    const [parentChildLovMap, setParentChildLovMap] = useState(new Map());
+    const apiLnk ='http://localhost:9002/hms/' +lnk+'/'+rec.id;
     const createdBy = state.createdBy;
   	const createdOn = state.createdOn;
     const comments = state.comments;
-    const recId = state.recId;
-	const tabIndex = getRowIndexById(recId);
-	const initialData = Object.values(state.initialData[tabIndex]); 
+	const initialData = Object.values(state.rec); 
+    const tabDataValues = state ? state.initialData : props.obj;
     const tabData = state?state.tabData:props.obj;
     const formName =state?state.page:props.name;
-    const lnk =state?state.lnk:props.lnk;
+    
     const stringIn={id:"",createdBy:"",createdOn:""};
+    const linkLov = "http://localhost:9002/hms/";
+    const [tabDataNoChar, setTabDataNoChar] = useState(initialData);
+    const [normalized, setNormalized] = useState(false);
+    const [dateCols, setDateCols] = useState([]);
+    // find the row in tabDataValues that matches the current record
+    const rowIndex = tabDataValues.findIndex(row => row.id === rec.id);
+    // fallback if not found
+    const currentRow = rowIndex >= 0 ? tabDataValues[rowIndex] : rec;
+
     const navigate = useNavigate();
  
+    const headers = {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + accessToken,
+        withCredentials: true,
+    };
     
-    const headers = {'Content-Type': 'application/json', 'Authorization':'Bearer ' + accessToken,'Access-Control-Allow-Origin': 'http://localhost:5173',withCredentials: true};
-
-    const cancelClicked = () => {
-        navigate('/'+lnk);  											
+   const cancelClicked = () => {
+    
+        navigate({
+            pathname: '/' + lnk,
+            search: '',   // 👈 clear query params
+            hash: ''      // 👈 clear any hash too
+        }, { replace: true });
     };
 
     const handleChange = (event) => {
     	const { name, value } = event.target;
-    	//alert(value);
     	setFormData((prevFormData) => ({  ...prevFormData,[name]: value }));   
   	};
+
+    const handleLovChange = (event) => {
+        const { name, value } = event.target;
+        setFormData(prev => {
+            const next = { ...prev, [name]: value };
+
+            if (parentChildLovMap.has(name)) {
+                console.log(`${name} --- ${value}`);
+
+                // clear descendants recursively
+                clearDescendants(next, name, parentChildLovMap, setLovMap);
+
+                // fetch LOVs for immediate child only
+                
+            }
+
+            return next;
+        }); 
+        const childKey = parentChildLovMap.get(name);
+        fetchChildLov(linkLov,childKey, value, headers, setLovMap); 
+    };
     
     const updateClicked = (event) => {
   		event.preventDefault();
   		
-		const obj = tabData.reduce((o, key) => ({ ...o, [key]: key=="id"?recId
+		const obj = tabData.reduce((o, key) => ({ ...o, [key]: key=="id"?rec.id
+                                                        :key=="code"?rec.id
 														:key=="createdBy"?createdBy
 														:key=="createdon"?createdOn
                                                         :key=="comments"?comments
-														: formData[key]==''?initialData[tabData.indexOf(key)]:formData[key]}), {})//Object.assign({}, ...Object.entries({...formObj}).map(([a,b]) => ({ [b]: formData[b] })))
-		console.log(lnk);	
-        console.log(apiLnk);											
+														: formData[key]==''?initialData[tabData.indexOf(key)]:formData[key]}), {})//Object.assign({}, ...Object.entries({...formObj}).map(([a,b]) => ({ [b]: formData[b] })))							
 	  	axios.put(apiLnk,obj,{headers: headers}
-  				).then(res => {navigate('/'+lnk);})
-  				  .catch((error) => {console.warn("response", error.response?.data)});
+  				).then(() => {navigate('/'+lnk);})
+  				  .catch((error) => {
+                    if (Array.isArray(error.response?.data)) {
+                        message.error(error.response.data.join(", "));
+                    } else if (error.response?.data?.message) {
+                        message.error(error.response.data.message);
+                    } else {
+                        message.error("An error occurred");
+                    }                    
+                  });
 	};
 	
 	const deleteClicked = (event) => {
@@ -67,9 +113,78 @@ export function ModifyForm(props){
 		  console.log('Thing was not saved to the database.');
 		}		
 	  	axios.delete(apiLnk,{headers: headers}
-  				).then(res => {navigate('/'+lnk);})
+  				).then(() => {navigate('/'+lnk);})
   				  .catch((error) => {console.warn("response", error.response?.data)});
 	};
+    
+    const getLovData = () => {
+        let keys = tabData;
+
+        const lovCols = keys.filter(  
+        (key) =>
+            typeof tabDataValues[0][key] === "string" &&
+            tabDataValues[0][key].includes(String.fromCharCode(31)) //filter fields that their value includes ascii char 31, they are the Lov fields
+        );
+        
+
+        lovCols.forEach((key) => {
+            const value = tabDataValues[0][key];
+            const parent = value.substring(value.indexOf(String.fromCharCode(31)) + 1).trim();
+            if (parent) {
+                setParentChildLovMap((prev) => new Map(prev).set(parent, key)); //create map that holds the parent child
+                //setLovMap((prev) => new Map(prev).set(key, []));
+                fetchChildLov(linkLov,key, value, headers, setLovMap);
+            } 
+            fetchLov(linkLov, key, headers, setLovMap);            
+        });
+
+        keys.forEach((k)=>{
+            if(k.endsWith("Date")){
+               setDateCols((prev) => [...prev, k]); 
+            }
+        })   
+    };
+
+    useEffect(() => {
+        getLovData();
+    }, []);
+
+    useEffect(() => {
+        if (lovMap.size > 0 && !normalized) {
+            const updated = { ...formData };
+            state.tabData.forEach(key => {
+                if (lovMap.has(key)) {
+                    const options = lovMap.get(key) || [];
+                    const rawValue = currentRow[key];   // ✅ use the correct row
+                    let displayValue = rawValue;
+                    if (typeof rawValue === "string" && rawValue.includes(String.fromCharCode(31))) {
+                        displayValue = rawValue.substring(0, rawValue.indexOf(String.fromCharCode(31)));
+                    }
+                    const match = options.find(
+                        opt => opt.name === displayValue || opt.username === displayValue
+                    );
+                    if (match) {
+                        updated[key] = match.id;
+                    }
+                }
+            });
+            setFormData(updated);
+            setNormalized(true); // ✅ only normalize once
+        }
+    }, [lovMap, normalized]);
+
+    useEffect(() => {
+        const cleaned = {};
+        Object.entries(state.rec).forEach(([key, value]) => {
+            if (typeof value === "string" && value.includes(String.fromCharCode(31))) {
+                cleaned[key] = value.substring(0, value.indexOf(String.fromCharCode(31)));
+            } else {
+                cleaned[key] = value;
+            }
+        });
+        setTabDataNoChar(cleaned);
+    }, [tabData]);
+
     
     return(
         <div className="form-table">
@@ -82,15 +197,49 @@ export function ModifyForm(props){
                 <table className='entry-Tab'>
                     <tbody>            	
                         {(tabData)?
-                            Object.keys(tabData).map(s=> 
-                                tabData[s] in stringIn
+                            tabData.map(fieldName =>
+                                fieldName in stringIn ? null :
+                                    lovMap.has(fieldName)
                                     ?
-                                        null
-                                    :
                                         <tr>					  	
-                                            <td><label htmlFor="name">{tabData[s]}:</label></td>
-                                            <td key={tabData[s]}><input type="text"  id={tabData[s]} defaultValue={initialData[s]} name={tabData[s]} value={formData?formData[s]:null} onChange={handleChange}/></td>
-                                        </tr>) :null								  	
+                                            <td><label htmlFor="name">{fieldName}:</label></td>
+                                            <td key={fieldName}><select  name={fieldName} value={formData[fieldName] ?? ""} onChange={handleLovChange} className='selectInput'>
+                                                <option value="">-- Select --</option>
+                                                {Array.from(lovMap.get(fieldName) || []).map((opt) => (
+                                                    <option key={opt.id} value={opt.id}>
+                                                        {opt.name?opt.name:opt.username}
+                                                    </option>
+                                                ))}
+                                                </select>
+                                            </td>
+                                            </tr>
+                                    :
+                                    dateCols.includes(fieldName)                                                
+                                        ?
+                                            <tr>				  	
+                                                <td><label htmlFor="name">{fieldName}:</label></td>
+                                                <td key={fieldName}><DatePicker    id={fieldName} 
+                                                                                    name={fieldName} 
+                                                                                    value={formData[fieldName] ? dayjs(formData[fieldName], "YYYY-MM-DD") : null}
+                                                                                    
+                                                                                    placeholder="Select date"
+                                                                                    onChange={(date) => {
+                                                                                        setFormData((prev) => ({
+                                                                                        ...prev,
+                                                                                        [fieldName]: date , // store as ISO string
+                                                                                        }));
+                                                                                    }}
+                                                                                    className='dateField'
+    
+                                                                    />
+                                                </td>
+                                            </tr>
+                                        :
+                                            <tr>					  	
+                                                <td><label htmlFor="name">{fieldName}:</label></td>
+                                                <td key={fieldName}><input type="text"  id={fieldName} name={fieldName} value={formData[fieldName] ?? ""} onChange={handleChange}/></td>
+                                            </tr>) :null
+                                                								  	
                         }	
                         <tr>
                             <td><button className="form-button" onClick={updateClicked}>Update</button></td>

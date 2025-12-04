@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Space } from 'antd';
 import { Navigate } from 'react-router';
 import './App.css';
+import 'antd/dist/reset.css'; // for AntD v5
 import { AppHeader } from './components/AppHeader';
 import { SideMenu } from './components/SideMenu';
 import { AppFooter } from './components/AppFooter';

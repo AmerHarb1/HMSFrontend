@@ -1,8 +1,9 @@
-import { Table, Typography, Space, Modal, Form, Button, Input} from 'antd';
+import { Table, Typography, Space, message} from 'antd';
 import axios from 'axios';
 import React,{ useState, useEffect} from 'react';
 import { AddButton } from './AddButton';
 import '../styles/page.css';
+import 'antd/dist/reset.css'; // for AntD v5
 //import {isDate} from '../functions/isDate.js';
 import {formatDate} from '../functions/formatDateVal.js';
 import { getValueType } from '../functions/getValueType.js';
@@ -24,16 +25,17 @@ export function AddTable(props){
     const [totalRecords, setTotalRecords] = useState(0);
     const [page, setpPage] = useState(0);
     const [pageSize, setpPageSize] = useState(10);
-    const [sortField, setSortField] = useState('id');
+    const [sortField, setSortField] = useState('');//chaged to comments from id, because all tables have field comments but not id
     const [sortOrder, setSortOrder] = useState('asc');
     
   	const actionLink = props.lnk+'/add';
+    const modifyLink = props.lnk+'/modify';
     
     const headers = {'Content-Type': 'application/json', 'Authorization':'Bearer ' + accessToken,'Access-Control-Allow-Origin': 'http://localhost:5173',withCredentials: true}
 
     const getData = async(page, pageSize, sortField, sortOrder, filters={}) => {
         setloading(true);
-    //    console.log('sortField = ' + sortField + '  sortOrder = ' + sortOrder);
+        //console.log('page = ' + page +' pageSize = ' + pageSize + ' sortField = ' + sortField + '  sortOrder = ' + sortOrder);
 
         // Build filter query string
         const filterParams = Object.entries(filters)
@@ -41,22 +43,23 @@ export function AddTable(props){
             .map(([key, value]) => `${key}=${value.join(",")}`)
             .join("&");
 
-        const link = 'http://localhost:9002/hms/' + props.lnk + '?page=' + page + '&pageSize=' + pageSize+ '&sort=' + sortField+ ',' + sortOrder + '&filterParams=' + filterParams ;	 
+        const link = 'http://localhost:9002/hms/' + props.lnk + '?page=' + page + '&size=' + pageSize+ '&sort=' + sortField+ ',' + sortOrder + '&filterParams=' + filterParams ;	 
         axios.get(link,{headers: headers}
   			).then(res => {                 
                 setTabData(res.data.content);   //res.data.content is an array of objects
                 setTotalPages(res.data.totalPages);
-                setTotalRecords(res.data.totalElements);               
+                setTotalRecords(res.data.totalElements);
                 })
-			  .catch((error) => {console.warn("response", error.response?.data)})
+			  .catch((error) => {
+                console.warn("response", error.response?.data);                
+              })
               .finally(()=>{
                  setloading(false);
               });	
     }
 
     useEffect(() => {
-	    getData(0,10,'id','asc');
-         console.log('tabData =' + tabData);
+	    getData(0,10,'','asc');
 	  }, []);
 
     // build columns whenever data or sort state changes
@@ -84,15 +87,15 @@ export function AddTable(props){
                         onFilter: (value, record) => record[key] === value,
                     };  
                     // Format dates
-                    if (getValueType(tabData[0][key]) === "date") {
+                    if (/^\d{4}-\d{2}-\d{2}T*/.test(tabData[0][key])) {
                     col.render = (text) => formatDate(text);
                     }                   
 
                     // 👇 Add hyperlink rendering for IDs
-                    if (key === "id") {
+                    if (key === "id" || key==="code") {
                         col.render = (text, record) => (
-                            <AddButton class='AddLinkButton' btn_type='link' lnk={props.lnk}  name={record.id} bodyData={tabData} recId= {record.id} createdBy={record.createdBy} createdOn={record.createdOn} comments={record.comments}>
-                                {record.id}
+                            <AddButton class='AddLinkButton' btn_type='link' lnk={props.lnk}  actionLink={modifyLink} name={record.id?record.id:record.code} bodyData={tabData} rec= {record} createdBy={record.createdBy} createdOn={record.createdOn} comments={record.comments}>
+                               {record.id?record.id:record.code}
                             </AddButton>
                         );
                     }
@@ -119,11 +122,10 @@ export function AddTable(props){
                 } else {
                     newRow[key] = value;
                 }
+            });
+            return newRow;
         });
-        return newRow;
-    });
-
-    setTabDataNoChar(cleaned);  //Updates tabDataNoChar with the cleaned version.
+        setTabDataNoChar(cleaned);  //Updates tabDataNoChar with the cleaned version.
 	}, [tabData]);
 
     //extracts unique values for each field from your dataset.
@@ -150,15 +152,11 @@ export function AddTable(props){
                         pageSize: pageSize,
                         current: page + 1,          // AntD is 1-based, backend is 0-based
                         total: totalRecords,        // use total number of records, not totalPages
-                        onChange:(page, pageSize)=>{
-                            getData(page -1, pageSize, sortField, sortOrder);    // convert back to 0-based
-                            setpPageSize(pageSize);
-                            setpPage(page - 1);
-                        }
+                        showSizeChanger: false,      // 👈 prevents AntD from changing pageSize
                     }}
                     onChange={(pagination, filters, sorter) => {
-                        const field = sorter.field;
-                        const order = sorter.order === "ascend" ? "asc" : "desc";
+                        const field = sorter.field?sorter.field:"";
+                        const order = sorter.field?sorter.order === "ascend" ? "asc" : "desc":"";
 
                         setSortField(field);
                         setSortOrder(order);
