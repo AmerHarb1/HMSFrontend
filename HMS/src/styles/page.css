@@ -106,28 +106,29 @@
 
 .form-table {   
     border-radius:6px;
-    margin: 10px 5px; 
+    margin: 10px; 
     font-size: 16px;   
     font-family: sans-serif;
     max-width: 90%;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
     border-radius: 10px;
 	line-height: 1.5;
-	padding: 40px 10px;	
+	padding: 40px 10px 10px 10px;	
 	background-color: #cddbf7;
 	width:90%;
 	box-shadow: 1rem 1rem 10px rgba(0, 0, 0, 0.15);
 }
 
 .entry-Tab tbody tr{
-    height: 40px;
+    height: 35px;
 }
 
 
 .entry-Tab tbody td{
     font-size: 20px; 
-    min-width: 50px;
-    height: 40px;
+    min-width: 70px;
+    height: 40px;    
+    padding: 2px;
 }
 
 .entry-Tab tbody td input{
@@ -157,7 +158,7 @@
 .selectInput{
     font-size: 20px; 
     min-width: 100px;
-    height: 40px;
+    height: 35px;
     width: 400px;
     border-radius: 5px;
     border: none;
@@ -165,7 +166,7 @@
 }
 
 .dateField{
-    height: 40px;
+    height: 35px;
     width: 400px;
     border: none;
     cursor: pointer;

@@ -16,6 +16,7 @@ export function AddForm(props){
         state ? state.tabData.reduce((a, v) => ({ ...a, [v]: "" }), {}) : props.obj
     );
     const tabData = state ? state.tabData : props.obj;
+//    console.log(tabData)
     const tabDataValues = state ? state.initialData : props.obj;
     const formName = state ? state.page : props.name;
     const lnk = state ? state.lnk : props.lnk;
@@ -85,11 +86,15 @@ export function AddForm(props){
 
         lovCols.forEach((key) => {
             const value = tabDataValues[0][key];
+            console.log(value)
             const parent = value.substring(value.indexOf(String.fromCharCode(31)) + 1).trim();
+            console.log(parent)
             if (parent) {
+                console.log(key)
                 setParentChildLovMap((prev) => new Map(prev).set(parent, key)); //create map that holds the parent child
                 setLovMap((prev) => new Map(prev).set(key, []));
             } else {
+                console.log(key)
                 fetchLov(linkLov, key, headers, setLovMap);
             }
         });
@@ -104,6 +109,10 @@ export function AddForm(props){
   useEffect(() => {
     getLovData();
   }, []);
+
+  useEffect(() => {
+    console.log(lovMap)
+  }, [lovMap]);
 
     return(
         <div className="form-table">
@@ -129,7 +138,7 @@ export function AddForm(props){
                                                         <option value="">-- Select --</option>
                                                         {Array.from(lovMap.get(tabData[s]) || []).map((opt) => (
                                                             <option key={opt.id?opt.id:opt.code} value={opt.id?opt.id:opt.code}>
-                                                                {opt.name?opt.name:opt.username}
+                                                                {opt.name?opt.name:opt.username?opt.username:opt.description}
                                                             </option>
                                                         ))}
                                                         </select>
@@ -143,12 +152,12 @@ export function AddForm(props){
                                                         <td key={tabData[s]}><DatePicker    id={tabData[s]} 
                                                                                             name={tabData[s]} 
                                                                                             value={state?formData?formData[s]:null:null} 
-                                                                                            format="MM/DD/YYYY" 
+                                                                                            format="MM/DD/YYYY HH:mm:ss" 
                                                                                             placeholder="Select date"
                                                                                             onChange={(date) => {
                                                                                                 setFormData((prev) => ({
                                                                                                 ...prev,
-                                                                                                [tabData[s]]: date ? date.format("YYYY-MM-DD") : null, // store as ISO string
+                                                                                                [tabData[s]]: date ? date.format("YYYY-MM-DDTHH:mm:ss") : null, // store as ISO string
                                                                                                 }));
                                                                                             }}
                                                                                             className='dateField'

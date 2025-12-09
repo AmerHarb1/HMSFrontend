@@ -1,12 +1,13 @@
 import { Typography, Space, message, DatePicker} from 'antd';
 import axios from 'axios';
 import dayjs from "dayjs";
-import { useState, useEffect, useCallback} from 'react';
+import { useState, useEffect} from 'react';
 import { useNavigate, useLocation} from 'react-router';
 import { getAccessToken } from "../functions/getAccessToken.js";
 import { fetchLov } from "../functions/fetchLov.js";
 import {  fetchChildLov } from "../functions/fetchChildLov.js";
 import {clearDescendants} from "../functions/clearDecendents.js";
+import {resolvePrimaryKey} from "../functions/resolvePrimaryKey.js";
 import '../styles/page.css';
 
 export function ModifyForm(props){
@@ -18,14 +19,17 @@ export function ModifyForm(props){
     const [formData, setFormData] = useState(rec);
     const [lovMap, setLovMap] = useState(new Map());
     const [parentChildLovMap, setParentChildLovMap] = useState(new Map());
-    const apiLnk ='http://localhost:9002/hms/' +lnk+'/'+rec.id;
+    console.log(rec)
+    console.log(state.bodyData)
+  //const apiLnk ='http://localhost:9002/hms/' +lnk+'/'+ (rec.id == null ? rec.code? rec.id:null:null);
+    const apiLnk = `http://localhost:9002/hms/${lnk}/${resolvePrimaryKey(rec)}`;
     const createdBy = state.createdBy;
   	const createdOn = state.createdOn;
     const comments = state.comments;
 	const initialData = Object.values(state.rec); 
     const tabDataValues = state ? state.initialData : props.obj;
     const tabData = state?state.tabData:props.obj;
-    const formName =state?state.page:props.name;
+    const formName =state?state.page:null;
     
     const stringIn={id:"",createdBy:"",createdOn:""};
     const linkLov = "http://localhost:9002/hms/";
@@ -84,11 +88,12 @@ export function ModifyForm(props){
   		event.preventDefault();
   		
 		const obj = tabData.reduce((o, key) => ({ ...o, [key]: key=="id"?rec.id
-                                                        :key=="code"?rec.id
+                                                        :key=="code"?rec.code
 														:key=="createdBy"?createdBy
 														:key=="createdon"?createdOn
                                                         :key=="comments"?comments
 														: formData[key]==''?initialData[tabData.indexOf(key)]:formData[key]}), {})//Object.assign({}, ...Object.entries({...formObj}).map(([a,b]) => ({ [b]: formData[b] })))							
+                                                  
 	  	axios.put(apiLnk,obj,{headers: headers}
   				).then(() => {navigate('/'+lnk);})
   				  .catch((error) => {
@@ -107,14 +112,13 @@ export function ModifyForm(props){
   		var answer = window.confirm("Are you sure you want to Delete data?");
     	if (answer) {
 		  // Save it!
-		  console.log('Thing was saved to the database.');
+		  axios.delete(apiLnk,{headers: headers}
+  				).then(() => {navigate('/'+lnk);})
+  				  .catch((error) => {console.warn("response", error.response?.data)});
 		} else {
 		  // Do nothing!
 		  console.log('Thing was not saved to the database.');
-		}		
-	  	axios.delete(apiLnk,{headers: headers}
-  				).then(() => {navigate('/'+lnk);})
-  				  .catch((error) => {console.warn("response", error.response?.data)});
+		}
 	};
     
     const getLovData = () => {
@@ -150,6 +154,10 @@ export function ModifyForm(props){
     }, []);
 
     useEffect(() => {
+    console.log(lovMap)
+  }, [lovMap]);
+
+    useEffect(() => {
         if (lovMap.size > 0 && !normalized) {
             const updated = { ...formData };
             state.tabData.forEach(key => {
@@ -161,7 +169,7 @@ export function ModifyForm(props){
                         displayValue = rawValue.substring(0, rawValue.indexOf(String.fromCharCode(31)));
                     }
                     const match = options.find(
-                        opt => opt.name === displayValue || opt.username === displayValue
+                        opt => opt.name === displayValue || opt.username === displayValue || opt.description === displayValue
                     );
                     if (match) {
                         updated[key] = match.id;
@@ -202,12 +210,14 @@ export function ModifyForm(props){
                                     lovMap.has(fieldName)
                                     ?
                                         <tr>					  	
-                                            <td><label htmlFor="name">{fieldName}:</label></td>
+                                            <td>{console.log(formData)} 
+                                                {console.log("Select value:", fieldName, formData[fieldName]??"")}
+                                                <label htmlFor="name">{fieldName}:</label></td>
                                             <td key={fieldName}><select  name={fieldName} value={formData[fieldName] ?? ""} onChange={handleLovChange} className='selectInput'>
                                                 <option value="">-- Select --</option>
                                                 {Array.from(lovMap.get(fieldName) || []).map((opt) => (
-                                                    <option key={opt.id} value={opt.id}>
-                                                        {opt.name?opt.name:opt.username}
+                                                    <option key={resolvePrimaryKey(opt)} value={resolvePrimaryKey(opt)}>
+                                                        {opt.name?opt.name:opt.username?opt.username:opt.description}
                                                     </option>
                                                 ))}
                                                 </select>
@@ -220,13 +230,18 @@ export function ModifyForm(props){
                                                 <td><label htmlFor="name">{fieldName}:</label></td>
                                                 <td key={fieldName}><DatePicker    id={fieldName} 
                                                                                     name={fieldName} 
-                                                                                    value={formData[fieldName] ? dayjs(formData[fieldName], "YYYY-MM-DD") : null}
-                                                                                    
+                                                                                    value={formData[fieldName] ? dayjs(formData[fieldName], "YYYY-MM-DD  HH:mm:ss") : null}
+                                                                                    showTime={{ 
+                                                                                        format: 'hh:mm:ss',
+                                                                                        minuteStep: 1,
+                                                                                        hideDisabledOptions: true
+                                                                                        }}
+                                                                                    format="MM/DD/YYYY HH:mm:ss" 
                                                                                     placeholder="Select date"
                                                                                     onChange={(date) => {
                                                                                         setFormData((prev) => ({
                                                                                         ...prev,
-                                                                                        [fieldName]: date , // store as ISO string
+                                                                                        [fieldName]: dayjs(date).format("YYYY-MM-DDTHH:mm:ss") , // store as ISO string
                                                                                         }));
                                                                                     }}
                                                                                     className='dateField'

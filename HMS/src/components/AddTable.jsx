@@ -94,7 +94,7 @@ export function AddTable(props){
                     // 👇 Add hyperlink rendering for IDs
                     if (key === "id" || key==="code") {
                         col.render = (text, record) => (
-                            <AddButton class='AddLinkButton' btn_type='link' lnk={props.lnk}  actionLink={modifyLink} name={record.id?record.id:record.code} bodyData={tabData} rec= {record} createdBy={record.createdBy} createdOn={record.createdOn} comments={record.comments}>
+                            <AddButton class='AddLinkButton' page={props.name} btn_type='link' lnk={props.lnk}  actionLink={modifyLink} name={record.id?record.id:record.code} bodyData={tabData} rec= {record} createdBy={record.createdBy} createdOn={record.createdOn} comments={record.comments}>
                                {record.id?record.id:record.code}
                             </AddButton>
                         );

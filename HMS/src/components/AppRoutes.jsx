@@ -35,6 +35,17 @@ import { BranchAddress } from '../pages/BranchAddress';
 import { Branch } from '../pages/Branch';
 import { CostCenter } from '../pages/CostCenter';
 import { SubCostCenter } from '../pages/SubCostCenter';
+import { CostCenterType } from '../pages/CostCenterType';
+import { Department } from '../pages/Department';
+import { LedgerPeriod } from '../pages/LedgerPeriod';
+import { JournalHeader } from '../pages/JournalHeader';
+import { GeneralLedger } from '../pages/GeneralLedger';
+import { JournalEntry } from '../pages/JournalEntry';
+import { LedgerAmountSource } from '../pages/LedgerAmountSource';
+import { LedgerAmountSourceType } from '../pages/LedgerAmountSourceType';
+import { LedgerPeriodStatus } from '../pages/LedgerPeriodStatus';
+
+
 export function AppRoutes(){
     return(
         <div className="AppRoutes">
@@ -130,6 +141,33 @@ export function AppRoutes(){
                 <Route path="/subCostCenter" element={<SubCostCenter/>}/>
                 <Route path="/subCostCenter/add" element={<AddPage/>}/>
                 <Route path="/subCostCenter/modify" element={<ModifyForm/>}/>
+                <Route path="/costCenterType" element={<CostCenterType/>}/>
+                <Route path="/costCenterType/add" element={<AddPage/>}/>
+                <Route path="/costCenterType/modify" element={<ModifyForm/>}/>
+                <Route path="/department" element={<Department/>}/>
+                <Route path="/department/add" element={<AddPage/>}/>
+                <Route path="/department/modify" element={<ModifyForm/>}/>
+                <Route path="/ledgerPeriod" element={<LedgerPeriod/>}/>
+                <Route path="/ledgerPeriod/add" element={<AddPage/>}/>
+                <Route path="/ledgerPeriod/modify" element={<ModifyForm/>}/>
+                <Route path="/journalHeader" element={<JournalHeader/>}/>
+                <Route path="/journalHeader/add" element={<AddPage/>}/>
+                <Route path="/journalHeader/modify" element={<ModifyForm/>}/>
+                <Route path="/generalLedger" element={<GeneralLedger/>}/>
+                <Route path="/generalLedger/add" element={<AddPage/>}/>
+                <Route path="/generalLedger/modify" element={<ModifyForm/>}/>
+                <Route path="/journalEntry" element={<JournalEntry/>}/>
+                <Route path="/journalEntry/add" element={<AddPage/>}/>
+                <Route path="/journalEntry/modify" element={<ModifyForm/>}/>
+                <Route path="/ledgerAmountSource" element={<LedgerAmountSource/>}/>
+                <Route path="/ledgerAmountSource/add" element={<AddPage/>}/>
+                <Route path="/ledgerAmountSource/modify" element={<ModifyForm/>}/>
+                <Route path="/ledgerAmountSourceType" element={<LedgerAmountSourceType/>}/>
+                <Route path="/ledgerAmountSourceType/add" element={<AddPage/>}/>
+                <Route path="/ledgerAmountSourceType/modify" element={<ModifyForm/>}/>
+                <Route path="/ledgerPeriodStatus" element={<LedgerPeriodStatus/>}/>
+                <Route path="/ledgerPeriodStatus/add" element={<AddPage/>}/>
+                <Route path="/ledgerPeriodStatus/modify" element={<ModifyForm/>}/>
             </Routes>
         </div>
     );
