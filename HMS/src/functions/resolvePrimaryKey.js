@@ -12,5 +12,15 @@ export function resolvePrimaryKey(rec) {
     return rec.code;
   }
 
+  // combound primary key
+  if (rec.pk.code !== undefined && rec.pk.code !== null) {
+    return rec.pk.code;
+  }
+
+  // combound primary key
+  if (rec.pk.itemNumber !== undefined && rec.pk.itemNumber !== null) {
+    return rec.pk.itemNumber;
+  }
+
   return null; // nothing usable
 }

@@ -44,7 +44,22 @@ import { JournalEntry } from '../pages/JournalEntry';
 import { LedgerAmountSource } from '../pages/LedgerAmountSource';
 import { LedgerAmountSourceType } from '../pages/LedgerAmountSourceType';
 import { LedgerPeriodStatus } from '../pages/LedgerPeriodStatus';
-
+import { BalanceSheet } from '../pages/BalanceSheet';
+import { TrialBalance } from '../pages/TrialBalance';
+import { IncomeStatement } from '../pages/IncomeStatement';
+import { Item } from '../pages/Item';
+import { ProductType } from '../pages/ProductType';
+import { ProductDivision } from '../pages/ProductDivision';
+import { ProductGroup } from '../pages/ProductGroup';                
+import { ProductCategory } from '../pages/ProductCategory';
+import { UnitOfMeasure } from '../pages/UnitOfMeasure';
+import { AbcCategory } from '../pages/AbcCategory';
+import { LifeTime } from '../pages/LifeTime';
+import { StockingCondition } from '../pages/StockingCondition';
+import { XyzCategory } from '../pages/XyzCategory';
+import { ServiceProduct } from '../pages/ServiceProduct';
+import { ServiceProductDetail } from '../pages/ServiceProductDetail';
+import { Service } from '../pages/Service';
 
 export function AppRoutes(){
     return(
@@ -168,6 +183,48 @@ export function AppRoutes(){
                 <Route path="/ledgerPeriodStatus" element={<LedgerPeriodStatus/>}/>
                 <Route path="/ledgerPeriodStatus/add" element={<AddPage/>}/>
                 <Route path="/ledgerPeriodStatus/modify" element={<ModifyForm/>}/>
+                <Route path="/balanceSheet" element={<BalanceSheet/>}/>
+                <Route path="/trialBalance" element={<TrialBalance/>}/>
+                <Route path="/incomeStatement" element={<IncomeStatement/>}/>
+                <Route path="/productType" element={<ProductType/>}/>
+                <Route path="/productDivision" element={<ProductDivision/>}/>
+                <Route path="/productGroup" element={<ProductGroup/>}/>
+                <Route path="/productCategory" element={<ProductCategory/>}/>
+                <Route path="/serviceProduct" element={<ServiceProduct/>}/>
+                <Route path="/serviceProductDetail" element={<ServiceProductDetail/>}/>
+                <Route path="/unitOfMeasure" element={<UnitOfMeasure/>}/>                
+                <Route path="/stockingCondition" element={<StockingCondition/>}/>
+                <Route path="/abcCategory" element={<AbcCategory/>}/>
+                <Route path="/xyzCategory" element={<XyzCategory/>}/>
+                <Route path="/lifeTime" element={<LifeTime/>}/>                
+                <Route path="/productType/add" element={<AddPage/>}/>
+                <Route path="/productDivision/add" element={<AddPage/>}/>
+                <Route path="/productGroup/add" element={<AddPage/>}/>
+                <Route path="/productCategory/add" element={<AddPage/>}/>
+                <Route path="/serviceProduct/add" element={<AddPage/>}/>
+                <Route path="/serviceProductDetail/add" element={<AddPage/>}/>
+                <Route path="/unitOfMeasure/add" element={<AddPage/>}/>                
+                <Route path="/stockingCondition/add" element={<AddPage/>}/>
+                <Route path="/abcCategory/add" element={<AddPage/>}/>
+                <Route path="/xyzCategory/add" element={<AddPage/>}/>
+                <Route path="/lifeTime/add" element={<AddPage/>}/>                
+                <Route path="/productType/modify" element={<ModifyForm/>}/>
+                <Route path="/productDivision/modify" element={<ModifyForm/>}/>
+                <Route path="/productGroup/modify" element={<ModifyForm/>}/>
+                <Route path="/productCategory/modify" element={<ModifyForm/>}/>
+                <Route path="/serviceProduct/add" element={<ModifyForm/>}/>
+                <Route path="/serviceProductDetail/modify" element={<ModifyForm/>}/>
+                <Route path="/unitOfMeasure/modify" element={<ModifyForm/>}/>                
+                <Route path="/stockingCondition/modify" element={<ModifyForm/>}/>
+                <Route path="/abcCategory/modify" element={<ModifyForm/>}/>
+                <Route path="/xyzCategory/modify" element={<ModifyForm/>}/>
+                <Route path="/lifeTime/modify" element={<ModifyForm/>}/>   
+                <Route path="/service" element={<Service/>}/>                                
+                <Route path="/service/add" element={<AddPage/>}/>
+                <Route path="/service/modify" element={<ModifyForm/>}/> 
+                <Route path="/item" element={<Item/>}/>
+                <Route path="/item/add" element={<AddPage/>}/>
+                <Route path="/item/modify" element={<ModifyForm/>}/>
             </Routes>
         </div>
     );

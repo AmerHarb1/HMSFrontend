@@ -1,10 +1,10 @@
 import  {AddTable } from '../components/AddTable';
 
-export function Account() {
+export function UnitOfMeasure() {
   const excludeFields = { id: "", createdBy: "", createdDate: "", accountNumber:"" }
   return (
     <div >  	
-        <AddTable name= "Account" lnk="account" excludeFields={excludeFields}/>
+        <AddTable name= "UnitOfMeasure" lnk="unitOfMeasure" excludeFields={excludeFields}/>
     </div>
   );
 }

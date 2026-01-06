@@ -1,10 +1,9 @@
 import axios from 'axios';
 // 👉 Fetch LOV data for a field
-export async function fetchLov(linkLov, key, headers, setLovMap) {
+export async function fetchInitLov(linkLov, key, headers) {
   try {
-   // console.log(`${linkLov}${key}Lov`)
     const res = await axios.get(`${linkLov}${key}Lov`, { headers });
-    setLovMap(prev => new Map(prev).set(key, res.data));
+    return res.data; // return LOV list
   } catch (error) {
     console.log(`${linkLov}${key}`)
     console.warn("response", error.response?.data);

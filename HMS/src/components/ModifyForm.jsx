@@ -4,10 +4,13 @@ import dayjs from "dayjs";
 import { useState, useEffect} from 'react';
 import { useNavigate, useLocation} from 'react-router';
 import { getAccessToken } from "../functions/getAccessToken.js";
-import { fetchLov } from "../functions/fetchLov.js";
-import {  fetchChildLov } from "../functions/fetchChildLov.js";
+import { fetchInitLov } from "../functions/fetchInitLov.js";
+import {  fetchInitChildLov } from "../functions/fetchInitChildLov.js";
 import {clearDescendants} from "../functions/clearDecendents.js";
 import {resolvePrimaryKey} from "../functions/resolvePrimaryKey.js";
+import {fixFormDataLov} from "../functions/fixFormDataLov.js";
+import {  lovChange } from "../functions/lovChange.js";
+import {  lovInit } from "../functions/lovInit.js";
 import '../styles/page.css';
 
 export function ModifyForm(props){
@@ -18,9 +21,8 @@ export function ModifyForm(props){
     const { rec } = useLocation().state;
     const [formData, setFormData] = useState(rec);
     const [lovMap, setLovMap] = useState(new Map());
-    const [parentChildLovMap, setParentChildLovMap] = useState(new Map());
-    console.log(rec)
-    console.log(state.bodyData)
+    const [parentChildLovMap, setParentChildLovMap] = useState(() => new Map());
+    
   //const apiLnk ='http://localhost:9002/hms/' +lnk+'/'+ (rec.id == null ? rec.code? rec.id:null:null);
     const apiLnk = `http://localhost:9002/hms/${lnk}/${resolvePrimaryKey(rec)}`;
     const createdBy = state.createdBy;
@@ -28,19 +30,19 @@ export function ModifyForm(props){
     const comments = state.comments;
 	const initialData = Object.values(state.rec); 
     const tabDataValues = state ? state.initialData : props.obj;
+    
     const tabData = state?state.tabData:props.obj;
     const formName =state?state.page:null;
-    
-    const stringIn={id:"",createdBy:"",createdOn:""};
+    const localLovMap = new Map();
+    const excludeFields=state.excludeFields;
     const linkLov = "http://localhost:9002/hms/";
     const [tabDataNoChar, setTabDataNoChar] = useState(initialData);
-    const [normalized, setNormalized] = useState(false);
     const [dateCols, setDateCols] = useState([]);
     // find the row in tabDataValues that matches the current record
-    const rowIndex = tabDataValues.findIndex(row => row.id === rec.id);
+    const rowIndex = tabDataValues.findIndex(row => row.id === rec.id || row.id === rec.code || row.id === rec.pk.code );
+ 
     // fallback if not found
     const currentRow = rowIndex >= 0 ? tabDataValues[rowIndex] : rec;
-
     const navigate = useNavigate();
  
     const headers = {
@@ -64,24 +66,10 @@ export function ModifyForm(props){
   	};
 
     const handleLovChange = (event) => {
-        const { name, value } = event.target;
-        setFormData(prev => {
-            const next = { ...prev, [name]: value };
-
-            if (parentChildLovMap.has(name)) {
-                console.log(`${name} --- ${value}`);
-
-                // clear descendants recursively
-                clearDescendants(next, name, parentChildLovMap, setLovMap);
-
-                // fetch LOVs for immediate child only
-                
-            }
-
-            return next;
-        }); 
-        const childKey = parentChildLovMap.get(name);
-        fetchChildLov(linkLov,childKey, value, headers, setLovMap); 
+        const { name, value } = event.target;         
+        const updatedFormData = { ...formData, [name]: value }; // Build the updated formData manually
+        setFormData(updatedFormData);
+        lovChange(updatedFormData, name, parentChildLovMap, setLovMap, headers, linkLov);
     };
     
     const updateClicked = (event) => {
@@ -89,6 +77,7 @@ export function ModifyForm(props){
   		
 		const obj = tabData.reduce((o, key) => ({ ...o, [key]: key=="id"?rec.id
                                                         :key=="code"?rec.code
+                                                        :key=="pk"?rec.pk.code
 														:key=="createdBy"?createdBy
 														:key=="createdon"?createdOn
                                                         :key=="comments"?comments
@@ -121,26 +110,52 @@ export function ModifyForm(props){
 		}
 	};
     
-    const getLovData = () => {
-        let keys = tabData;
-
+    const getLovData = async() => {
+        const keys = tabData;
+        const row = Array.isArray(tabDataValues) ? tabDataValues[0] : tabDataValues; 
+        if (!row) return;
         const lovCols = keys.filter(  
         (key) =>
-            typeof tabDataValues[0][key] === "string" &&
-            tabDataValues[0][key].includes(String.fromCharCode(31)) //filter fields that their value includes ascii char 31, they are the Lov fields
+            typeof row[key] === "string" && row[key].includes(String.fromCharCode(31)) //filter fields that their value includes ascii char 31, they are the Lov fields
         );
-        
 
-        lovCols.forEach((key) => {
-            const value = tabDataValues[0][key];
-            const parent = value.substring(value.indexOf(String.fromCharCode(31)) + 1).trim();
-            if (parent) {
-                setParentChildLovMap((prev) => new Map(prev).set(parent, key)); //create map that holds the parent child
-                //setLovMap((prev) => new Map(prev).set(key, []));
-                fetchChildLov(linkLov,key, value, headers, setLovMap);
+        // 1) Build a local parent-child map (not state) 
+        const localParentChildMap = new Map(); 
+
+        for (const key of lovCols) { 
+            const value = row[key]; 
+            const parent = value.substring(value.indexOf(String.fromCharCode(31)) + 1).trim(); //get string after chr(13), it's parent
+            if (parent) { 
+                // parent can have multiple children; store as array 
+                //const existing = localParentChildMap.get(parent) || []; 
+                localParentChildMap.set(parent, key); 
             } 
-            fetchLov(linkLov, key, headers, setLovMap);            
-        });
+        }
+
+        // 3. Load root LOVs first
+        for (const key of lovCols) {
+            const value = row[key]; 
+            const parent = value .substring(value.indexOf(String.fromCharCode(31)) + 1) .trim(); 
+            if (!parent) { // Root LOV
+                console.log(key) 
+                const lov = await fetchInitLov(linkLov, key, headers);
+                localLovMap.set(key, lov);
+            } 
+        }
+
+        // 4. Load child LOVs after roots are ready 
+        for (const key of lovCols) { 
+            const value = row[key]; 
+            const parent = value.substring(value.indexOf(String.fromCharCode(31)) + 1).trim(); 
+            if (parent) { 
+                const lov = await lovInit(formData, key, localParentChildMap, headers, linkLov); 
+                localLovMap.set(key, lov);
+            } 
+        }
+        
+        // 5. Push final maps into React state 
+        setLovMap(localLovMap); 
+        setParentChildLovMap(localParentChildMap);
 
         keys.forEach((k)=>{
             if(k.endsWith("Date")){
@@ -149,38 +164,22 @@ export function ModifyForm(props){
         })   
     };
 
-    useEffect(() => {
-        getLovData();
-    }, []);
+    useEffect(() => { 
+        (async () => { 
+            await getLovData(); 
+        })(); 
+    }, [tabData, tabDataValues]);
 
     useEffect(() => {
-    console.log(lovMap)
+        console.log(lovMap)
+        fixFormDataLov(lovMap, formData, tabData, setFormData);
   }, [lovMap]);
 
-    useEffect(() => {
-        if (lovMap.size > 0 && !normalized) {
-            const updated = { ...formData };
-            state.tabData.forEach(key => {
-                if (lovMap.has(key)) {
-                    const options = lovMap.get(key) || [];
-                    const rawValue = currentRow[key];   // ✅ use the correct row
-                    let displayValue = rawValue;
-                    if (typeof rawValue === "string" && rawValue.includes(String.fromCharCode(31))) {
-                        displayValue = rawValue.substring(0, rawValue.indexOf(String.fromCharCode(31)));
-                    }
-                    const match = options.find(
-                        opt => opt.name === displayValue || opt.username === displayValue || opt.description === displayValue
-                    );
-                    if (match) {
-                        updated[key] = match.id;
-                    }
-                }
-            });
-            setFormData(updated);
-            setNormalized(true); // ✅ only normalize once
-        }
-    }, [lovMap, normalized]);
+  useEffect(() => {
+        console.log(parentChildLovMap)
+  }, [parentChildLovMap]);
 
+    
     useEffect(() => {
         const cleaned = {};
         Object.entries(state.rec).forEach(([key, value]) => {
@@ -203,20 +202,19 @@ export function ModifyForm(props){
                 
                 <form  >
                 <table className='entry-Tab'>
-                    <tbody>            	
+                    <tbody>  
                         {(tabData)?
                             tabData.map(fieldName =>
-                                fieldName in stringIn ? null :
-                                    lovMap.has(fieldName)
+                                fieldName in excludeFields ? null :
+                                    lovMap.has(fieldName)||lovMap.has(localLovMap)
                                     ?
                                         <tr>					  	
-                                            <td>{console.log(formData)} 
-                                                {console.log("Select value:", fieldName, formData[fieldName]??"")}
+                                            <td>
                                                 <label htmlFor="name">{fieldName}:</label></td>
                                             <td key={fieldName}><select  name={fieldName} value={formData[fieldName] ?? ""} onChange={handleLovChange} className='selectInput'>
                                                 <option value="">-- Select --</option>
-                                                {Array.from(lovMap.get(fieldName) || []).map((opt) => (
-                                                    <option key={resolvePrimaryKey(opt)} value={resolvePrimaryKey(opt)}>
+                                                {Array.from(lovMap.get(fieldName) || localLovMap.get(fieldName)|| []).map((opt) => (
+                                                    <option  value={resolvePrimaryKey(opt)}>
                                                         {opt.name?opt.name:opt.username?opt.username:opt.description}
                                                     </option>
                                                 ))}

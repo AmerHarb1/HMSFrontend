@@ -1,7 +1,7 @@
-import { Table, Typography, Space, message} from 'antd';
+import { Table, Space} from 'antd';
 import axios from 'axios';
 import React,{ useState, useEffect} from 'react';
-import { AddButton } from './AddButton';
+import { AddButton } from '../components/AddButton';
 import '../styles/page.css';
 import 'antd/dist/reset.css'; // for AntD v5
 //import {isDate} from '../functions/isDate.js';
@@ -10,26 +10,30 @@ import { getValueType } from '../functions/getValueType.js';
 import { getHeader } from "../functions/getHeader";
 import { PlusOutlined } from '@ant-design/icons';
 
-export function AddTable(props){
-//    console.log('in Add table' +props.name);
-//    console.log(props.lnk);
-    const [loading, setloading ] = useState(true);
-    const headers = getHeader();
-    const [tabData, setTabData] = useState([]);
-    const [tabDataNoChar, setTabDataNoChar] = useState([]);
-    const [tabColumns, setTabColumns] = useState([]);
-    const [totalPages, setTotalPages] = useState(0);
-    const [totalRecords, setTotalRecords] = useState(0);
-    const [page, setpPage] = useState(0);
-    const [pageSize, setpPageSize] = useState(10);
-    const [sortField, setSortField] = useState('');//chaged to comments from id, because all tables have field comments but not id
-    const [sortOrder, setSortOrder] = useState('asc');
-    const excludeFields = props.excludeFields?props.excludeFields:{id: '', createdBy: '', createdDate: ''};
-
-  	const actionLink = props.lnk+'/add';
-    const modifyLink = props.lnk+'/modify';
-
-    const getData = async(page, pageSize, sortField, sortOrder, filters={}) => {
+export function ServiceProductDetail(props) {
+  const [loading, setloading ] = useState(true);
+  const headers = getHeader();
+  const [tabData, setTabData] = useState([]);
+  const [serviceFormData, setServiceFormData] = useState(props.serviceFormData);
+  const [serviceProductId, setServiceProductId] = useState(props.serviceProductId);
+  const [backLink, setBackLink] = useState(props.backLink);
+  const [tabDataNoChar, setTabDataNoChar] = useState([]);
+  const [tabColumns, setTabColumns] = useState([]);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalRecords, setTotalRecords] = useState(0);
+  const [page, setpPage] = useState(0);
+  const [pageSize, setpPageSize] = useState(10);
+  const [sortField, setSortField] = useState('');//chaged to comments from id, because all tables have field comments but not id
+  const [sortOrder, setSortOrder] = useState('asc');
+  const excludeFields = props.excludeFields;
+  const lnk = 'serviceProductDetail'
+  //setServiceFormData(props.serviceFormData);
+  const actionLink = lnk+'/add';
+  const modifyLink = lnk+'/modify';
+  console.log(serviceFormData)
+console.log(backLink);
+console.log(tabData)
+  const getData = async(page, pageSize, sortField, sortOrder, filters={}) => {
         setloading(true);
         //console.log('page = ' + page +' pageSize = ' + pageSize + ' sortField = ' + sortField + '  sortOrder = ' + sortOrder);
 
@@ -39,7 +43,8 @@ export function AddTable(props){
             .map(([key, value]) => `${key}=${value.join(",")}`)
             .join("&");
 
-        const link = 'http://localhost:9002/hms/' + props.lnk + '?page=' + page + '&size=' + pageSize+ '&sort=' + sortField+ ',' + sortOrder + '&filterParams=' + filterParams ;	 
+        if(!serviceFormData){
+            const link = 'http://localhost:9002/hms/' + props.lnk + '?page=' + page + '&size=' + pageSize+ '&sort=' + sortField+ ',' + sortOrder + '&filterParams=' + filterParams ;	 
         axios.get(link,{headers: headers}
   			).then(res => {                                
                 setTabData(res.data.content);   //res.data.content is an array of objects
@@ -52,13 +57,29 @@ export function AddTable(props){
               })
               .finally(()=>{
                  setloading(false);
-              });	
+              });
+        }else{
+            const link = 'http://localhost:9002/hms/serviceProductDetailGet' + '?page=' + page + '&size=' + pageSize+ '&sort=' + sortField+ ',' + sortOrder + '&filterParams=' + filterParams ;	 
+            axios.post(link,serviceFormData,{headers: headers}
+                ).then(res => {                                
+                    setTabData(res.data.content);   //res.data.content is an array of objects
+                    setTotalPages(res.data.totalPages);
+                    setTotalRecords(res.data.totalElements);
+                    })
+                .catch((error) => {
+                    console.warn("response", error.response?.data);                
+                })
+                .finally(()=>{
+                    setloading(false);
+                });
+        }        	
     }
 
     useEffect(() => {
 	    getData(0,10,'','asc');
 	  }, []);
 
+    
     // build columns whenever data or sort state changes
     useEffect(() => {
         if (tabData.length > 0) {
@@ -97,9 +118,9 @@ export function AddTable(props){
                                 record.code ??
                                 record.pk?.code ??
                                 "";  
-                            //    console.log(display)  ;                    
+                                console.log(display)  ;                    
                             return(
-                                <AddButton class='AddLinkButton' page={props.name} btn_type='link' lnk={props.lnk} excludeFields={excludeFields} actionLink={modifyLink} name={record.id?record.id:record.code} bodyData={tabData} rec= {record} createdBy={record.createdBy} createdOn={record.createdOn} comments={record.comments}>
+                                <AddButton class='AddLinkButton' page={'Service Product Details'} btn_type='link' lnk={lnk} excludeFields={excludeFields} actionLink={modifyLink} name={record.id?record.id:record.code} bodyData={tabData} rec= {record} createdBy={record.createdBy} createdOn={record.createdOn} comments={record.comments}>
                                     {display}
                                 </AddButton>
                             );
@@ -110,13 +131,6 @@ export function AddTable(props){
             setTabColumns(cols);
         }
     }, [tabData, sortField, sortOrder]);
-
-    useEffect(() => {
-	//    console.log('totalPages =' + totalPages);
-	  }, [totalPages]);
-    useEffect(() => {
-	//    console.log('totalRecords =' + totalRecords);
-	  }, [totalRecords]);
 
     useEffect(() => {
         if (!Array.isArray(tabData)) return;
@@ -145,9 +159,6 @@ export function AddTable(props){
     return(
         <div>
             <Space size={15} direction="vertical">
-                <Typography.Text className='Title'>
-                    {props.name}
-                </Typography.Text>
                 <Table
                     className="Tab"
                     columns={tabColumns}
@@ -173,9 +184,20 @@ export function AddTable(props){
                         getData(pagination.current - 1, pagination.pageSize, field, order, filters);                        
                     }}
                 >
-
                 </Table>
-                <AddButton class="AddButton" name= 'Add' page={props.name} lnk={props.lnk} actionLink={actionLink} bodyData={tabData} excludeFields={excludeFields} icon={<PlusOutlined/>} btn_type='primary'></AddButton>
+                <AddButton  class="AddButton" 
+                            name= 'Add' 
+                            page={'Service Product Details'} 
+                            lnk={lnk} 
+                            actionLink={actionLink} 
+                            bodyData={tabData} 
+                            backLink={backLink}
+                            backId={serviceProductId}
+                            serviceFormData={props.serviceFormData} 
+                            excludeFields={excludeFields} 
+                            icon={<PlusOutlined/>} 
+                            btn_type='primary'>
+                </AddButton>
             </Space>
         </div>
     );

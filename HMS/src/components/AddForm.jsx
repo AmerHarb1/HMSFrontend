@@ -4,8 +4,10 @@ import { useState, useEffect} from 'react';
 import { useNavigate, useLocation} from 'react-router';
 import dayjs from "dayjs";
 import { getAccessToken } from "../functions/getAccessToken.js";
-import { fetchLov } from "../functions/fetchLov.js";
-import {  fetchChildLov } from "../functions/fetchChildLov.js";
+import {resolvePrimaryKey} from "../functions/resolvePrimaryKey.js";
+import {  getLovData } from "../functions/getLovData.js";
+import {  lovChange } from "../functions/lovChange.js";
+import {resolveDescription} from "../functions/resolveDescription.js";
 import '../styles/page.css';
 
 export function AddForm(props){
@@ -15,12 +17,22 @@ export function AddForm(props){
     const [formData, setFormData] = useState(
         state ? state.tabData.reduce((a, v) => ({ ...a, [v]: "" }), {}) : props.obj
     );
+
+    //const obj = { ...tabData.reduce((o, key) => ({ ...o, [key]: formData[key] }), {}), serviceProductId: formData.serviceProductId };
+
     const tabData = state ? state.tabData : props.obj;
-//    console.log(tabData)
+    const serviceFormData = state.serviceFormData;
+    const backLink = state.backLink;
+    const backId = state.backId;
+    
     const tabDataValues = state ? state.initialData : props.obj;
     const formName = state ? state.page : props.name;
     const lnk = state ? state.lnk : props.lnk;
-    const stringIn = { id: "", createdBy: "", createdOn: "" };
+    const excludeFields = state.excludeFields;
+    const masterData=state?state.masterData:props.masterData;
+
+    //setFormData(prev => ({ ...prev, serviceProductId: tabDataValues?.serviceProductId ?? "" }));
+    
     const navigate = useNavigate();
     const linkLov = "http://localhost:9002/hms/";
     const [lovMap, setLovMap] = useState(new Map());
@@ -33,7 +45,7 @@ export function AddForm(props){
         Authorization: "Bearer " + accessToken,
         withCredentials: true,
     };
-
+console.log(backId)
     const cancelClicked = () => navigate("/" + lnk);
 
     const handleChange = (event) => {
@@ -42,20 +54,38 @@ export function AddForm(props){
     };
 
     const handleLovChange = (event) => {
-        const { name, value } = event.target;
-        setFormData((prev) => ({ ...prev, [name]: value }));
-        if (parentChildLovMap.has(name)) {
-            const childKey = parentChildLovMap.get(name);
-            fetchChildLov(linkLov, childKey, value, headers, setLovMap, setFormData);
-        }
+        const { name, value } = event.target;         
+        const updatedFormData = { ...formData, [name]: value }; // Build the updated formData manually
+        setFormData(updatedFormData);
+        lovChange(updatedFormData, name, parentChildLovMap, setLovMap, headers, linkLov);
     };
 
     const handleSubmit = (event) => {
+        console.log(backLink);
         event.preventDefault();
         const obj = tabData.reduce((o, key) => ({ ...o, [key]: formData[key] }), {});
         axios
         .post(link, obj, { headers })
-        .then(() => navigate("/" + lnk))
+        .then(() => {
+            if (backLink) { 
+                console.log(backId);
+                console.log(serviceFormData);
+                navigate("/" + backLink, { 
+                    state: { 
+                        backId: backId, 
+                        excludeFields: excludeFields, 
+                        serviceFormData: serviceFormData,
+                        masterData: masterData,
+                        from: "ServiceProductDetail" } 
+                }); 
+            } else 
+                { 
+                    console.log('front');
+                    navigate("/" + lnk, { 
+                        state: { serviceFormData: obj } 
+                    });
+                } 
+            })
         .catch((error) => {
             alert(error.response?.data)
             if (Array.isArray(error.response?.data)) {
@@ -68,51 +98,19 @@ export function AddForm(props){
         });
     };
 
-    const getLovData = () => {
-        let keys = tabData;
-        /*
-        if (tabData !== null && Array.isArray(tabData) && tabData.length > 0) {
-            keys = Object.keys(tabData);
-            console.log(tabDataValues[0]);
-        }
-*/
-        const lovCols = keys.filter(  
-            (key) =>
-                typeof tabDataValues[0][key] === "string" &&
-                tabDataValues[0][key].includes(String.fromCharCode(31)) //filter fields that their value includes ascii char 31, they are the Lov fields
-            );
-   
-        //setDateKeys(keys.filter((k) => tabData[k].endsWith("Date")));   //filter fields that their name ends with a postfix "Date", they are the Date fields 
-
-        lovCols.forEach((key) => {
-            const value = tabDataValues[0][key];
-            console.log(value)
-            const parent = value.substring(value.indexOf(String.fromCharCode(31)) + 1).trim();
-            console.log(parent)
-            if (parent) {
-                console.log(key)
-                setParentChildLovMap((prev) => new Map(prev).set(parent, key)); //create map that holds the parent child
-                setLovMap((prev) => new Map(prev).set(key, []));
-            } else {
-                console.log(key)
-                fetchLov(linkLov, key, headers, setLovMap);
-            }
-        });
-
-        keys.forEach((k)=>{
-            if(k.endsWith("Date")){
-               setDateCols((prev) => [...prev, k]); 
-            }
-        })       
-    };
-
   useEffect(() => {
-    getLovData();
+    getLovData(tabData, tabDataValues, setParentChildLovMap, setLovMap, linkLov, headers, setDateCols);
   }, []);
 
   useEffect(() => {
-    console.log(lovMap)
-  }, [lovMap]);
+    console.log(formData)
+  }, [formData]);
+
+  useEffect(() => { 
+    if (Array.isArray(tabDataValues) && tabDataValues[0]?.serviceProductId) { 
+        setFormData(prev => ({ ...prev, serviceProductId: tabDataValues[0].serviceProductId })); 
+    } 
+}, [tabDataValues]);
 
     return(
         <div className="form-table">
@@ -125,50 +123,50 @@ export function AddForm(props){
                     <table className='entry-Tab'>
                         <tbody>            	
                             {state?(tabData)?
-                                Object.keys(tabData).map(s=>                                     
-                                    tabData[s] in stringIn
+                                tabData.map(field=>                                     
+                                    field in excludeFields
                                         ?
                                             null
                                         :                                            
-                                            lovMap.has(tabData[s])
+                                            lovMap.has(field)
                                             ?
                                                 <tr>					  	
-                                                        <td><label htmlFor="name">{tabData[s]}:</label></td>
-                                                    <td key={tabData[s]}><select  id={tabData[s]} name={tabData[s]} value={state?formData?formData[s]:null:null} onChange={handleLovChange} className='selectInput'>
+                                                        <td><label htmlFor="name">{field}:</label></td>
+                                                    <td key={field}><select  id={field} name={field} value={state?formData?formData[field]:null:null} onChange={handleLovChange} className='selectInput'>
                                                         <option value="">-- Select --</option>
-                                                        {Array.from(lovMap.get(tabData[s]) || []).map((opt) => (
-                                                            <option key={opt.id?opt.id:opt.code} value={opt.id?opt.id:opt.code}>
-                                                                {opt.name?opt.name:opt.username?opt.username:opt.description}
+                                                        {Array.from(lovMap.get(field) || []).map((opt) => (
+                                                            <option key={resolvePrimaryKey(opt)} value={resolvePrimaryKey(opt)}>
+                                                                {resolveDescription(opt)}
                                                             </option>
                                                         ))}
                                                         </select>
                                                     </td>
                                                  </tr>
                                             :
-                                                dateCols.includes(tabData[s])                                                
+                                                dateCols.includes(field)                                                
                                                 ?
                                                     <tr>				  	
-                                                        <td><label htmlFor="name">{tabData[s]}:</label></td>
-                                                        <td key={tabData[s]}><DatePicker    id={tabData[s]} 
-                                                                                            name={tabData[s]} 
-                                                                                            value={state?formData?formData[s]:null:null} 
-                                                                                            format="MM/DD/YYYY HH:mm:ss" 
-                                                                                            placeholder="Select date"
-                                                                                            onChange={(date) => {
-                                                                                                setFormData((prev) => ({
-                                                                                                ...prev,
-                                                                                                [tabData[s]]: date ? date.format("YYYY-MM-DDTHH:mm:ss") : null, // store as ISO string
-                                                                                                }));
-                                                                                            }}
-                                                                                            className='dateField'
+                                                        <td><label htmlFor="name">{field}:</label></td>
+                                                        <td key={field}><DatePicker id={field} 
+                                                                                    name={field} 
+                                                                                    value={state?formData?formData[field]:null:null} 
+                                                                                    format="MM/DD/YYYY HH:mm:ss" 
+                                                                                    placeholder="Select date"
+                                                                                    onChange={(date) => {
+                                                                                        setFormData((prev) => ({
+                                                                                        ...prev,
+                                                                                        [field]: date ? date.format("YYYY-MM-DDTHH:mm:ss") : null, // store as ISO string
+                                                                                        }));
+                                                                                    }}
+                                                                                    className='dateField'
             
                                                                             />
                                                         </td>
                                                     </tr>
                                                 :
                                                     <tr>					  	
-                                                        <td><label htmlFor="name">{tabData[s]}:</label></td>
-                                                        <td key={tabData[s]}><input type="text"  id={tabData[s]} name={tabData[s]} value={state?formData?formData[s]:null:null} onChange={handleChange}/></td>
+                                                        <td><label htmlFor="name">{field}:</label></td>
+                                                        <td key={field}><input type="text"  id={field} name={field} value={state?formData?formData[field]:null:null} onChange={handleChange}/></td>
                                                     </tr>) :null:null
                             }	
 				<tr>

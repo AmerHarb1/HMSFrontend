@@ -10,7 +10,7 @@ import { PageContent } from './components/PageContent';
 import { Register } from './pages/Register';
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userMenu, setUserMenu] = useState(null);
   const getUserMenuData = (userMenu) =>{  //use back a prop from a called function
     setUserMenu(userMenu);
@@ -19,6 +19,7 @@ function App() {
 
   return (
     <div className="App">
+      
       {isAuthenticated ? (
             <>
               <AppHeader/>

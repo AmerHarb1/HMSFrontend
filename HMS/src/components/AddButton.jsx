@@ -3,9 +3,13 @@ import {useNavigate} from 'react-router';
 import '../styles/page.css';
 
 export function AddButton(props){
-//	console.log(tabData[0]);
 	const tabData = props.bodyData;
 	const page = props.page;
+	const backLink = props.backLink;
+	const backId = props.backId;
+	const masterData=props.masterData;
+	const excludeFields = props.excludeFields;
+	const serviceFormData=props.serviceFormData;
 	const navigate = useNavigate();
 //console.log(props.recId);
 	const buttonClicked = () => {		
@@ -20,7 +24,13 @@ export function AddButton(props){
 						page:page,
 						lnk:props.lnk,
 						rec:props.rec,
+						excludeFields:excludeFields,
 						name:props.name,
+						serviceFormData:serviceFormData,
+						backLink:backLink,
+						backId:backId,
+						masterData:masterData,
+						serviceFormDate:props.serviceFormDate,
 						createdBy:props.createdBy,
 						createdOn:props.createdOn}
 					});

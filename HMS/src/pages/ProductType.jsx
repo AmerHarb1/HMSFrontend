@@ -1,10 +1,10 @@
 import  {AddTable } from '../components/AddTable';
 
-export function Account() {
+export function ProductType() {
   const excludeFields = { id: "", createdBy: "", createdDate: "", accountNumber:"" }
   return (
     <div >  	
-        <AddTable name= "Account" lnk="account" excludeFields={excludeFields}/>
+        <AddTable name= "ProductType" lnk="productType" excludeFields={excludeFields}/>
     </div>
   );
 }
