@@ -39,7 +39,12 @@ export function ModifyForm(props){
     const [tabDataNoChar, setTabDataNoChar] = useState(initialData);
     const [dateCols, setDateCols] = useState([]);
     // find the row in tabDataValues that matches the current record
-    const rowIndex = tabDataValues.findIndex(row => row.id === rec.id || row.id === rec.code || row.id === rec.pk.code );
+
+    const getRowKey = (row) => row.id ?? row.code ?? row.pk?.code; 
+    const recKey = rec.id ?? rec.code ?? rec.pk?.code; 
+    const rowIndex = tabDataValues.findIndex(row => getRowKey(row) === recKey);
+
+    //const rowIndex = tabDataValues.findIndex(row => row.id === rec.id || row.id === rec.code || row.id === rec.pk.code );
  
     // fallback if not found
     const currentRow = rowIndex >= 0 ? tabDataValues[rowIndex] : rec;

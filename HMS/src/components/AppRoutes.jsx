@@ -60,6 +60,19 @@ import { XyzCategory } from '../pages/XyzCategory';
 import { ServiceProduct } from '../pages/ServiceProduct';
 import { ServiceProductDetail } from '../pages/ServiceProductDetail';
 import { Service } from '../pages/Service';
+import { ItemApprovalType } from '../pages/ItemApprovalType';
+import { ItemDespenseType } from '../pages/ItemDespenseType';
+import { MaterialRequest } from '../pages/MaterialRequest';
+import { MaterialRequestDetail } from '../pages/MaterialRequestDetail';                
+import { MaterialRequestStatus } from '../pages/MaterialRequestStatus';
+import { ProductBatch } from '../pages/ProductBatch';
+import { ProductIssuance } from '../pages/ProductIssuance';
+import { ProductIssueStatus } from '../pages/ProductIssueStatus';
+import { Storage } from '../pages/Storage';
+import { StorageType } from '../pages/StorageType';
+import { Employee } from '../pages/Employee';
+import { EmployeeStatus } from '../pages/EmployeeStatus';
+
 
 export function AppRoutes(){
     return(
@@ -225,6 +238,43 @@ export function AppRoutes(){
                 <Route path="/item" element={<Item/>}/>
                 <Route path="/item/add" element={<AddPage/>}/>
                 <Route path="/item/modify" element={<ModifyForm/>}/>
+                <Route path="/itemApprovalType" element={<ItemApprovalType/>}/> 
+                <Route path="/itemApprovalType/add" element={<AddPage/>}/>                
+                <Route path="/itemApprovalType/modify" element={<ModifyForm/>}/>
+                <Route path="/itemDespenseType" element={<ItemDespenseType/>}/> 
+                <Route path="/itemDespenseType/add" element={<AddPage/>}/>                
+                <Route path="/itemDespenseType/modify" element={<ModifyForm/>}/>
+                <Route path="/materialRequest" element={<MaterialRequest/>}/> 
+                <Route path="/materialRequest/add" element={<AddPage/>}/>                
+                <Route path="/materialRequest/modify" element={<ModifyForm/>}/>
+                <Route path="/materialRequestDetail" element={<MaterialRequestDetail/>}/> 
+                <Route path="/materialRequestDetail/add" element={<AddPage/>}/>                
+                <Route path="/materialRequestDetail/modify" element={<ModifyForm/>}/>
+                <Route path="/materialRequestStatus" element={<MaterialRequestStatus/>}/> 
+                <Route path="/materialRequestStatus/add" element={<AddPage/>}/>                
+                <Route path="/materialRequestStatus/modify" element={<ModifyForm/>}/>
+                <Route path="/productBatch" element={<ProductBatch/>}/> 
+                <Route path="/productBatch/add" element={<AddPage/>}/>                
+                <Route path="/productBatch/modify" element={<ModifyForm/>}/>
+                <Route path="/productIssuance" element={<ProductIssuance/>}/> 
+                <Route path="/productIssuance/add" element={<AddPage/>}/>                
+                <Route path="/productIssuance/modify" element={<ModifyForm/>}/>
+                <Route path="/productIssueStatus" element={<ProductIssueStatus/>}/> 
+                <Route path="/productIssueStatus/add" element={<AddPage/>}/>                
+                <Route path="/productIssueStatus/modify" element={<ModifyForm/>}/>
+                <Route path="/storage" element={<Storage/>}/> 
+                <Route path="/storage/add" element={<AddPage/>}/>                
+                <Route path="/storage/modify" element={<ModifyForm/>}/>
+                <Route path="/storageType" element={<StorageType/>}/> 
+                <Route path="/storageType/add" element={<AddPage/>}/>                
+                <Route path="/storageType/modify" element={<ModifyForm/>}/>
+                <Route path="/employee" element={<Employee/>}/> 
+                <Route path="/employee/add" element={<AddPage/>}/>                
+                <Route path="/employee/modify" element={<ModifyForm/>}/>
+                <Route path="/employeeStatus" element={<EmployeeStatus/>}/> 
+                <Route path="/employeeStatus/add" element={<AddPage/>}/>                
+                <Route path="/employeeStatus/modify" element={<ModifyForm/>}/>
+                
             </Routes>
         </div>
     );

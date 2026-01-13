@@ -18,8 +18,11 @@ export async function getLovDataNoParent(tabData, formData, setParentChildLovMap
         const value = row[key]; 
         const parent = value.substring(value.indexOf(String.fromCharCode(31)) + 1).trim(); //get string after chr(13), it's parent
         if (parent) { 
-            // parent can have multiple children; store as array 
+            // 12/25/2025, to do: parent can have multiple children; store as array 
             //const existing = localParentChildMap.get(parent) || []; 
+            // if (!existing.includes(key)) { 
+            //      localParentChildMap.set(parent, [...existing, key]); 
+            //}
             localParentChildMap.set(parent, key); 
         } 
     }

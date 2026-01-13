@@ -28,12 +28,19 @@ export function MasterDetails(props) {
     const [sortField, setSortField] = useState('');//chaged to comments from id, because all tables have field comments but not id
     const [sortOrder, setSortOrder] = useState('asc');
     const excludeFields = props.excludeFields;
+    const detailExcludeFields = props.detailExcludeFields;
+    
     const lnk = props.lnk;
+    const detail = props.detail;
+    const title = props.title;
     //setServiceFormData(props.serviceFormData);
     const actionLink = lnk+'/add';
     const modifyLink = lnk+'/modify';
     const masterData=props.masterData;
-    console.log(forwardKey)
+    const masterCode = props.masterCode;
+    const masterCodeValue = props.masterCodeValue;
+    console.log(masterCode);
+
     const getData = async(page, pageSize, sortField, sortOrder, filters={}) => {
         setloading(true);
         let reducedForm = "";
@@ -108,9 +115,10 @@ export function MasterDetails(props) {
                                 record.id ??
                                 record.code ??
                                 record.pk?.code ??
+                                record.pk?.itemNumber ??
                                 "";                   
                             return(
-                                <AddButton class='AddLinkButton' page={'Service Product Details'} btn_type='link' lnk={lnk} excludeFields={excludeFields} actionLink={modifyLink} name={record.id?record.id:record.code} bodyData={tabData} rec= {record} createdBy={record.createdBy} createdOn={record.createdOn} comments={record.comments}>
+                                <AddButton class='AddLinkButton' page={title + ' ' + detail} btn_type='link' lnk={lnk} excludeFields={excludeFields} detailExcludeFields={detailExcludeFields} actionLink={modifyLink} name={record.id?record.id:record.code?record.code:record.pk?record.pk.code?record.pk.code:record.pk.itemNumber:null} bodyData={tabData} rec= {record} createdBy={record.createdBy} createdOn={record.createdOn} comments={record.comments}>
                                     {display}
                                 </AddButton>
                             );
@@ -177,15 +185,20 @@ export function MasterDetails(props) {
                 </Table>
                 <AddButton  class="AddButton" 
                             name= 'Add' 
-                            page={'Service Product Details'} 
+                            page={title} 
                             lnk={lnk} 
                             actionLink={actionLink} 
                             bodyData={tabData} 
                             backLink={backLink}
                             backId={forwardKey}
+                            detail={detail}
+                            title={title}
                             serviceFormData={props.serviceFormData} 
                             excludeFields={excludeFields} 
+                            detailExcludeFields={detailExcludeFields} 
                             masterData={masterData}
+                            masterCode = {masterCode} 
+                            masterCodeValue={masterCodeValue}
                             icon={<PlusOutlined/>} 
                             btn_type='primary'>
                 </AddButton>

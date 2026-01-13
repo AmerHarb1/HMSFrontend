@@ -29,8 +29,12 @@ export function AddForm(props){
     const formName = state ? state.page : props.name;
     const lnk = state ? state.lnk : props.lnk;
     const excludeFields = state.excludeFields;
+    const detailExcludeFields = state.detailExcludeFields;
     const masterData=state?state.masterData:props.masterData;
-
+    const masterCode=state?state.masterCode:props.masterCode;
+    const masterCodeValue=state?state.masterCodeValue:props.masterCodeValue;
+    const detail = props.detail;
+console.log(masterCode)
     //setFormData(prev => ({ ...prev, serviceProductId: tabDataValues?.serviceProductId ?? "" }));
     
     const navigate = useNavigate();
@@ -45,7 +49,7 @@ export function AddForm(props){
         Authorization: "Bearer " + accessToken,
         withCredentials: true,
     };
-console.log(backId)
+
     const cancelClicked = () => navigate("/" + lnk);
 
     const handleChange = (event) => {
@@ -74,8 +78,12 @@ console.log(backId)
                     state: { 
                         backId: backId, 
                         excludeFields: excludeFields, 
+                        detailExcludeFields: detailExcludeFields,
+                        detail: detail,
                         serviceFormData: serviceFormData,
                         masterData: masterData,
+                        masterCode: masterCode,
+                        masterCodeValue:masterCodeValue,
                         from: "ServiceProductDetail" } 
                 }); 
             } else 
@@ -103,7 +111,7 @@ console.log(backId)
   }, []);
 
   useEffect(() => {
-    console.log(formData)
+    //console.log(formData)
   }, [formData]);
 
   useEffect(() => { 
@@ -121,10 +129,11 @@ console.log(backId)
                 
                 <form onSubmit={handleSubmit} >
                     <table className='entry-Tab'>
-                        <tbody>            	
+                        <tbody>   {console.log(detailExcludeFields)}     
+                            {console.log(excludeFields)}      	
                             {state?(tabData)?
                                 tabData.map(field=>                                     
-                                    field in excludeFields
+                                    (detailExcludeFields && field in detailExcludeFields) || (excludeFields && field in excludeFields)
                                         ?
                                             null
                                         :                                            
@@ -149,13 +158,13 @@ console.log(backId)
                                                         <td><label htmlFor="name">{field}:</label></td>
                                                         <td key={field}><DatePicker id={field} 
                                                                                     name={field} 
-                                                                                    value={state?formData?formData[field]:null:null} 
+                                                                                    value={formData[field]? dayjs(formData[field], "YYYY-MM-DD  HH:mm:ss") : null} 
                                                                                     format="MM/DD/YYYY HH:mm:ss" 
                                                                                     placeholder="Select date"
                                                                                     onChange={(date) => {
                                                                                         setFormData((prev) => ({
                                                                                         ...prev,
-                                                                                        [field]: date ? date.format("YYYY-MM-DDTHH:mm:ss") : null, // store as ISO string
+                                                                                        [field]: dayjs(date).format("YYYY-MM-DDTHH:mm:ss"), // store as ISO string
                                                                                         }));
                                                                                     }}
                                                                                     className='dateField'

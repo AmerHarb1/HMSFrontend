@@ -9,6 +9,7 @@ import {resolveDescription} from "../functions/resolveDescription.js";
 import { MasterDetails } from './MasterDetails';
 import {  getLovData } from "../functions/getLovData.js";
 import {  getLovDataNoParent } from "../functions/getLovDataNoParent.js";
+import {  getParentsFormValues } from "../functions/getParentsFormValues.js";
 
 import '../styles/report.css';
 
@@ -28,20 +29,30 @@ export function Master(props) {
     const headers = getHeader();
     const linkLov = "http://localhost:9002/hms/";
     const lnk = props.lnk;
+    const detail = props.detail;
+    const title = props.title;
+    const masterCode = props.masterCode;
+    const masterCodeValue = props.masterCodeValue;
     const [forwardKey, setForwardKey] = useState(props.forwardKey);
     //const tabData = ['productType', 'productDivision', 'productGroup', 'productCategory', 'itemNumber'];
-    const excludeFields = props.excludeFields;
+    const excludeFields = state?.excludeFields ?? props.excludeFields; 
+    const detailExcludeFields = state?.detailExcludeFields ?? props.detailExcludeFields;
+    
+    console.log(masterCode)
     let backId = state?state.backId:formData.id;
-     
-console.log(backId)
-    console.log(forwardKey);
 
     useEffect(() => {
+        setBackReady(false);
         setFormData(safeFormData)
-        //getLovDataNoParent(tabData, tabDataNoChar, setParentChildLovMap, setLovMap, linkLov, headers, setDateCols,setFormData,formData,parentChildLovMap);     
+        //getLovDataNoParent(tabData, tabDataNoChar, setParentChildLovMap, setLovMap, linkLov, headers, setDateCols,setFormData,formData,parentChildLovMap);  
+        console.log(backId) 
+        console.log(masterCodeValue)  
         if(backId){
             console.log(formData)
             getMaster(backId)
+        }else{                      //self Master and detail
+            console.log(masterCodeValue)
+            getMasterByCode(masterCodeValue)
         }
     }, [backId]);
 
@@ -62,11 +73,20 @@ console.log(backId)
 
     const handleSubmit = (event) => {
         event.preventDefault();
-        saveMaster();
+        if(detail !== undefined && detail !== null && detail !== ""){   //real Master Detail
+            console.log(detail)
+            saveMaster();
+        }else{                      //self Master and detail
+            console.log(masterCode)
+            getMasterByCode(getParentsFormValues(formData, masterCode))
+            setBackReady(true);
+        }
+            
         
     };
 
-    useEffect(() => {    
+    useEffect(() => {   
+        console.log(backId) 
          if(backId){
             
             getLovDataNoParent(tabData, formData, setParentChildLovMap, setLovMap, linkLov, headers, setDateCols, setFormData);
@@ -87,7 +107,7 @@ console.log(backId)
     return (
         <div className="form-table">
             <Space size={15} direction="vertical">
-              <Typography.Title className='TitleRep'>Service Products</Typography.Title>
+              <Typography.Title className='TitleRep'>{title}</Typography.Title>
               <form onSubmit={handleSubmit}>
                   <table className='entry-Tab'>
                       <tbody>
@@ -146,15 +166,20 @@ console.log(backId)
                               <td><button className="form-button" type="submit">Get Service Details</button></td>
                           </tr>
                       </tbody>
-              </table>
+              </table>{console.log(formData)}
                   {/* ✅ Render the Income Statement table */}
                   {ready? (                    
                       <MasterDetails    serviceFormData={formData} 
-                                        forwardKey={backId?backId:formData[forwardKey]} 
+                                        forwardKey={backId?backId:formData['masterId']} 
                                         serviceAddFormData= {serviceAddFormData}
                                         backLink={lnk} 
                                         excludeFields={excludeFields}
-                                        lnk={lnk+'Detail'}
+                                        detailExcludeFields={detailExcludeFields}
+                                        lnk={lnk+detail}
+                                        detail={detail}
+                                        title={title}
+                                        masterCode={props.masterCode} 
+                                        masterCodeValue={detail === undefined?getParentsFormValues(formData, masterCode):null} 
                                         masterData={props.masterData}/>
                   ):null}
             </form>  
@@ -168,7 +193,7 @@ console.log(backId)
         axios
             .post(masterLink, obj, { headers })
             .then((res) => {
-                setFormData((prev) => ({ ...prev, serviceProductId: res.data.id }));
+                setFormData((prev) => ({ ...prev, masterId: res.data.id }));
                 setBackReady(true);
                 
             })
@@ -191,6 +216,23 @@ console.log(backId)
                 setTabData(Object.keys(res.data)); 
                 setFormData(res.data);
                 setBackReady(true); 
+            }catch (error) { 
+                console.warn("response", error.response?.data); 
+            } 
+    }
+
+    async function getMasterByCode(masterCodeValue) { 
+        try {
+            setBackReady(false);
+            console.log(masterCodeValue)
+            axios
+            .get(`${masterLink}Code/${masterCodeValue}`, { headers })
+            .then((res) => {
+                setFormData((prev) => ({ ...prev, masterId: res.data.id }));
+                setBackReady(true);
+                
+            })
+             setBackReady(true);   
             }catch (error) { 
                 console.warn("response", error.response?.data); 
             } 

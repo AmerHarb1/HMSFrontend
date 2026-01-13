@@ -8,8 +8,13 @@ export function AddButton(props){
 	const backLink = props.backLink;
 	const backId = props.backId;
 	const masterData=props.masterData;
+	const masterCode=props.masterCode;
+	const masterCodeValue=props.masterCodeValue;
 	const excludeFields = props.excludeFields;
 	const serviceFormData=props.serviceFormData;
+	const detailExcludeFields = props.detailExcludeFields;
+	const detail = props.detail;
+	console.log(masterCode);
 	const navigate = useNavigate();
 //console.log(props.recId);
 	const buttonClicked = () => {		
@@ -25,11 +30,15 @@ export function AddButton(props){
 						lnk:props.lnk,
 						rec:props.rec,
 						excludeFields:excludeFields,
+						detailExcludeFields:detailExcludeFields,
 						name:props.name,
 						serviceFormData:serviceFormData,
 						backLink:backLink,
 						backId:backId,
 						masterData:masterData,
+						masterCode:masterCode,
+						masterCodeValue:masterCodeValue,
+						detail: detail,
 						serviceFormDate:props.serviceFormDate,
 						createdBy:props.createdBy,
 						createdOn:props.createdOn}
