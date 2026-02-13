@@ -1,6 +1,6 @@
 import { Typography, Space, message, DatePicker} from 'antd';
 import axios from 'axios';
-import { useState, useEffect} from 'react';
+import { useState, useEffect, forwardRef} from 'react';
 import { useNavigate, useLocation} from 'react-router';
 import dayjs from "dayjs";
 import { getAccessToken } from "../functions/getAccessToken.js";
@@ -12,29 +12,39 @@ import '../styles/page.css';
 
 export function AddForm(props){
     const { state } = useLocation();
-    const accessToken = getAccessToken();
-
+    const masterId = state.masterId?state.masterId:props.masterId;
+    const forwardKey = state.forwardKey?state.forwardKey:props.forwardKey;
+    const accessToken = getAccessToken();    
+    const serviceFormData = state.serviceFormData;
     const [formData, setFormData] = useState(
-        state ? state.tabData.reduce((a, v) => ({ ...a, [v]: "" }), {}) : props.obj
-    );
-
+            () => { const base = state ? state.tabData.reduce((a, v) => ({ ...a, [v]: "" }), {}) : props.obj; 
+            if (forwardKey) { 
+                return { ...base, [forwardKey]: masterId }; 
+            }
+            return base; 
+    });
+   // 
+   // const [formData, setFormData] = useState(serviceFormData);
     //const obj = { ...tabData.reduce((o, key) => ({ ...o, [key]: formData[key] }), {}), serviceProductId: formData.serviceProductId };
 
     const tabData = state ? state.tabData : props.obj;
-    const serviceFormData = state.serviceFormData;
-    const backLink = state.backLink;
-    const backId = state.backId;
+    
+    const backLink = state ? state.backLink:props.backLink;
+    const backId = state ? state.backId:props.backId;
     
     const tabDataValues = state ? state.initialData : props.obj;
     const formName = state ? state.page : props.name;
     const lnk = state ? state.lnk : props.lnk;
     const excludeFields = state.excludeFields;
     const detailExcludeFields = state.detailExcludeFields;
-    const masterData=state?state.masterData:props.masterData;
+    const masterFields=state?state.masterFields:props.masterFields;
     const masterCode=state?state.masterCode:props.masterCode;
     const masterCodeValue=state?state.masterCodeValue:props.masterCodeValue;
+    const masterLocalLovMap = state?state.masterLocalLovMap:props.masterLocalLovMap;
+    
     const detail = props.detail;
-console.log(masterCode)
+    
+console.log(tabDataValues)
     //setFormData(prev => ({ ...prev, serviceProductId: tabDataValues?.serviceProductId ?? "" }));
     
     const navigate = useNavigate();
@@ -72,20 +82,44 @@ console.log(masterCode)
         .post(link, obj, { headers })
         .then(() => {
             if (backLink) { 
-                console.log(backId);
-                console.log(serviceFormData);
-                navigate("/" + backLink, { 
-                    state: { 
-                        backId: backId, 
-                        excludeFields: excludeFields, 
-                        detailExcludeFields: detailExcludeFields,
-                        detail: detail,
-                        serviceFormData: serviceFormData,
-                        masterData: masterData,
-                        masterCode: masterCode,
-                        masterCodeValue:masterCodeValue,
-                        from: "ServiceProductDetail" } 
-                }); 
+                if(backLink === 'back'){
+                    navigate(-1, { 
+                        state: { 
+                            backId: backId, 
+                            masterId: masterId,
+                            excludeFields: excludeFields, 
+                            detailExcludeFields: detailExcludeFields,
+                            detail: detail,
+                            tabData:tabData,
+                            rec: serviceFormData,
+                            masterFields: masterFields,
+                            masterCode: masterCode,
+                            masterCodeValue:masterCodeValue,
+                            masterLocalLovMap:masterLocalLovMap,
+                            backLink:backLink,
+                            title:formName,                                
+                            from: formName } 
+                            });
+                }else{
+                    navigate("/" + backLink, { 
+                        state: { 
+                            backId: backId, 
+                            masterId: masterId,
+                            excludeFields: excludeFields, 
+                            detailExcludeFields: detailExcludeFields,
+                            detail: detail,
+                            tabData:tabData,
+                            rec: serviceFormData,
+                            masterFields: masterFields,
+                            masterCode: masterCode,
+                            masterCodeValue:masterCodeValue,
+                            masterLocalLovMap:masterLocalLovMap,
+                            backLink:backLink,
+                            title:formName,                                
+                            from: formName } 
+                        
+                    });
+                } 
             } else 
                 { 
                     console.log('front');
@@ -111,12 +145,18 @@ console.log(masterCode)
   }, []);
 
   useEffect(() => {
-    //console.log(formData)
+    console.log(formData)
   }, [formData]);
+
+  useEffect(() => {
+    console.log(forwardKey);
+    console.log(masterId)
+    setFormData((prev) => ({ ...prev, [forwardKey]: masterId }));
+  }, [forwardKey]);
 
   useEffect(() => { 
     if (Array.isArray(tabDataValues) && tabDataValues[0]?.serviceProductId) { 
-        setFormData(prev => ({ ...prev, serviceProductId: tabDataValues[0].serviceProductId })); 
+        setFormData(prev => ({ ...prev, forwardKey: tabDataValues[0].forwardKey })); 
     } 
 }, [tabDataValues]);
 
@@ -129,8 +169,8 @@ console.log(masterCode)
                 
                 <form onSubmit={handleSubmit} >
                     <table className='entry-Tab'>
-                        <tbody>   {console.log(detailExcludeFields)}     
-                            {console.log(excludeFields)}      	
+                        <tbody>   
+                            {console.log(formData)}      	
                             {state?(tabData)?
                                 tabData.map(field=>                                     
                                     (detailExcludeFields && field in detailExcludeFields) || (excludeFields && field in excludeFields)

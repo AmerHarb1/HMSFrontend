@@ -2,11 +2,14 @@ import {  fetchLov } from "./fetchLov.js";
 export function getLovData(tabData, tabDataValues, setParentChildLovMap, setLovMap, linkLov, headers, setDateCols) {
     
     let keys = tabData;
+    console.log(keys)
+    console.log(tabDataValues)
     const row = Array.isArray(tabDataValues) ? tabDataValues[0] : tabDataValues;
     const lovCols = keys.filter(
         (key) => typeof row[key] === "string" &&
             row[key].includes(String.fromCharCode(31)) //filter fields that their value includes ascii char 31, they are the Lov fields
     );
+    console.log(lovCols)
     lovCols.forEach((key) => {
         const value = row[key];
         const parent = value.substring(value.indexOf(String.fromCharCode(31)) + 1).trim();

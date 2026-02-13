@@ -5,12 +5,11 @@ import { useState, useEffect} from 'react';
 import { useNavigate, useLocation} from 'react-router';
 import { getAccessToken } from "../functions/getAccessToken.js";
 import { fetchInitLov } from "../functions/fetchInitLov.js";
-import {  fetchInitChildLov } from "../functions/fetchInitChildLov.js";
-import {clearDescendants} from "../functions/clearDecendents.js";
 import {resolvePrimaryKey} from "../functions/resolvePrimaryKey.js";
 import {fixFormDataLov} from "../functions/fixFormDataLov.js";
 import {  lovChange } from "../functions/lovChange.js";
 import {  lovInit } from "../functions/lovInit.js";
+import { getHeader } from "../functions/getHeader";
 import '../styles/page.css';
 
 export function ModifyForm(props){
@@ -28,8 +27,10 @@ export function ModifyForm(props){
     const createdBy = state.createdBy;
   	const createdOn = state.createdOn;
     const comments = state.comments;
-	const initialData = Object.values(state.rec); 
+	
     const tabDataValues = state ? state.initialData : props.obj;
+    const initialData = Object.values(state.rec); 
+    const backLink = state.backLink;   
     
     const tabData = state?state.tabData:props.obj;
     const formName =state?state.page:null;
@@ -39,30 +40,27 @@ export function ModifyForm(props){
     const [tabDataNoChar, setTabDataNoChar] = useState(initialData);
     const [dateCols, setDateCols] = useState([]);
     // find the row in tabDataValues that matches the current record
-
-    const getRowKey = (row) => row.id ?? row.code ?? row.pk?.code; 
-    const recKey = rec.id ?? rec.code ?? rec.pk?.code; 
-    const rowIndex = tabDataValues.findIndex(row => getRowKey(row) === recKey);
-
-    //const rowIndex = tabDataValues.findIndex(row => row.id === rec.id || row.id === rec.code || row.id === rec.pk.code );
- 
-    // fallback if not found
-    const currentRow = rowIndex >= 0 ? tabDataValues[rowIndex] : rec;
+    const masterId = state?state.masterId : null;
+    const backId = masterId;
+    const detailExcludeFields = state.detailExcludeFields;
+    const masterFields=state?state.masterFields:props.masterFields;
+    const masterCode=state?state.masterCode:props.masterCode;
+    const masterCodeValue=state?state.masterCodeValue:props.masterCodeValue;
+    const localLovMapRef = state?state.masterLocalLovMap:props.masterLocalLovMap;
+    
+    const detail = state.detail;
+    const serviceFormData = state.serviceFormData;
     const navigate = useNavigate();
- 
-    const headers = {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + accessToken,
-        withCredentials: true,
-    };
+    const headers = getHeader();
     
    const cancelClicked = () => {
-    
-        navigate({
+    history.back(); //history.go(-1)
+    console.log(lnk)
+   /*     navigate({
             pathname: '/' + lnk,
             search: '',   // 👈 clear query params
             hash: ''      // 👈 clear any hash too
-        }, { replace: true });
+        }, { replace: true });*/
     };
 
     const handleChange = (event) => {
@@ -79,7 +77,7 @@ export function ModifyForm(props){
     
     const updateClicked = (event) => {
   		event.preventDefault();
-  		
+  		console.log(backLink);
 		const obj = tabData.reduce((o, key) => ({ ...o, [key]: key=="id"?rec.id
                                                         :key=="code"?rec.code
                                                         :key=="pk"?rec.pk.code
@@ -89,7 +87,53 @@ export function ModifyForm(props){
 														: formData[key]==''?initialData[tabData.indexOf(key)]:formData[key]}), {})//Object.assign({}, ...Object.entries({...formObj}).map(([a,b]) => ({ [b]: formData[b] })))							
                                                   
 	  	axios.put(apiLnk,obj,{headers: headers}
-  				).then(() => {navigate('/'+lnk);})
+  				).then(() => {
+                    if (backLink) {
+                        if(backLink === 'back'){
+                            navigate(-1, { 
+                                                state: { 
+                                                    backId: backId, 
+                                                    masterId: masterId,
+                                                    excludeFields: excludeFields, 
+                                                    detailExcludeFields: detailExcludeFields,
+                                                    detail: detail,
+                                                    tabData:tabData,
+                                                    rec: serviceFormData,
+                                                    masterFields: masterFields,
+                                                    masterCode: masterCode,
+                                                    masterCodeValue:masterCodeValue,
+                                                    masterLocalLovMap:localLovMapRef,
+                                                    backLink:backLink,
+                                                    title:formName,                                
+                                                    from: formName } 
+                                                    });
+                        }else{
+                            navigate("/" + backLink, { 
+                                state: { 
+                                    backId: backId, 
+                                    masterId: masterId,
+                                    excludeFields: excludeFields, 
+                                    detailExcludeFields: detailExcludeFields,
+                                    detail: detail,
+                                    tabData:tabData,
+                                    rec: serviceFormData,
+                                    masterFields: masterFields,
+                                    masterCode: masterCode,
+                                    masterCodeValue:masterCodeValue,
+                                    masterLocalLovMap:localLovMapRef,
+                                    backLink:backLink,
+                                    title:formName,                                
+                                    from: formName } 
+                                
+                            });
+                        } 
+                    } else 
+                        { 
+                            navigate("/" + lnk, { 
+                                state: { serviceFormData: obj } 
+                            });
+                        } 
+                })
   				  .catch((error) => {
                     if (Array.isArray(error.response?.data)) {
                         message.error(error.response.data.join(", "));
@@ -117,7 +161,7 @@ export function ModifyForm(props){
     
     const getLovData = async() => {
         const keys = tabData;
-        const row = Array.isArray(tabDataValues) ? tabDataValues[0] : tabDataValues; 
+        const row = Array.isArray(tabDataValues) && tabDataValues.length > 0 && typeof tabDataValues[0] === "object" && !Array.isArray(tabDataValues[0]) ? tabDataValues[0] : tabDataValues;// if tabDataValues is an array of objects, then get the first object but if it's an object then get it back 
         if (!row) return;
         const lovCols = keys.filter(  
         (key) =>
@@ -140,9 +184,8 @@ export function ModifyForm(props){
         // 3. Load root LOVs first
         for (const key of lovCols) {
             const value = row[key]; 
-            const parent = value .substring(value.indexOf(String.fromCharCode(31)) + 1) .trim(); 
+            const parent = value.substring(value.indexOf(String.fromCharCode(31)) + 1) .trim(); 
             if (!parent) { // Root LOV
-                console.log(key) 
                 const lov = await fetchInitLov(linkLov, key, headers);
                 localLovMap.set(key, lov);
             } 
@@ -176,14 +219,8 @@ export function ModifyForm(props){
     }, [tabData, tabDataValues]);
 
     useEffect(() => {
-        console.log(lovMap)
         fixFormDataLov(lovMap, formData, tabData, setFormData);
   }, [lovMap]);
-
-  useEffect(() => {
-        console.log(parentChildLovMap)
-  }, [parentChildLovMap]);
-
     
     useEffect(() => {
         const cleaned = {};

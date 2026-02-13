@@ -10,6 +10,7 @@ import { getValueType } from '../functions/getValueType.js';
 import { getHeader } from "../functions/getHeader";
 import { PlusOutlined } from '@ant-design/icons';
 
+
 export function AddTable(props){
 //    console.log('in Add table' +props.name);
 //    console.log(props.lnk);
@@ -24,7 +25,16 @@ export function AddTable(props){
     const [pageSize, setpPageSize] = useState(10);
     const [sortField, setSortField] = useState('');//chaged to comments from id, because all tables have field comments but not id
     const [sortOrder, setSortOrder] = useState('asc');
+    
     const excludeFields = props.excludeFields?props.excludeFields:{id: '', createdBy: '', createdDate: ''};
+
+    const masterFields = props.masterFields;
+    const masterDefaultValues = props.masterDefaultValues;
+    const detailExcludeFields = props.detailExcludeFields;
+    const forwardKey = props.forwardKey;
+    const detail = props.detail;
+    const pageTitle = props.name;
+    const backLink = props.backLink;
 
   	const actionLink = props.lnk+'/add';
     const modifyLink = props.lnk+'/modify';
@@ -97,9 +107,28 @@ export function AddTable(props){
                                 record.code ??
                                 record.pk?.code ??
                                 "";  
-                            //    console.log(display)  ;                    
+                            //    console.log(record.id)  ;                    
                             return(
-                                <AddButton class='AddLinkButton' page={props.name} btn_type='link' lnk={props.lnk} excludeFields={excludeFields} actionLink={modifyLink} name={record.id?record.id:record.code} bodyData={tabData} rec= {record} createdBy={record.createdBy} createdOn={record.createdOn} comments={record.comments}>
+                                <AddButton  class='AddLinkButton' 
+                                            page={props.name} 
+                                            title= {pageTitle} 
+                                            btn_type='link' 
+                                            lnk={props.lnk} 
+                                            backLink={backLink} 
+                                            excludeFields={excludeFields} 
+                                            actionLink={modifyLink} 
+                                            name={record.id?record.id:record.code} 
+                                            bodyData={tabData}
+                                            detailExcludeFields={detailExcludeFields}
+                                            masterFields = {masterFields}
+                                            masterDefaultValues = {masterDefaultValues}
+                                            detail={detail}
+                                            forwardKey={forwardKey}
+                                            masterId={record.id}
+                                            rec= {record} 
+                                            createdBy={record.createdBy} 
+                                            createdOn={record.createdOn} 
+                                            comments={record.comments}>
                                     {display}
                                 </AddButton>
                             );
@@ -175,7 +204,25 @@ export function AddTable(props){
                 >
 
                 </Table>
-                <AddButton class="AddButton" name= 'Add' page={props.name} lnk={props.lnk} actionLink={actionLink} bodyData={tabData} excludeFields={excludeFields} icon={<PlusOutlined/>} btn_type='primary'></AddButton>
+               
+                <AddButton  class="AddButton" 
+                            name= "Add"  
+                            page={props.name} 
+                            title= {pageTitle} 
+                            lnk={props.lnk}
+                            backLink={backLink}
+                            actionLink={actionLink} 
+                            detail={detail}
+                            forwardKey={forwardKey}
+                            bodyData={tabData} 
+                            excludeFields={excludeFields} 
+                            detailExcludeFields={detailExcludeFields}
+                            masterFields = {masterFields}
+                            masterDefaultValues = {masterDefaultValues}
+                            icon={<PlusOutlined/>} 
+                            btn_type='primary'>
+                </AddButton>
+                
             </Space>
         </div>
     );

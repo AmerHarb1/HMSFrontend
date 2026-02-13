@@ -1,10 +1,10 @@
 import  {AddTable } from '../components/AddTable';
 
-export function LifeTime() {
+export function LifeTimeType() {
   const excludeFields = { id: "", createdBy: "", createdDate: "", accountNumber:"" }
   return (
     <div >  	
-        <AddTable name= "LifeTime" lnk="lifeTime" excludeFields={excludeFields}/>
+        <AddTable name= "LifeTimeType" lnk="lifeTimeType" excludeFields={excludeFields}/>
     </div>
   );
 }

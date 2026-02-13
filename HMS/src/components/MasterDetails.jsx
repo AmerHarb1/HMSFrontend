@@ -17,8 +17,8 @@ export function MasterDetails(props) {
     const [tabData, setTabData] = useState([]);
     const [serviceFormData, setServiceFormData] = useState(props.serviceFormData);
     const [serviceAddFormData, setServiceAddFormData] = useState(props.serviceAddFormData);
-    const [forwardKey, setForwardKey] = useState(props.forwardKey);
-    const [backLink, setBackLink] = useState(props.backLink);
+    //const [forwardKey, setForwardKey] = useState(props.forwardKey);
+    
     const [tabDataNoChar, setTabDataNoChar] = useState([]);
     const [tabColumns, setTabColumns] = useState([]);
     const [totalPages, setTotalPages] = useState(0);
@@ -27,40 +27,35 @@ export function MasterDetails(props) {
     const [pageSize, setpPageSize] = useState(10);
     const [sortField, setSortField] = useState('');//chaged to comments from id, because all tables have field comments but not id
     const [sortOrder, setSortOrder] = useState('asc');
+    const masterDefaultValues = useState(props.masterDefaultValues);
     const excludeFields = props.excludeFields;
     const detailExcludeFields = props.detailExcludeFields;
     
     const lnk = props.lnk;
     const detail = props.detail;
     const title = props.title;
+    const masterId = props.masterId;
     //setServiceFormData(props.serviceFormData);
     const actionLink = lnk+'/add';
     const modifyLink = lnk+'/modify';
-    const masterData=props.masterData;
+    const backLink = props.backLink;
+    const masterFields=props.masterFields;
     const masterCode = props.masterCode;
     const masterCodeValue = props.masterCodeValue;
-    console.log(masterCode);
-
+    const forwardKey = props.forwardKey;
+    const localLovMapRef = props.masterLocalLovMap;
+    
     const getData = async(page, pageSize, sortField, sortOrder, filters={}) => {
         setloading(true);
-        let reducedForm = "";
         // Build filter query string
         const filterParams = Object.entries(filters)
             .filter(([_, value]) => value && value.length > 0)
             .map(([key, value]) => `${key}=${value.join(",")}`)
             .join("&");
-
-        if(!serviceAddFormData ||Object.keys(serviceAddFormData).length === 0){
-            const cleanedFormData = removeChr31(serviceFormData);
-            setServiceFormData(cleanedFormData);
-            reducedForm = masterData.reduce((o, key) => ({ ...o, [key]: cleanedFormData[key] }), {});
-        }else{
-            reducedForm = masterData.reduce((o, key) => ({ ...o, [key]: serviceAddFormData[key] }), {});
-        }
         
-        const link = 'http://localhost:9002/hms/'+props.lnk + 'Get' + '?page=' + page + '&size=' + pageSize+ '&sort=' + sortField+ ',' + sortOrder + '&filterParams=' + filterParams ;	
+    const link = 'http://localhost:9002/hms/'+props.lnk + 'Get' + '?page=' + page + '&size=' + pageSize+ '&sort=' + sortField+ ',' + sortOrder + '&filterParams=' + filterParams ;	
 
-        axios.post(link,reducedForm,{headers: headers}
+        axios.post(link,masterId,{headers: headers}
             ).then(res => {                                
                 setTabData(res.data.content);   //res.data.content is an array of objects
                 setTotalPages(res.data.totalPages);
@@ -80,6 +75,7 @@ export function MasterDetails(props) {
     
     // build columns whenever data or sort state changes
     useEffect(() => {
+        //console.log(tabData)
         if (tabData.length > 0) {
         //    setTabDataNoChar(tabData);
             const cols = Object.keys(tabData[0])
@@ -118,7 +114,30 @@ export function MasterDetails(props) {
                                 record.pk?.itemNumber ??
                                 "";                   
                             return(
-                                <AddButton class='AddLinkButton' page={title + ' ' + detail} btn_type='link' lnk={lnk} excludeFields={excludeFields} detailExcludeFields={detailExcludeFields} actionLink={modifyLink} name={record.id?record.id:record.code?record.code:record.pk?record.pk.code?record.pk.code:record.pk.itemNumber:null} bodyData={tabData} rec= {record} createdBy={record.createdBy} createdOn={record.createdOn} comments={record.comments}>
+                                <AddButton  class='AddLinkButton' 
+                                            page={title + ' ' + detail} 
+                                            btn_type='link' lnk={lnk} 
+                                            excludeFields={excludeFields} 
+                                            detailExcludeFields={detailExcludeFields} 
+                                            actionLink={modifyLink} 
+                                            name={record.id?record.id:record.code?record.code:record.pk?record.pk.code?record.pk.code:record.pk.itemNumber:null} 
+                                            bodyData={tabData} 
+                                            rec= {record} 
+                                            backLink={backLink}
+                                            backId={record.id}
+                                            masterId={masterId}
+                                            forwardKey={forwardKey}
+                                            detail={detail}
+                                            title={title+ ' ' + detail}
+                                            serviceFormData={props.serviceFormData}
+                                            masterFields={masterFields}
+                                            masterCode = {masterCode} 
+                                            masterCodeValue={masterCodeValue}
+                                            masterDefaultValues={null}
+                                            masterLocalLovMap={localLovMapRef}
+                                            createdBy={record.createdBy} 
+                                            createdOn={record.createdOn} 
+                                            comments={record.comments}>
                                     {display}
                                 </AddButton>
                             );
@@ -185,20 +204,24 @@ export function MasterDetails(props) {
                 </Table>
                 <AddButton  class="AddButton" 
                             name= 'Add' 
-                            page={title} 
+                            page={title+ ' ' + detail} 
                             lnk={lnk} 
                             actionLink={actionLink} 
                             bodyData={tabData} 
                             backLink={backLink}
-                            backId={forwardKey}
+                            backId={masterId}
+                            masterId={masterId}
+                            forwardKey={forwardKey}
                             detail={detail}
-                            title={title}
+                            title={title+ ' ' + detail}
                             serviceFormData={props.serviceFormData} 
                             excludeFields={excludeFields} 
                             detailExcludeFields={detailExcludeFields} 
-                            masterData={masterData}
+                            masterFields={masterFields}
                             masterCode = {masterCode} 
                             masterCodeValue={masterCodeValue}
+                            masterDefaultValues={masterDefaultValues}
+                            masterLocalLovMap={localLovMapRef}
                             icon={<PlusOutlined/>} 
                             btn_type='primary'>
                 </AddButton>

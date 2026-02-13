@@ -13,6 +13,7 @@ import { AccountStatus } from '../pages/AccountStatus';
 import { AddPage } from './AddPage';
 import { ModifyForm } from './ModifyForm';
 import { ModifyPage } from './ModifyPage';
+import  {Master } from '../components/Master';
 import { GlobalRegion } from '../pages/GlobalRegion';
 import { Phone } from '../pages/Phone';
 import { PhoneType } from '../pages/PhoneType';
@@ -54,7 +55,7 @@ import { ProductGroup } from '../pages/ProductGroup';
 import { ProductCategory } from '../pages/ProductCategory';
 import { UnitOfMeasure } from '../pages/UnitOfMeasure';
 import { AbcCategory } from '../pages/AbcCategory';
-import { LifeTime } from '../pages/LifeTime';
+import { LifeTimeType } from '../pages/LifeTimeType';
 import { StockingCondition } from '../pages/StockingCondition';
 import { XyzCategory } from '../pages/XyzCategory';
 import { ServiceProduct } from '../pages/ServiceProduct';
@@ -72,7 +73,21 @@ import { Storage } from '../pages/Storage';
 import { StorageType } from '../pages/StorageType';
 import { Employee } from '../pages/Employee';
 import { EmployeeStatus } from '../pages/EmployeeStatus';
-
+import { PurchaseStatus } from '../pages/PurchaseStatus';
+import { PurchaseOrder } from '../pages/PurchaseOrder';
+import { ReceivePurchaseOrder } from '../pages/ReceivePurchaseOrder';
+import { Supplier } from '../pages/Supplier';
+import { ProductSupplier } from '../pages/ProductSupplier';
+import { QuotationRequest } from '../pages/QuotationRequest';
+import { QuotationResponse } from '../pages/QuotationResponse';
+import { Icd10Block } from '../pages/Icd10Block';
+import { Icd10Category } from '../pages/Icd10Category';
+import { Icd10Chapter } from '../pages/Icd10Chapter';
+import { Icd10Diagnoses } from '../pages/Icd10Diagnoses';
+import { Icd10Level } from '../pages/Icd10Level';
+import { ProductIcd10Relation } from '../pages/ProductIcd10Relation';
+import { ProductRequestApproval } from '../pages/ProductRequestApproval';
+import { ProductRequestPriority } from '../pages/ProductRequestPriority';
 
 export function AppRoutes(){
     return(
@@ -202,36 +217,36 @@ export function AppRoutes(){
                 <Route path="/productType" element={<ProductType/>}/>
                 <Route path="/productDivision" element={<ProductDivision/>}/>
                 <Route path="/productGroup" element={<ProductGroup/>}/>
-                <Route path="/productCategory" element={<ProductCategory/>}/>
-                <Route path="/serviceProduct" element={<ServiceProduct/>}/>
-                <Route path="/serviceProductDetail" element={<ServiceProductDetail/>}/>
+                <Route path="/productCategory" element={<ProductCategory/>}/>                
                 <Route path="/unitOfMeasure" element={<UnitOfMeasure/>}/>                
                 <Route path="/stockingCondition" element={<StockingCondition/>}/>
                 <Route path="/abcCategory" element={<AbcCategory/>}/>
                 <Route path="/xyzCategory" element={<XyzCategory/>}/>
-                <Route path="/lifeTime" element={<LifeTime/>}/>                
+                <Route path="/lifeTimeType" element={<LifeTimeType/>}/>                
                 <Route path="/productType/add" element={<AddPage/>}/>
                 <Route path="/productDivision/add" element={<AddPage/>}/>
                 <Route path="/productGroup/add" element={<AddPage/>}/>
                 <Route path="/productCategory/add" element={<AddPage/>}/>
+                <Route path="/serviceProduct" element={<ServiceProduct/>}/>                
                 <Route path="/serviceProduct/add" element={<AddPage/>}/>
+                <Route path="/serviceProduct/modify" element={<ModifyForm/>}/>
+                <Route path="/serviceProductDetail" element={<ServiceProductDetail/>}/>
                 <Route path="/serviceProductDetail/add" element={<AddPage/>}/>
+                <Route path="/serviceProductDetail/modify" element={<ModifyForm/>}/>
                 <Route path="/unitOfMeasure/add" element={<AddPage/>}/>                
                 <Route path="/stockingCondition/add" element={<AddPage/>}/>
                 <Route path="/abcCategory/add" element={<AddPage/>}/>
                 <Route path="/xyzCategory/add" element={<AddPage/>}/>
-                <Route path="/lifeTime/add" element={<AddPage/>}/>                
+                <Route path="/lifeTimeType/add" element={<AddPage/>}/>                
                 <Route path="/productType/modify" element={<ModifyForm/>}/>
                 <Route path="/productDivision/modify" element={<ModifyForm/>}/>
                 <Route path="/productGroup/modify" element={<ModifyForm/>}/>
-                <Route path="/productCategory/modify" element={<ModifyForm/>}/>
-                <Route path="/serviceProduct/add" element={<ModifyForm/>}/>
-                <Route path="/serviceProductDetail/modify" element={<ModifyForm/>}/>
+                <Route path="/productCategory/modify" element={<ModifyForm/>}/>                
                 <Route path="/unitOfMeasure/modify" element={<ModifyForm/>}/>                
                 <Route path="/stockingCondition/modify" element={<ModifyForm/>}/>
                 <Route path="/abcCategory/modify" element={<ModifyForm/>}/>
                 <Route path="/xyzCategory/modify" element={<ModifyForm/>}/>
-                <Route path="/lifeTime/modify" element={<ModifyForm/>}/>   
+                <Route path="/lifeTimeType/modify" element={<ModifyForm/>}/>   
                 <Route path="/service" element={<Service/>}/>                                
                 <Route path="/service/add" element={<AddPage/>}/>
                 <Route path="/service/modify" element={<ModifyForm/>}/> 
@@ -245,8 +260,8 @@ export function AppRoutes(){
                 <Route path="/itemDespenseType/add" element={<AddPage/>}/>                
                 <Route path="/itemDespenseType/modify" element={<ModifyForm/>}/>
                 <Route path="/materialRequest" element={<MaterialRequest/>}/> 
-                <Route path="/materialRequest/add" element={<AddPage/>}/>                
-                <Route path="/materialRequest/modify" element={<ModifyForm/>}/>
+                <Route path="/materialRequest/add" element={<Master/>}/>                
+                <Route path="/materialRequest/modify" element={<Master/>}/>
                 <Route path="/materialRequestDetail" element={<MaterialRequestDetail/>}/> 
                 <Route path="/materialRequestDetail/add" element={<AddPage/>}/>                
                 <Route path="/materialRequestDetail/modify" element={<ModifyForm/>}/>
@@ -274,8 +289,71 @@ export function AppRoutes(){
                 <Route path="/employeeStatus" element={<EmployeeStatus/>}/> 
                 <Route path="/employeeStatus/add" element={<AddPage/>}/>                
                 <Route path="/employeeStatus/modify" element={<ModifyForm/>}/>
+                <Route path="/PurchaseStatus" element={<PurchaseStatus/>}/> 
+                <Route path="/PurchaseStatus/add" element={<AddPage/>}/>                
+                <Route path="/PurchaseStatus/modify" element={<ModifyForm/>}/>
+                <Route path="/PurchaseOrder" element={<PurchaseOrder/>}/> 
+                <Route path="/PurchaseOrder/add" element={<AddPage/>}/>                
+                <Route path="/PurchaseOrder/modify" element={<ModifyForm/>}/>
+                <Route path="/ReceivePurchaseOrder" element={<ReceivePurchaseOrder/>}/> 
+                <Route path="/ReceivePurchaseOrder/add" element={<AddPage/>}/>                
+                <Route path="/ReceivePurchaseOrder/modify" element={<ModifyForm/>}/>
+                <Route path="/Supplier" element={<Supplier/>}/> 
+                <Route path="/Supplier/add" element={<AddPage/>}/>                
+                <Route path="/Supplier/modify" element={<ModifyForm/>}/>
+                <Route path="/ProductSupplier" element={<ProductSupplier/>}/> 
+                <Route path="/ProductSupplier/add" element={<AddPage/>}/>                
+                <Route path="/ProductSupplier/modify" element={<ModifyForm/>}/>
+                <Route path="/QuotationRequest" element={<QuotationRequest/>}/> 
+                <Route path="/QuotationRequest/add" element={<AddPage/>}/>                
+                <Route path="/QuotationRequest/modify" element={<ModifyForm/>}/>
+                <Route path="/QuotationResponse" element={<QuotationResponse/>}/> 
+                <Route path="/QuotationResponse/add" element={<AddPage/>}/>                
+                <Route path="/QuotationResponse/modify" element={<ModifyForm/>}/>
                 
+                <Route path="/Icd10Block" element={<Icd10Block/>}/> 
+                <Route path="/Icd10Block/add" element={<AddPage/>}/>                
+                <Route path="/Icd10Block/modify" element={<ModifyForm/>}/>
+
+                <Route path="/Icd10Category" element={<Icd10Category/>}/> 
+                <Route path="/Icd10Category/add" element={<AddPage/>}/>                
+                <Route path="/Icd10Category/modify" element={<ModifyForm/>}/>
+
+                <Route path="/Icd10Chapter" element={<Icd10Chapter/>}/> 
+                <Route path="/Icd10Chapter/add" element={<AddPage/>}/>                
+                <Route path="/Icd10Chapter/modify" element={<ModifyForm/>}/>
+
+                <Route path="/Icd10Diagnoses" element={<Icd10Diagnoses/>}/> 
+                <Route path="/Icd10Diagnoses/add" element={<AddPage/>}/>                
+                <Route path="/Icd10Diagnoses/modify" element={<ModifyForm/>}/>
+
+                <Route path="/Icd10Level" element={<Icd10Level/>}/> 
+                <Route path="/Icd10Level/add" element={<AddPage/>}/>                
+                <Route path="/Icd10Level/modify" element={<ModifyForm/>}/>
+
+                <Route path="/ProductIcd10Relation" element={<ProductIcd10Relation/>}/> 
+                <Route path="/ProductIcd10Relation/add" element={<AddPage/>}/>                
+                <Route path="/ProductIcd10Relation/modify" element={<ModifyForm/>}/>
+
+                <Route path="/ProductRequestApproval" element={<ProductRequestApproval/>}/> 
+                <Route path="/ProductRequestApproval/add" element={<AddPage/>}/>                
+                <Route path="/ProductRequestApproval/modify" element={<ModifyForm/>}/>
+
+                <Route path="/ProductRequestPriority" element={<ProductRequestPriority/>}/> 
+                <Route path="/ProductRequestPriority/add" element={<AddPage/>}/>                
+                <Route path="/ProductRequestPriority/modify" element={<ModifyForm/>}/>
             </Routes>
         </div>
     );
 }
+
+
+
+
+
+
+
+
+
+
+

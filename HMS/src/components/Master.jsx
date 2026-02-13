@@ -1,6 +1,7 @@
 import { DatePicker , message,  Space, Statistic, Typography } from "antd";
 import axios from 'axios';
-import React, { useState, useEffect } from 'react';
+import dayjs from "dayjs";
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation} from 'react-router';
 import { getHeader } from "../functions/getHeader";
 import {  lovChange } from "../functions/lovChange.js";
@@ -10,52 +11,71 @@ import { MasterDetails } from './MasterDetails';
 import {  getLovData } from "../functions/getLovData.js";
 import {  getLovDataNoParent } from "../functions/getLovDataNoParent.js";
 import {  getParentsFormValues } from "../functions/getParentsFormValues.js";
-
+import { fetchInitLov } from "../functions/fetchInitLov.js";
+import {  lovInit } from "../functions/lovInit.js";
 import '../styles/report.css';
 
 export function Master(props) {
     const { state } = useLocation();
+    let localLovMapRef = useRef(new Map());
     const safeFormData = state?.serviceFormData ?? {};
     const [ready, setReady] = useState(false);
     const [backReady, setBackReady] = useState(false);
-    const [tabData, setTabData] = useState(Object.keys(safeFormData).length > 0 ? Object.keys(safeFormData) : props.masterData);
-    const [tabDataValues, setTabDataValues] = useState(Object.keys(safeFormData).length > 0 ? safeFormData : props.tabDataValues);
-    const [formData, setFormData] = useState({});
+    const masterFields = state?state.masterFields:props.masterFields; 
+    const tabDataFields = (state?.tabData && typeof state.tabData === "object") ? state.tabData : (props.tabData && typeof props.tabData === "object") ? props.tabData : {};
+    const [tabData, setTabData] = useState(state?state.tabData:masterFields ? masterFields : props.masterFields?props.masterFields:state.masterFields);
+
+       
+    const masterDefaultValues = state?state.masterDefaultValues:props.masterDefaultValues;
+    
     const [lovMap, setLovMap] = useState(new Map());
     const [parentChildLovMap, setParentChildLovMap] = useState(new Map());//create map that holds the parent child
     const [dateCols, setDateCols] = useState([]);
     const [serviceFormData, setServiceFormData] = useState(state?.serviceFormData ?? {});
     const [serviceAddFormData, setServiceAddFormData] = useState(state?.serviceFormData ?? {});
+    const [masterId, setMasterId] = useState(state?state.masterId : null);
     const headers = getHeader();
     const linkLov = "http://localhost:9002/hms/";
-    const lnk = props.lnk;
-    const detail = props.detail;
-    const title = props.title;
-    const masterCode = props.masterCode;
-    const masterCodeValue = props.masterCodeValue;
-    const [forwardKey, setForwardKey] = useState(props.forwardKey);
+    const lnk = props.lnk?props.lnk:state.lnk;
+    const backLink = state?state.backLink:lnk;
+    const detail = props.detail?props.detail:state.detail;
+    const title = props.title?props.title:state.title;
+    const masterCode = props.masterCode?props.masterCode:state?state.masterCode:null;
+    const masterCodeValue = props.masterCodeValue?props.masterCodeValue:state?state.masterCodeValue:null;
+    const masterLocalLovMap = state?state.masterLocalLovMap:{};
+    const forwardKey = state?state.forwardKey: props.forwardKey;
+    const initialData = state?state.initialData: props.initialData;
     //const tabData = ['productType', 'productDivision', 'productGroup', 'productCategory', 'itemNumber'];
     const excludeFields = state?.excludeFields ?? props.excludeFields; 
     const detailExcludeFields = state?.detailExcludeFields ?? props.detailExcludeFields;
-    
-    console.log(masterCode)
+    const rec = JSON.parse(JSON.stringify(state?state.rec ?? {}:{}));
+    const [formData, setFormData] = useState(rec);    
     let backId = state?state.backId:formData.id;
-
-    useEffect(() => {
-        setBackReady(false);
-        setFormData(safeFormData)
-        //getLovDataNoParent(tabData, tabDataNoChar, setParentChildLovMap, setLovMap, linkLov, headers, setDateCols,setFormData,formData,parentChildLovMap);  
-        console.log(backId) 
-        console.log(masterCodeValue)  
-        if(backId){
-            console.log(formData)
-            getMaster(backId)
-        }else{                      //self Master and detail
-            console.log(masterCodeValue)
-            getMasterByCode(masterCodeValue)
-        }
+     if(masterLocalLovMap !== undefined && masterLocalLovMap.current !== undefined && masterLocalLovMap.current.size > 0){        
+        localLovMapRef = masterLocalLovMap;
+        //console.log(localLovMapRef.current)
+     }
+    
+    useEffect(() => { 
+        const run = async () => { 
+            setBackReady(false); 
+            if (backId) { 
+                if(localLovMapRef === undefined || localLovMapRef.current === undefined || localLovMapRef.current.size === 0){
+                    await populateMaster();
+                    console.log(localLovMapRef.current)
+                }else{
+                    setLovMap(localLovMapRef.current);
+                }
+                 
+                setBackReady(true); 
+            } else if (masterCodeValue) { 
+                console.log(masterCodeValue); 
+                getMasterByCode(masterCodeValue); 
+            } 
+        }; 
+        run(); 
     }, [backId]);
-
+    
     const masterLink = 'http://localhost:9002/hms/'+lnk;
 
     const handleChange = (event) => {
@@ -74,35 +94,37 @@ export function Master(props) {
     const handleSubmit = (event) => {
         event.preventDefault();
         if(detail !== undefined && detail !== null && detail !== ""){   //real Master Detail
-            console.log(detail)
+            if(localLovMapRef === undefined || localLovMapRef.current === undefined || localLovMapRef.current.size === 0){
+                const run = async () => {                     
+                    await populateMaster();        
+                }; 
+                run();
+            }
             saveMaster();
         }else{                      //self Master and detail
             console.log(masterCode)
             getMasterByCode(getParentsFormValues(formData, masterCode))
             setBackReady(true);
-        }
-            
+        }            
         
     };
 
     useEffect(() => {   
-        console.log(backId) 
-         if(backId){
-            
-            getLovDataNoParent(tabData, formData, setParentChildLovMap, setLovMap, linkLov, headers, setDateCols, setFormData);
-            
+        console.log(tabDataFields) 
+         if(backId){            
+            //getLovDataNoParent(tabData, formData, setParentChildLovMap, setLovMap, linkLov, headers, setDateCols, setFormData);            
          }else{
-            getLovData(tabData, tabDataValues, setParentChildLovMap, setLovMap, linkLov, headers, setDateCols); 
+            if(masterDefaultValues){
+                getLovData(tabData, masterDefaultValues, setParentChildLovMap, setLovMap, linkLov, headers, setDateCols);
+            }             
          }
-    }, [tabData]);
+    }, [masterDefaultValues]);
  
     useEffect(() => {
         if(backReady && formData !== undefined && formData !== null){
             setReady(true);
         }
     }, [backReady]);
-    
-   
 
     return (
         <div className="form-table">
@@ -112,20 +134,20 @@ export function Master(props) {
                   <table className='entry-Tab'>
                       <tbody>
                         {Object.keys(tabData).map(s=>{                             
-                            const field = tabData[s];                            
+                            const field = tabData[s];                        
                             return(
                                 field in excludeFields
                                     ?
                                         null
                                     :                                            
-                                        lovMap.has(field)
+                                        lovMap.has(field)||lovMap.has(localLovMapRef.current)
                                         ?
-                                            <tr>					  	
+                                            <tr>				  	
                                                 <td><label htmlFor="name">{field}:</label></td>
-                                                <td key={field}><select  id={field} name={field} value={ formData?.[field] ? formData[field]:null} onChange={handleLovChange} className='selectInput'>
-                                                    <option value="">-- Select --</option>                                                    
-                                                    {Array.from(lovMap.get(field) || []).map((opt) => (
-                                                        <option key={resolvePrimaryKey(opt)} value={resolvePrimaryKey(opt)}> 
+                                                <td key={field}><select  id={field} name={field} value={formData[field] ?? ""} onChange={handleLovChange} className='selectInput'>
+                                                    <option value="">-- Select --</option>                                               
+                                                    {Array.from(lovMap.get(field)|| localLovMapRef.current.get(field) || []).map((opt) => (
+                                                        <option key={resolvePrimaryKey(opt)} value={ backLink==='back'?resolveDescription(opt):resolvePrimaryKey(opt)}> {/*backLink==='back'when List Master otherwise it's equal the page name*/ }
                                                             {resolveDescription(opt)}
                                                         </option>
                                                     ))}
@@ -139,10 +161,11 @@ export function Master(props) {
                                                         <td><label htmlFor="name">{field}:</label></td>
                                                         <td key={field}><DatePicker id={field} 
                                                                                     name={field} 
-                                                                                    value={state?formData?formData[field]:null:null} 
+                                                                                    value={state?formData?dayjs(formData[field]):null:null} 
                                                                                     format="MM/DD/YYYY HH:mm:ss" 
                                                                                     placeholder="Select date"
                                                                                     onChange={(date) => {
+                                                                                        console.log(date)
                                                                                         setFormData((prev) => ({
                                                                                         ...prev,
                                                                                         [field]: date ? date.format("YYYY-MM-DDTHH:mm:ss") : null, // store as ISO string
@@ -163,24 +186,27 @@ export function Master(props) {
                           
                         )}
                           <tr>
-                              <td><button className="form-button" type="submit">Get Service Details</button></td>
+                              <td><button className="form-button" type="submit">Get Details</button></td>
                           </tr>
                       </tbody>
-              </table>{console.log(formData)}
-                  {/* ✅ Render the Income Statement table */}
-                  {ready? (                    
+              </table>
+                  {/* ✅ Render the Detail rows */}
+                  {ready&&masterId? (                    
                       <MasterDetails    serviceFormData={formData} 
-                                        forwardKey={backId?backId:formData['masterId']} 
+                                        forwardKey={forwardKey} 
+                                        masterId={masterId}
                                         serviceAddFormData= {serviceAddFormData}
-                                        backLink={lnk} 
+                                        backLink={backLink} 
                                         excludeFields={excludeFields}
                                         detailExcludeFields={detailExcludeFields}
                                         lnk={lnk+detail}
                                         detail={detail}
                                         title={title}
-                                        masterCode={props.masterCode} 
+                                        masterCode={masterCode} 
                                         masterCodeValue={detail === undefined?getParentsFormValues(formData, masterCode):null} 
-                                        masterData={props.masterData}/>
+                                        masterFields={masterFields}
+                                        masterDefaultValues={masterDefaultValues}
+                                        masterLocalLovMap={localLovMapRef}/>
                   ):null}
             </form>  
           </Space>         	
@@ -193,9 +219,11 @@ export function Master(props) {
         axios
             .post(masterLink, obj, { headers })
             .then((res) => {
-                setFormData((prev) => ({ ...prev, masterId: res.data.id }));
+                console.log(formData)
+                setFormData((prev) => ({ ...prev, [forwardKey]: res.data.id }));
                 setBackReady(true);
-                
+                setMasterId(res.data.id)
+                console.log(res.data.id)
             })
             .catch((error) => {
                 alert(error.response?.data);
@@ -236,5 +264,73 @@ export function Master(props) {
             }catch (error) { 
                 console.warn("response", error.response?.data); 
             } 
+    }
+
+    async function populateMaster(){
+        const keys = Array.isArray(tabDataFields) && tabDataFields.length > 0?tabDataFields:masterFields;
+        console.log(keys)
+        console.log(tabDataFields)
+        let row
+        if(Array.isArray(tabDataFields) && tabDataFields.length > 0){
+            console.log(keys)
+            row = Array.isArray(initialData) && initialData.length > 0 && typeof initialData[0] === "object" && !Array.isArray(initialData[0]) ? initialData[0] : initialData;// if initialData is an array of objects, then get the first object but if it's an object then get it back
+        }else{
+            console.log(keys)
+            row = masterDefaultValues;
+        }
+
+     
+console.log(row)        
+        if (!row) return;
+        const lovCols = keys.filter(  
+        (key) =>
+            typeof row[key] === "string" && row[key].includes(String.fromCharCode(31)) //filter fields that their value includes ascii char 31, they are the Lov fields
+        );
+
+        // 1) Build a local parent-child map (not state) 
+        const localParentChildMap = new Map(); 
+console.log(lovCols)
+        for (const key of lovCols) { 
+            const value = row[key]; 
+            const parent = value.substring(value.indexOf(String.fromCharCode(31)) + 1).trim(); //get string after chr(13), it's parent
+            if (parent) { 
+                // parent can have multiple children; store as array 
+                //const existing = localParentChildMap.get(parent) || []; 
+                localParentChildMap.set(parent, key); 
+            } 
+        }
+console.log(localParentChildMap)
+        // 3. Load root LOVs first
+        for (const key of lovCols) {
+            const value = row[key];
+            const parent = value.substring(value.indexOf(String.fromCharCode(31)) + 1) .trim(); 
+            if (!parent) { // Root LOV               
+                const lov = await fetchInitLov(linkLov, key, headers);
+            //    localLovMap.set(key, lov);
+                localLovMapRef.current.set(key, lov);
+            } 
+        }
+console.log(localLovMapRef.current)
+
+        // 4. Load child LOVs after roots are ready 
+        for (const key of lovCols) { 
+            const value = row[key];
+            const parent = value.substring(value.indexOf(String.fromCharCode(31)) + 1).trim(); 
+            if (parent) { 
+                const lov = await lovInit(formData, key, localParentChildMap, headers, linkLov); 
+            //    localLovMap.set(key, lov);
+                localLovMapRef.current.set(key, lov);
+            } 
+        }
+console.log(localLovMapRef.current)
+        // 5. Push final maps into React state 
+        setLovMap(localLovMapRef.current); 
+        setParentChildLovMap(localParentChildMap);
+
+        keys.forEach((k)=>{
+            if(k.endsWith("Date")){
+               setDateCols((prev) => [...prev, k]); 
+            }
+        })  
     }
 }

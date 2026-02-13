@@ -1,6 +1,6 @@
 /* General table wrapper */
 .Tab {
-    width: 75vw;
+    width: 85vw;
     border-radius: 6px;
     background-color: #fff;        /* white background */
     border: 1px solid #e0e0e0;     /* subtle border */
@@ -106,17 +106,17 @@
 }
 
 .form-table {   
-    border-radius:6px;
-    margin: 10px; 
-    font-size: 16px;   
-    font-family: sans-serif;
-    max-width: 90%;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
-    border-radius: 10px;
+  border-radius:6px;
+  margin:10px 20px auto; 
+  font-size: 16px;   
+  font-family: sans-serif;
+  max-width: 96.6%;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+  border-radius: 10px;
 	line-height: 1.5;
 	padding: 40px 10px 10px 10px;	
 	background-color: #cddbf7;
-	width:90%;
+	width:100%;
 	box-shadow: 1rem 1rem 10px rgba(0, 0, 0, 0.15);
 }
 
@@ -129,7 +129,7 @@
     font-size: 20px; 
     min-width: 70px;
     height: 40px;    
-    padding: 2px;
+    padding: 1px;
 }
 
 .entry-Tab tbody td input{

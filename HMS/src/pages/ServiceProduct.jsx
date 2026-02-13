@@ -12,8 +12,8 @@ export function ServiceProduct() {
                     forwardKey="serviceProductId"
                     excludeFields={{id: '', createdBy: '', createdDate: ''}}
                     detailExcludeFields={{id: '', createdBy: '', createdDate: ''}}
-                    masterData = {['id','productType', 'productDivision', 'productGroup', 'productCategory', 'itemNumber']}
-                    tabDataValues = {{id: '', productType: '\x1F', productDivision: '\x1FproductType', productGroup: '\x1FproductDivision', productCategory: '\x1FproductGroup', itemNumber: '\x1FproductCategory'}}/>
+                    masterFields = {['id','productType', 'productDivision', 'productGroup', 'productCategory', 'itemNumber']}
+                    masterDefaultValues = {{id: '', productType: '\x1F', productDivision: '\x1FproductType', productGroup: '\x1FproductDivision', productCategory: '\x1FproductGroup', itemNumber: '\x1FproductCategory'}}/>
         </div>
     );
 }
