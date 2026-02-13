@@ -23,11 +23,8 @@ export function Master(props) {
     const [backReady, setBackReady] = useState(false);
     const masterFields = state?state.masterFields:props.masterFields; 
     const tabDataFields = (state?.tabData && typeof state.tabData === "object") ? state.tabData : (props.tabData && typeof props.tabData === "object") ? props.tabData : {};
-    const [tabData, setTabData] = useState(state?state.tabData:masterFields ? masterFields : props.masterFields?props.masterFields:state.masterFields);
-
-       
-    const masterDefaultValues = state?state.masterDefaultValues:props.masterDefaultValues;
-    
+    const [tabData, setTabData] = useState(state?state.tabData:masterFields ? masterFields : props.masterFields?props.masterFields:state.masterFields);    
+    const masterDefaultValues = state?state.masterDefaultValues:props.masterDefaultValues;    
     const [lovMap, setLovMap] = useState(new Map());
     const [parentChildLovMap, setParentChildLovMap] = useState(new Map());//create map that holds the parent child
     const [dateCols, setDateCols] = useState([]);
@@ -51,6 +48,11 @@ export function Master(props) {
     const rec = JSON.parse(JSON.stringify(state?state.rec ?? {}:{}));
     const [formData, setFormData] = useState(rec);    
     let backId = state?state.backId:formData.id;
+    const createdBy = state?state.createdBy:{};
+  	const createdOn = state?state.createdOn:null;
+    const comments = state?state.comments:null;
+    const apiLnk = `http://localhost:9002/hms/${lnk}/${masterId}`;
+    const navigate = useNavigate();
      if(masterLocalLovMap !== undefined && masterLocalLovMap.current !== undefined && masterLocalLovMap.current.size > 0){        
         localLovMapRef = masterLocalLovMap;
         //console.log(localLovMapRef.current)
@@ -62,7 +64,6 @@ export function Master(props) {
             if (backId) { 
                 if(localLovMapRef === undefined || localLovMapRef.current === undefined || localLovMapRef.current.size === 0){
                     await populateMaster();
-                    console.log(localLovMapRef.current)
                 }else{
                     setLovMap(localLovMapRef.current);
                 }
@@ -109,8 +110,7 @@ export function Master(props) {
         
     };
 
-    useEffect(() => {   
-        console.log(tabDataFields) 
+    useEffect(() => {
          if(backId){            
             //getLovDataNoParent(tabData, formData, setParentChildLovMap, setLovMap, linkLov, headers, setDateCols, setFormData);            
          }else{
@@ -125,6 +125,36 @@ export function Master(props) {
             setReady(true);
         }
     }, [backReady]);
+
+    const updateClicked = (event) => {
+  		event.preventDefault();
+		const obj = tabData.reduce((o, key) => ({ ...o, [key]: key=="id"?rec.id
+                                                        :key=="code"?rec.code
+                                                        :key=="pk"?rec.pk.code
+														:key=="createdBy"?createdBy
+														:key=="createdon"?createdOn
+                                                        :key=="comments"?comments
+														: formData[key]                                                    
+                                                }), {}
+                                   )//Object.assign({}, ...Object.entries({...formObj}).map(([a,b]) => ({ [b]: formData[b] })))	
+                                                           						
+     console.log(obj)                                            
+	  	axios.put(apiLnk,obj,{headers: headers});
+    }
+	
+	const deleteClicked = (event) => {
+  		event.preventDefault();
+  		var answer = window.confirm("Are you sure you want to Delete master data?");
+    	if (answer) {
+		  // Save it!
+		  axios.delete(apiLnk,{headers: headers}
+  				).then(() => {navigate('/'+lnk);})
+                 .catch((error) => {console.warn("response", error.response?.data)});
+		} else {
+		  // Do nothing!
+		  console.log('Thing was not saved to the database.');
+		}
+	};
 
     return (
         <div className="form-table">
@@ -187,6 +217,12 @@ export function Master(props) {
                         )}
                           <tr>
                               <td><button className="form-button" type="submit">Get Details</button></td>
+                              {masterId?
+                                <div>
+                                    <td><button className="form-button" onClick={updateClicked}>Update</button></td>
+                                    <td><button className="form-button" onClick={deleteClicked}>Delete</button></td>
+                                </div>
+                              :null}
                           </tr>
                       </tbody>
               </table>
@@ -268,19 +304,13 @@ export function Master(props) {
 
     async function populateMaster(){
         const keys = Array.isArray(tabDataFields) && tabDataFields.length > 0?tabDataFields:masterFields;
-        console.log(keys)
-        console.log(tabDataFields)
         let row
         if(Array.isArray(tabDataFields) && tabDataFields.length > 0){
-            console.log(keys)
             row = Array.isArray(initialData) && initialData.length > 0 && typeof initialData[0] === "object" && !Array.isArray(initialData[0]) ? initialData[0] : initialData;// if initialData is an array of objects, then get the first object but if it's an object then get it back
         }else{
-            console.log(keys)
             row = masterDefaultValues;
         }
-
-     
-console.log(row)        
+        
         if (!row) return;
         const lovCols = keys.filter(  
         (key) =>
@@ -289,7 +319,7 @@ console.log(row)
 
         // 1) Build a local parent-child map (not state) 
         const localParentChildMap = new Map(); 
-console.log(lovCols)
+
         for (const key of lovCols) { 
             const value = row[key]; 
             const parent = value.substring(value.indexOf(String.fromCharCode(31)) + 1).trim(); //get string after chr(13), it's parent
@@ -299,7 +329,7 @@ console.log(lovCols)
                 localParentChildMap.set(parent, key); 
             } 
         }
-console.log(localParentChildMap)
+
         // 3. Load root LOVs first
         for (const key of lovCols) {
             const value = row[key];
@@ -310,7 +340,7 @@ console.log(localParentChildMap)
                 localLovMapRef.current.set(key, lov);
             } 
         }
-console.log(localLovMapRef.current)
+
 
         // 4. Load child LOVs after roots are ready 
         for (const key of lovCols) { 
@@ -322,7 +352,7 @@ console.log(localLovMapRef.current)
                 localLovMapRef.current.set(key, lov);
             } 
         }
-console.log(localLovMapRef.current)
+
         // 5. Push final maps into React state 
         setLovMap(localLovMapRef.current); 
         setParentChildLovMap(localParentChildMap);

@@ -27,7 +27,7 @@ function App() {
                 <SideMenu menuItems={userMenu}></SideMenu>
                 <PageContent></PageContent>
               </Space>
-              <AppFooter/>
+
             </>
             ) : (
               <Register onLoginSuccess={() => setIsAuthenticated(true)} populateUserMenu={getUserMenuData}/>
