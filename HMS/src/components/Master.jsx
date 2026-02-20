@@ -9,10 +9,11 @@ import {resolvePrimaryKey} from "../functions/resolvePrimaryKey.js";
 import {resolveDescription} from "../functions/resolveDescription.js";
 import { MasterDetails } from './MasterDetails';
 import {  getLovData } from "../functions/getLovData.js";
-import {  getLovDataNoParent } from "../functions/getLovDataNoParent.js";
 import {  getParentsFormValues } from "../functions/getParentsFormValues.js";
 import { fetchInitLov } from "../functions/fetchInitLov.js";
 import {  lovInit } from "../functions/lovInit.js";
+import {  getLovVal } from "../functions/getLovVal.js";
+import { toSpacedWords } from "../functions/toSpacedWords.js";
 import '../styles/report.css';
 
 export function Master(props) {
@@ -35,7 +36,7 @@ export function Master(props) {
     const linkLov = "http://localhost:9002/hms/";
     const lnk = props.lnk?props.lnk:state.lnk;
     const backLink = state?state.backLink:lnk;
-    const detail = props.detail?props.detail:state.detail;
+    const detail = props.detail?props.detail:state?state.detail:null;
     const title = props.title?props.title:state.title;
     const masterCode = props.masterCode?props.masterCode:state?state.masterCode:null;
     const masterCodeValue = props.masterCodeValue?props.masterCodeValue:state?state.masterCodeValue:null;
@@ -48,11 +49,15 @@ export function Master(props) {
     const rec = JSON.parse(JSON.stringify(state?state.rec ?? {}:{}));
     const [formData, setFormData] = useState(rec);    
     let backId = state?state.backId:formData.id;
+    const detailChild = state?state.detailChild:null;
     const createdBy = state?state.createdBy:{};
   	const createdOn = state?state.createdOn:null;
     const comments = state?state.comments:null;
+    const detailLink = state?state.detailLink:props.detailLink;
+    const entryView = state?state.entryView:props.entryView;
     const apiLnk = `http://localhost:9002/hms/${lnk}/${masterId}`;
     const navigate = useNavigate();
+
      if(masterLocalLovMap !== undefined && masterLocalLovMap.current !== undefined && masterLocalLovMap.current.size > 0){        
         localLovMapRef = masterLocalLovMap;
         //console.log(localLovMapRef.current)
@@ -134,11 +139,10 @@ export function Master(props) {
 														:key=="createdBy"?createdBy
 														:key=="createdon"?createdOn
                                                         :key=="comments"?comments
-														: formData[key]                                                    
+                                                        :lovMap.has(key)?getLovVal(lovMap.get(key), formData[key])
+														:formData[key]                                                    
                                                 }), {}
-                                   )//Object.assign({}, ...Object.entries({...formObj}).map(([a,b]) => ({ [b]: formData[b] })))	
-                                                           						
-     console.log(obj)                                            
+                                   )//Object.assign({}, ...Object.entries({...formObj}).map(([a,b]) => ({ [b]: formData[b] })))	                                            
 	  	axios.put(apiLnk,obj,{headers: headers});
     }
 	
@@ -173,7 +177,7 @@ export function Master(props) {
                                         lovMap.has(field)||lovMap.has(localLovMapRef.current)
                                         ?
                                             <tr>				  	
-                                                <td><label htmlFor="name">{field}:</label></td>
+                                                <td><label htmlFor="name">{toSpacedWords(field)}:</label></td>
                                                 <td key={field}><select  id={field} name={field} value={formData[field] ?? ""} onChange={handleLovChange} className='selectInput'>
                                                     <option value="">-- Select --</option>                                               
                                                     {Array.from(lovMap.get(field)|| localLovMapRef.current.get(field) || []).map((opt) => (
@@ -188,7 +192,7 @@ export function Master(props) {
                                             dateCols.includes(field)                                                
                                                 ?
                                                     <tr>				  	
-                                                        <td><label htmlFor="name">{field}:</label></td>
+                                                        <td><label htmlFor="name">{toSpacedWords(field)}:</label></td>
                                                         <td key={field}><DatePicker id={field} 
                                                                                     name={field} 
                                                                                     value={state?formData?dayjs(formData[field]):null:null} 
@@ -208,7 +212,7 @@ export function Master(props) {
                                                     </tr>
                                                 :
                                                     <tr>					  	
-                                                        <td><label htmlFor="name">{field}:</label></td>
+                                                        <td><label htmlFor="name">{toSpacedWords(field)}:</label></td>
                                                         <td key={field}><input type="text"  id={field} name={field} value={state?formData?formData[field]:null:null} onChange={handleChange}/></td>
                                                     </tr> 
                             )
@@ -216,8 +220,10 @@ export function Master(props) {
                           
                         )}
                           <tr>
+                            {entryView !== "view"?
                               <td><button className="form-button" type="submit">Get Details</button></td>
-                              {masterId?
+                              :<td><button className="form-button" onClick={updateClicked}>Update</button></td>}
+                              {masterId && entryView !== "view"?
                                 <div>
                                     <td><button className="form-button" onClick={updateClicked}>Update</button></td>
                                     <td><button className="form-button" onClick={deleteClicked}>Delete</button></td>
@@ -226,7 +232,7 @@ export function Master(props) {
                           </tr>
                       </tbody>
               </table>
-                  {/* ✅ Render the Detail rows */}
+                  {console.log(masterId)/* ✅ Render the Detail rows */}
                   {ready&&masterId? (                    
                       <MasterDetails    serviceFormData={formData} 
                                         forwardKey={forwardKey} 
@@ -236,7 +242,10 @@ export function Master(props) {
                                         excludeFields={excludeFields}
                                         detailExcludeFields={detailExcludeFields}
                                         lnk={lnk+detail}
+                                        detailLink={detailLink}
                                         detail={detail}
+                                        entryView={entryView}
+                                        detailChild={detailChild}
                                         title={title}
                                         masterCode={masterCode} 
                                         masterCodeValue={detail === undefined?getParentsFormValues(formData, masterCode):null} 
@@ -255,7 +264,6 @@ export function Master(props) {
         axios
             .post(masterLink, obj, { headers })
             .then((res) => {
-                console.log(formData)
                 setFormData((prev) => ({ ...prev, [forwardKey]: res.data.id }));
                 setBackReady(true);
                 setMasterId(res.data.id)
@@ -293,8 +301,9 @@ export function Master(props) {
             .get(`${masterLink}Code/${masterCodeValue}`, { headers })
             .then((res) => {
                 setFormData((prev) => ({ ...prev, masterId: res.data.id }));
+                setMasterId(res.data.id)
                 setBackReady(true);
-                
+                console.log(res.data.id)
             })
              setBackReady(true);   
             }catch (error) { 

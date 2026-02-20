@@ -10,6 +10,7 @@ import { getValueType } from '../functions/getValueType.js';
 import { getHeader } from "../functions/getHeader";
 import { PlusOutlined } from '@ant-design/icons';
 import {removeChr31} from "../functions/removeChr31.js";
+import { toSpacedWords } from "../functions/toSpacedWords.js";
 
 export function MasterDetails(props) {
     const [loading, setloading ] = useState(true);
@@ -30,21 +31,28 @@ export function MasterDetails(props) {
     const masterDefaultValues = useState(props.masterDefaultValues);
     const excludeFields = props.excludeFields;
     const detailExcludeFields = props.detailExcludeFields;
-    
-    const lnk = props.lnk;
+    const entryView = props.entryView;      //usage of this field is dscribed in addTable
+    const detailChild = props.detailChild;  //usage of this field is dscribed in addTable
+    const detailLink = props.detailLink;    //usage of this field is dscribed in addTable
+    console.log(detailChild)
+    console.log(detailLink)
+    const lnk = detailChild?detailChild:detailLink?detailLink:props.lnk;
+    console.log(lnk)
     const detail = props.detail;
     const title = props.title;
-    const masterId = props.masterId;
-    //setServiceFormData(props.serviceFormData);
+    const masterId = props.masterId;    
+    const childActionLink = lnk+'/entry';
     const actionLink = lnk+'/add';
-    const modifyLink = lnk+'/modify';
+    const modifyLink = detailChild?childActionLink:lnk+'/modify';
     const backLink = props.backLink;
     const masterFields=props.masterFields;
     const masterCode = props.masterCode;
     const masterCodeValue = props.masterCodeValue;
     const forwardKey = props.forwardKey;
     const localLovMapRef = props.masterLocalLovMap;
-    
+
+    console.log(lnk)
+
     const getData = async(page, pageSize, sortField, sortOrder, filters={}) => {
         setloading(true);
         // Build filter query string
@@ -53,13 +61,14 @@ export function MasterDetails(props) {
             .map(([key, value]) => `${key}=${value.join(",")}`)
             .join("&");
         
-    const link = 'http://localhost:9002/hms/'+props.lnk + 'Get' + '?page=' + page + '&size=' + pageSize+ '&sort=' + sortField+ ',' + sortOrder + '&filterParams=' + filterParams ;	
-
+        const link = 'http://localhost:9002/hms/'+lnk + 'Get' + '?page=' + page + '&size=' + pageSize+ '&sort=' + sortField+ ',' + sortOrder + '&filterParams=' + filterParams ;	
+        console.log(link)
         axios.post(link,masterId,{headers: headers}
             ).then(res => {                                
                 setTabData(res.data.content);   //res.data.content is an array of objects
                 setTotalPages(res.data.totalPages);
                 setTotalRecords(res.data.totalElements);
+                console.log(res.data.content)
                 })
             .catch((error) => {
                 console.warn("response", error.response?.data);                
@@ -114,38 +123,41 @@ export function MasterDetails(props) {
                                 record.pk?.itemNumber ??
                                 "";                   
                             return(
-                                <AddButton  class='AddLinkButton' 
-                                            page={title + ' ' + detail} 
-                                            btn_type='link' lnk={lnk} 
-                                            excludeFields={excludeFields} 
-                                            detailExcludeFields={detailExcludeFields} 
-                                            actionLink={modifyLink} 
-                                            name={record.id?record.id:record.code?record.code:record.pk?record.pk.code?record.pk.code:record.pk.itemNumber:null} 
-                                            bodyData={tabData} 
-                                            rec= {record} 
-                                            backLink={backLink}
-                                            backId={record.id}
-                                            masterId={masterId}
-                                            forwardKey={forwardKey}
-                                            detail={detail}
-                                            title={title+ ' ' + detail}
-                                            serviceFormData={props.serviceFormData}
-                                            masterFields={masterFields}
-                                            masterCode = {masterCode} 
-                                            masterCodeValue={masterCodeValue}
-                                            masterDefaultValues={null}
-                                            masterLocalLovMap={localLovMapRef}
-                                            createdBy={record.createdBy} 
-                                            createdOn={record.createdOn} 
-                                            comments={record.comments}>
-                                    {display}
-                                </AddButton>
+                                entryView !== "view" || detailChild !== 'undefined'?
+                                    <AddButton  class='AddLinkButton' 
+                                                page={title + ' ' + detail} 
+                                                btn_type='link' lnk={lnk} 
+                                                excludeFields={excludeFields} 
+                                                detailExcludeFields={detailExcludeFields} 
+                                                actionLink={modifyLink} 
+                                                name={record.id?record.id:record.code?record.code:record.pk?record.pk.code?record.pk.code:record.pk.itemNumber:null} 
+                                                bodyData={tabData} 
+                                                rec= {record} 
+                                                backLink={backLink}
+                                                backId={record.id}
+                                                masterId={masterId}
+                                                forwardKey={forwardKey}
+                                                entryView={entryView}
+                                                detail={detail}
+                                                title={title+ ' ' + detail}
+                                                serviceFormData={props.serviceFormData}
+                                                masterFields={masterFields}
+                                                masterCode = {masterCode} 
+                                                masterCodeValue={masterCodeValue}
+                                                masterDefaultValues={null}
+                                                masterLocalLovMap={localLovMapRef}
+                                                createdBy={record.createdBy} 
+                                                createdOn={record.createdOn} 
+                                                comments={record.comments}>
+                                        {display}
+                                    </AddButton>:display
                             );
                     }
                 }
                 return col;
             });
-            setTabColumns(cols);
+            const spacedCols = cols.map(col => ({ ...col, title: toSpacedWords(col.title) }));
+            setTabColumns(spacedCols);
         }
     }, [tabData, sortField, sortOrder]);
 
@@ -172,7 +184,10 @@ export function MasterDetails(props) {
             .filter(val => val !== undefined && val !== null) // skip nulls
             .map(val => ({ text: String(val), value: val }));
     }
-	
+	const cancelClicked = () => {
+        history.back(); //history.go(-1)
+    };
+
     return(
         <div>
             <Space size={15} direction="vertical">
@@ -202,29 +217,31 @@ export function MasterDetails(props) {
                     }}
                 >
                 </Table>
-                <AddButton  class="AddButton" 
-                            name= 'Add' 
-                            page={title+ ' ' + detail} 
-                            lnk={lnk} 
-                            actionLink={actionLink} 
-                            bodyData={tabData} 
-                            backLink={backLink}
-                            backId={masterId}
-                            masterId={masterId}
-                            forwardKey={forwardKey}
-                            detail={detail}
-                            title={title+ ' ' + detail}
-                            serviceFormData={props.serviceFormData} 
-                            excludeFields={excludeFields} 
-                            detailExcludeFields={detailExcludeFields} 
-                            masterFields={masterFields}
-                            masterCode = {masterCode} 
-                            masterCodeValue={masterCodeValue}
-                            masterDefaultValues={masterDefaultValues}
-                            masterLocalLovMap={localLovMapRef}
-                            icon={<PlusOutlined/>} 
-                            btn_type='primary'>
-                </AddButton>
+                {entryView !== "view"?
+                    <AddButton  class="AddButton" 
+                                name= 'Add' 
+                                page={title+ ' ' + detail} 
+                                lnk={lnk} 
+                                actionLink={actionLink} 
+                                bodyData={tabData} 
+                                backLink={backLink}
+                                backId={masterId}
+                                masterId={masterId}
+                                forwardKey={forwardKey}
+                                detail={detail}
+                                title={title+ ' ' + detail}
+                                serviceFormData={props.serviceFormData} 
+                                excludeFields={excludeFields} 
+                                detailExcludeFields={detailExcludeFields} 
+                                masterFields={masterFields}
+                                masterCode = {masterCode} 
+                                masterCodeValue={masterCodeValue}
+                                masterDefaultValues={masterDefaultValues}
+                                masterLocalLovMap={localLovMapRef}
+                                icon={<PlusOutlined/>} 
+                                btn_type='primary'>
+                    </AddButton>:null}
+                {backLink === 'back' ?<td><button className="form-button" onClick={cancelClicked}>Back</button></td>:null}
             </Space>
         </div>
     );

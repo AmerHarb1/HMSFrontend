@@ -30,15 +30,15 @@ export function Register({ onLoginSuccess, populateUserMenu }){
   		const obj = tabData.reduce((o, key) => ({ ...o, [key]: formData[key]}), {})//create obj array that has key value pairs of formData for only keys found in tabData
 		axios.post(link,obj,{headers: headers}
   			).then(res => {   
-                    console.log(res.data);//token
+                    //console.log(res.data);//token
                     setAccessToken(res.data.token);
 				    localStorage.setItem('accessKey', JSON.stringify(res.data.token));
 				    
-                    console.log(accessToken);//token
-                    console.log(res.data.token);//token
+                    //console.log(accessToken);//token
+                    //console.log(res.data.token);//token
                     
                     onLoginSuccess();    
-                    console.log('after receiving response from get token ' + obj.username + '  ' + res.data.menuStructure + '  ' + res.data.token);                
+                    //console.log('after receiving response from get token ' + obj.username + '  ' + res.data.menuStructure + '  ' + res.data.token);                
                     populateUserMenu(res.data.menuStructure);                   
                     
 				  navigate('/');
@@ -47,7 +47,7 @@ export function Register({ onLoginSuccess, populateUserMenu }){
 	};
 
     useEffect(() => {
-        console.log(accessToken);//token
+       // console.log(accessToken);//token
     }, [accessToken]);
 
 

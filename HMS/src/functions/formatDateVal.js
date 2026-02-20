@@ -3,5 +3,5 @@ export function formatDate(val){
   const jsDate = typeof val === "string" ? new Date(val) : val;
   if (!(jsDate instanceof Date) || isNaN(jsDate)) return String(jsDate);
 
-    return `${jsDate.getMonth()}/${jsDate.getDate()}/${jsDate.getFullYear()} ${jsDate.getHours()}:${jsDate.getMinutes()}:${jsDate.getSeconds()}`;
+    return `${jsDate.getMonth()+1}/${jsDate.getDate()}/${jsDate.getFullYear()} ${jsDate.getHours()}:${jsDate.getMinutes()}:${jsDate.getSeconds()}`;
 }

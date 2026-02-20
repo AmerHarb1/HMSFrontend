@@ -34,6 +34,7 @@ import { Org } from '../pages/Org';
 import { BranchPhone } from '../pages/BranchPhone';
 import { BranchAddress } from '../pages/BranchAddress';
 import { Branch } from '../pages/Branch';
+import { ExternalBranch } from '../pages/ExternalBranch';
 import { CostCenter } from '../pages/CostCenter';
 import { SubCostCenter } from '../pages/SubCostCenter';
 import { CostCenterType } from '../pages/CostCenterType';
@@ -88,6 +89,7 @@ import { Icd10Level } from '../pages/Icd10Level';
 import { ProductIcd10Relation } from '../pages/ProductIcd10Relation';
 import { ProductRequestApproval } from '../pages/ProductRequestApproval';
 import { ProductRequestPriority } from '../pages/ProductRequestPriority';
+import { ApproveMaterialRequest } from '../pages/ApproveMaterialRequest';
 
 export function AppRoutes(){
     return(
@@ -178,6 +180,9 @@ export function AppRoutes(){
                 <Route path="/branch" element={<Branch/>}/>
                 <Route path="/branch/add" element={<AddPage/>}/>
                 <Route path="/branch/modify" element={<ModifyForm/>}/>
+                <Route path="/externalBranch" element={<ExternalBranch/>}/>
+                <Route path="/externalBranch/add" element={<AddPage/>}/>
+                <Route path="/externalBranch/modify" element={<ModifyForm/>}/>
                 <Route path="/costCenter" element={<CostCenter/>}/>
                 <Route path="/costCenter/add" element={<AddPage/>}/>
                 <Route path="/costCenter/modify" element={<ModifyForm/>}/>
@@ -271,9 +276,6 @@ export function AppRoutes(){
                 <Route path="/productBatch" element={<ProductBatch/>}/> 
                 <Route path="/productBatch/add" element={<AddPage/>}/>                
                 <Route path="/productBatch/modify" element={<ModifyForm/>}/>
-                <Route path="/productIssuance" element={<ProductIssuance/>}/> 
-                <Route path="/productIssuance/add" element={<AddPage/>}/>                
-                <Route path="/productIssuance/modify" element={<ModifyForm/>}/>
                 <Route path="/productIssueStatus" element={<ProductIssueStatus/>}/> 
                 <Route path="/productIssueStatus/add" element={<AddPage/>}/>                
                 <Route path="/productIssueStatus/modify" element={<ModifyForm/>}/>
@@ -342,6 +344,13 @@ export function AppRoutes(){
                 <Route path="/ProductRequestPriority" element={<ProductRequestPriority/>}/> 
                 <Route path="/ProductRequestPriority/add" element={<AddPage/>}/>                
                 <Route path="/ProductRequestPriority/modify" element={<ModifyForm/>}/>
+
+                <Route path="/ApproveMaterialRequest" element={<ApproveMaterialRequest/>}/>    
+                <Route path="/ApproveMaterialRequest/modify" element={<Master/>}/>
+
+                <Route path="/productIssuance" element={<ProductIssuance/>}/>           
+                <Route path="/productIssuance/modify" element={<Master/>}/>
+                <Route path="/productIssuance/entry" element={<ModifyForm/>}/>
             </Routes>
         </div>
     );

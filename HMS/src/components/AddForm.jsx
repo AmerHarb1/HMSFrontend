@@ -8,6 +8,7 @@ import {resolvePrimaryKey} from "../functions/resolvePrimaryKey.js";
 import {  getLovData } from "../functions/getLovData.js";
 import {  lovChange } from "../functions/lovChange.js";
 import {resolveDescription} from "../functions/resolveDescription.js";
+import { toSpacedWords } from "../functions/toSpacedWords.js";
 import '../styles/page.css';
 
 export function AddForm(props){
@@ -44,7 +45,7 @@ export function AddForm(props){
     
     const detail = props.detail;
     
-console.log(tabDataValues)
+//console.log(tabDataValues)
     //setFormData(prev => ({ ...prev, serviceProductId: tabDataValues?.serviceProductId ?? "" }));
     
     const navigate = useNavigate();
@@ -60,7 +61,7 @@ console.log(tabDataValues)
         withCredentials: true,
     };
 
-    const cancelClicked = () => navigate("/" + lnk);
+    const cancelClicked = () => navigate("/" + history.back());
 
     const handleChange = (event) => {
         const { name, value } = event.target;
@@ -141,16 +142,15 @@ console.log(tabDataValues)
     };
 
   useEffect(() => {
+    console.log('here')
     getLovData(tabData, tabDataValues, setParentChildLovMap, setLovMap, linkLov, headers, setDateCols);
   }, []);
 
   useEffect(() => {
-    console.log(formData)
+    //console.log(formData)
   }, [formData]);
 
   useEffect(() => {
-    console.log(forwardKey);
-    console.log(masterId)
     setFormData((prev) => ({ ...prev, [forwardKey]: masterId }));
   }, [forwardKey]);
 
@@ -169,8 +169,7 @@ console.log(tabDataValues)
                 
                 <form onSubmit={handleSubmit} >
                     <table className='entry-Tab'>
-                        <tbody>   
-                            {console.log(formData)}      	
+                        <tbody>      	
                             {state?(tabData)?
                                 tabData.map(field=>                                     
                                     (detailExcludeFields && field in detailExcludeFields) || (excludeFields && field in excludeFields)
@@ -180,7 +179,7 @@ console.log(tabDataValues)
                                             lovMap.has(field)
                                             ?
                                                 <tr>					  	
-                                                        <td><label htmlFor="name">{field}:</label></td>
+                                                        <td><label htmlFor="name">{toSpacedWords(field)}:</label></td>
                                                     <td key={field}><select  id={field} name={field} value={state?formData?formData[field]:null:null} onChange={handleLovChange} className='selectInput'>
                                                         <option value="">-- Select --</option>
                                                         {Array.from(lovMap.get(field) || []).map((opt) => (
@@ -195,7 +194,7 @@ console.log(tabDataValues)
                                                 dateCols.includes(field)                                                
                                                 ?
                                                     <tr>				  	
-                                                        <td><label htmlFor="name">{field}:</label></td>
+                                                        <td><label htmlFor="name">{toSpacedWords(field)}:</label></td>
                                                         <td key={field}><DatePicker id={field} 
                                                                                     name={field} 
                                                                                     value={formData[field]? dayjs(formData[field], "YYYY-MM-DD  HH:mm:ss") : null} 
@@ -214,7 +213,7 @@ console.log(tabDataValues)
                                                     </tr>
                                                 :
                                                     <tr>					  	
-                                                        <td><label htmlFor="name">{field}:</label></td>
+                                                        <td><label htmlFor="name">{toSpacedWords(field)}:</label></td>
                                                         <td key={field}><input type="text"  id={field} name={field} value={state?formData?formData[field]:null:null} onChange={handleChange}/></td>
                                                     </tr>) :null:null
                             }	

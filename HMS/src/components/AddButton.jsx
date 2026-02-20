@@ -16,11 +16,13 @@ export function AddButton(props){
 	const serviceFormData=props.serviceFormData;
 	const detailExcludeFields = props.detailExcludeFields;
 	const detail = props.detail;	
+	const disabledFields = props.disabledFields;
     const masterDefaultValues = props.masterDefaultValues?props.masterDefaultValues:{};    
 	const safeMasterDefaultValues = JSON.parse(JSON.stringify(masterDefaultValues ?? {}));
 	const localLovMapRef = props.masterLocalLovMap;
-	
-	
+	const entryView = props.entryView;
+	const detailLink = props.detailLink;
+	const detailChild = props.detailChild;
     const forwardKey = props.forwardKey;
 	const title = props.title;
    //console.log(masterId)
@@ -53,6 +55,10 @@ export function AddButton(props){
 						masterCode:masterCode,
 						masterCodeValue:masterCodeValue,
 						detail: detail,
+						disabledFields:disabledFields,
+						detailLink:detailLink,
+						entryView:entryView,
+						detailChild:detailChild,
 						serviceFormDate:props.serviceFormDate,
 						createdBy:props.createdBy,
 						createdOn:props.createdOn,

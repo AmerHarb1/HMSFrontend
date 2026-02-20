@@ -8,6 +8,7 @@ import 'antd/dist/reset.css'; // for AntD v5
 import {formatDate} from '../functions/formatDateVal.js';
 import { getValueType } from '../functions/getValueType.js';
 import { getHeader } from "../functions/getHeader";
+import { toSpacedWords } from "../functions/toSpacedWords.js";
 import { PlusOutlined } from '@ant-design/icons';
 
 
@@ -35,10 +36,20 @@ export function AddTable(props){
     const detail = props.detail;
     const pageTitle = props.name;
     const backLink = props.backLink;
+    const lnk = props.lnk;
 
+    const disabledFieldsRaw = props.disabledFields; 
+    const disabledFields = Array.isArray(disabledFieldsRaw) ? disabledFieldsRaw : Object.keys(disabledFieldsRaw || {}); // if you used object-as-set    //used to dislay the included fields as disabled
+
+    
+    const detailLink = props.detailLink;        //used in master detail to retrieve the detail data where some List Master pages are not the real or strait master (e.g., Approve Material Request).
+    const entryView = props.entryView;          //used with value view to not disply the add button on table and master detail
   	const actionLink = props.lnk+'/add';
     const modifyLink = props.lnk+'/modify';
+    const detailChild = props.detailChild;      //for a child of master detail pages, where the enry and modification need to be on the child fields and the mater detail id is one of the child fields (e.g., Product Issuance). 
+                                                // also used as an alternative lnk to get the master detail data joined with child data to be displayed together in the master detail data.
 
+                                               
     const getData = async(page, pageSize, sortField, sortOrder, filters={}) => {
         setloading(true);
         //console.log('page = ' + page +' pageSize = ' + pageSize + ' sortField = ' + sortField + '  sortOrder = ' + sortOrder);
@@ -113,7 +124,8 @@ export function AddTable(props){
                                             page={props.name} 
                                             title= {pageTitle} 
                                             btn_type='link' 
-                                            lnk={props.lnk} 
+                                            lnk={lnk} 
+                                            detailLink={detailLink}
                                             backLink={backLink} 
                                             excludeFields={excludeFields} 
                                             actionLink={modifyLink} 
@@ -123,6 +135,9 @@ export function AddTable(props){
                                             masterFields = {masterFields}
                                             masterDefaultValues = {masterDefaultValues}
                                             detail={detail}
+                                            disabledFields={disabledFields}
+                                            detailChild={detailChild}
+                                            entryView={entryView}
                                             forwardKey={forwardKey}
                                             masterId={record.id}
                                             rec= {record} 
@@ -136,7 +151,8 @@ export function AddTable(props){
                 }
                 return col;
             });
-            setTabColumns(cols);
+            const spacedCols = cols.map(col => ({ ...col, title: toSpacedWords(col.title) }));
+            setTabColumns(spacedCols);
         }
     }, [tabData, sortField, sortOrder]);
 
@@ -205,23 +221,25 @@ export function AddTable(props){
 
                 </Table>
                
-                <AddButton  class="AddButton" 
-                            name= "Add"  
-                            page={props.name} 
-                            title= {pageTitle} 
-                            lnk={props.lnk}
-                            backLink={backLink}
-                            actionLink={actionLink} 
-                            detail={detail}
-                            forwardKey={forwardKey}
-                            bodyData={tabData} 
-                            excludeFields={excludeFields} 
-                            detailExcludeFields={detailExcludeFields}
-                            masterFields = {masterFields}
-                            masterDefaultValues = {masterDefaultValues}
-                            icon={<PlusOutlined/>} 
-                            btn_type='primary'>
-                </AddButton>
+               {entryView !== "view"?
+                    <AddButton  class="AddButton" 
+                                name= "Add"  
+                                page={props.name} 
+                                title= {pageTitle} 
+                                lnk={props.lnk}
+                                backLink={backLink}
+                                actionLink={actionLink} 
+                                detail={detail}
+                                forwardKey={forwardKey}
+                                bodyData={tabData} 
+                                excludeFields={excludeFields} 
+                                detailExcludeFields={detailExcludeFields}
+                                masterFields = {masterFields}
+                                masterDefaultValues = {masterDefaultValues}
+                                disabledFields={disabledFields}
+                                icon={<PlusOutlined/>} 
+                                btn_type='primary'>
+                    </AddButton>:null}
                 
             </Space>
         </div>

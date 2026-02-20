@@ -10,6 +10,7 @@ import {fixFormDataLov} from "../functions/fixFormDataLov.js";
 import {  lovChange } from "../functions/lovChange.js";
 import {  lovInit } from "../functions/lovInit.js";
 import { getHeader } from "../functions/getHeader";
+import { toSpacedWords } from "../functions/toSpacedWords.js";
 import '../styles/page.css';
 
 export function ModifyForm(props){
@@ -43,24 +44,27 @@ export function ModifyForm(props){
     const masterId = state?state.masterId : null;
     const backId = masterId;
     const detailExcludeFields = state.detailExcludeFields;
+    const disabledFields = state?state.disabledFields: null;
     const masterFields=state?state.masterFields:props.masterFields;
     const masterCode=state?state.masterCode:props.masterCode;
     const masterCodeValue=state?state.masterCodeValue:props.masterCodeValue;
     const localLovMapRef = state?state.masterLocalLovMap:props.masterLocalLovMap;
-    
+    const entryView = state?state.entryView:null;
     const detail = state.detail;
     const serviceFormData = state.serviceFormData;
     const navigate = useNavigate();
     const headers = getHeader();
+
+
+    /*  Amer on 02/15/2026
+        modify form is populated by setting formData to the rec state variable passed from addButton.
+        tabData and tabDataValues are populated from tabData and initialData state variables
+        getLovData function will be triggered to run when either tabData or tabDataValues values are changed this happens once when the page is visited).
+        getLovData uses formData, tabData and tabDataValues to populate the lovMap, ParentChildMap and dateCols, which are used in the HTML to build and populate the page.
+    */
     
-   const cancelClicked = () => {
-    history.back(); //history.go(-1)
-    console.log(lnk)
-   /*     navigate({
-            pathname: '/' + lnk,
-            search: '',   // 👈 clear query params
-            hash: ''      // 👈 clear any hash too
-        }, { replace: true });*/
+    const cancelClicked = () => {
+        navigate("/" + history.back());
     };
 
     const handleChange = (event) => {
@@ -71,6 +75,7 @@ export function ModifyForm(props){
     const handleLovChange = (event) => {
         const { name, value } = event.target;         
         const updatedFormData = { ...formData, [name]: value }; // Build the updated formData manually
+        //console.log(name +' , '+ value)
         setFormData(updatedFormData);
         lovChange(updatedFormData, name, parentChildLovMap, setLovMap, headers, linkLov);
     };
@@ -104,7 +109,8 @@ export function ModifyForm(props){
                                                     masterCodeValue:masterCodeValue,
                                                     masterLocalLovMap:localLovMapRef,
                                                     backLink:backLink,
-                                                    title:formName,                                
+                                                    title:formName,
+                                                    entryView:entryView,                                
                                                     from: formName } 
                                                     });
                         }else{
@@ -122,7 +128,8 @@ export function ModifyForm(props){
                                     masterCodeValue:masterCodeValue,
                                     masterLocalLovMap:localLovMapRef,
                                     backLink:backLink,
-                                    title:formName,                                
+                                    title:formName, 
+                                    entryView:entryView,                               
                                     from: formName } 
                                 
                             });
@@ -252,8 +259,8 @@ export function ModifyForm(props){
                                     ?
                                         <tr>					  	
                                             <td>
-                                                <label htmlFor="name">{fieldName}:</label></td>
-                                            <td key={fieldName}><select  name={fieldName} value={formData[fieldName] ?? ""} onChange={handleLovChange} className='selectInput'>
+                                                <label htmlFor="name">{toSpacedWords(fieldName)}:</label></td>
+                                            <td key={fieldName}><select  name={fieldName} value={formData[fieldName] ?? ""} disabled={disabledFields?disabledFields.includes(fieldName):false} onChange={handleLovChange} className='selectInput'>
                                                 <option value="">-- Select --</option>
                                                 {Array.from(lovMap.get(fieldName) || localLovMap.get(fieldName)|| []).map((opt) => (
                                                     <option  value={resolvePrimaryKey(opt)}>
@@ -267,10 +274,11 @@ export function ModifyForm(props){
                                     dateCols.includes(fieldName)                                                
                                         ?
                                             <tr>				  	
-                                                <td><label htmlFor="name">{fieldName}:</label></td>
+                                                <td><label htmlFor="name">{toSpacedWords(fieldName)}:</label></td>
                                                 <td key={fieldName}><DatePicker    id={fieldName} 
                                                                                     name={fieldName} 
                                                                                     value={formData[fieldName] ? dayjs(formData[fieldName], "YYYY-MM-DD  HH:mm:ss") : null}
+                                                                                    disabled={disabledFields?disabledFields.includes(fieldName):false}
                                                                                     showTime={{ 
                                                                                         format: 'hh:mm:ss',
                                                                                         minuteStep: 1,
@@ -291,8 +299,8 @@ export function ModifyForm(props){
                                             </tr>
                                         :
                                             <tr>					  	
-                                                <td><label htmlFor="name">{fieldName}:</label></td>
-                                                <td key={fieldName}><input type="text"  id={fieldName} name={fieldName} value={formData[fieldName] ?? ""} onChange={handleChange}/></td>
+                                                <td><label htmlFor="name">{toSpacedWords(fieldName)}:</label></td>
+                                                <td key={fieldName}><input type="text"  id={fieldName} name={fieldName} value={formData[fieldName] ?? "" } disabled={disabledFields?disabledFields.includes(fieldName):false} onChange={handleChange}/></td>
                                             </tr>) :null
                                                 								  	
                         }	
