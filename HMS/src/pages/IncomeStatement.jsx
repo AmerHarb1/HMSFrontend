@@ -52,7 +52,7 @@ export function IncomeStatement() {
 
     return (
         <div >
-            <Typography.Title className='TitleRep'>Income tatement</Typography.Title>
+            <Typography.Title className='TitleRep'>Income Statement</Typography.Title>
             <form onSubmit={handleSubmit}>
                 <table className='entry-Tab'>
                     <tbody>

@@ -12,6 +12,7 @@ export function ProductIssuance() {
                   forwardKey="materialRequestId"
                   excludeFields={{id: '', createdBy: '', createdDate: '', materialRequestStatus: '', productRequestPriority: '', approvedDate: '', requestedDate: '', requester: '', approver: '', purpose: '', costCenter: '', productRequestApproval: '', issuer: '', issuedDate: ''}}
                   detailExcludeFields={{id: '', createdBy: '', createdDate: ''}}
+                  disabledFields={{materialRequestDetailId: '', productCode: '', requestedQuantity: ''}}
                   entryView = "view"/>
     </div>
   );

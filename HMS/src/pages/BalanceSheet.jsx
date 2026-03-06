@@ -27,7 +27,8 @@ export function BalanceSheet() {
 
                 rows.forEach(row => {
                     const mapped = {
-                        account: row.accountName,
+                        accountType: row.accountType,
+                        accountSubType: row.accountSubType,
                         amount: row.amount
                     };
 
@@ -71,7 +72,8 @@ export function BalanceSheet() {
 function DashboardCard({ title, data }) {
 
     const tabColumns = [        
-        { title: 'Account', dataIndex: 'account', key: 'account' },
+        { title: 'accountType', dataIndex: 'accountType', key: 'accountType' },
+        { title: 'accountSubType', dataIndex: 'accountSubType', key: 'accountSubType' },
         { title: 'Amount', dataIndex: 'amount', key: 'amount' }
     ];
 
@@ -82,14 +84,16 @@ function DashboardCard({ title, data }) {
                 <table className="Report">
                     <thead>
                         <tr>
-                        <th>Account</th>
-                        <th>Amount</th>
+                            <th>account Type</th>
+                            <th>account Sub Type</th>
+                            <th>Amount</th>
                         </tr>
                     </thead>
                     <tbody>            	
                         {data.map((row, index) => (
                                 <tr key={index}>					  	
-                                    <td>{row.account}</td>
+                                    <td>{row.accountType}</td>
+                                    <td>{row.accountSubType}</td>
                                     <td>{row.amount ?? 0}</td>
                                 </tr>) 
                         )}	

@@ -29,7 +29,7 @@
 
 /* Hover effect on rows */
 .Tab .ant-table-tbody > tr:hover > td {
-  background-color: #fafafa;
+  background-color: #eacaca;
 }
 
 /* Pagination styling */
@@ -64,7 +64,7 @@
 
 .Tab tBody tr:nth-child(even){
     width: 40vw;
-    background-color: rgb(238, 243, 251);
+    background-color: rgb(222, 230, 243);
 }
 
 .AddButton{
@@ -115,21 +115,35 @@
   border-radius: 10px;
 	line-height: 1.5;
 	padding: 40px 10px 10px 10px;	
-	background-color: #cddbf7;
+	background-color: #c8d7f3;
 	width:100%;
 	box-shadow: 1rem 1rem 10px rgba(0, 0, 0, 0.15);
+}
+
+.entry-Tab { 
+    width: 100%;
+    border-collapse: separate; 
+    border-spacing: 10px 0px; /* 40px horizontal, 14px vertical */ 
+    margin-right: 0;
 }
 
 .entry-Tab tbody tr{
     height: 35px;
 }
 
+.entry-Tab tr:hover  { 
+    background: #cdd8e6; 
+}
+
+.empty { 
+  visibility: hidden; 
+}
 
 .entry-Tab tbody td{
     font-size: 20px; 
     min-width: 70px;
     height: 40px;    
-    padding: 1px;
+    padding: 3px 20px;
 }
 
 .entry-Tab tbody td input{
@@ -163,16 +177,104 @@
     width: 400px;
     border-radius: 5px;
     border: none;
-    box-shadow: 1rem 1rem 20px rgba(0, 0, 0, 0.15);
+    box-shadow: 1rem 1rem 40px rgba(0, 0, 0, 0.15);
 }
 
 .dateField{
-    height: 35px;
-    width: 400px;
+    height: 40px;
+    width: 100%;
     border: none;
     cursor: pointer;
-    font-Size: 25px;
+    font-Size: 40px;
     margin: 0px;
-    padding-left: 5px
+    padding-left: 0px
+}
+
+/* Normalize height and padding */ 
+.dateField .ant-picker-input > input { 
+    height: 32px !important; 
+    padding: 4px 8px !important; 
+    font-size: 20px !important; 
+} 
+
+
+
+/* Fix alignment inside table cells */ 
+.input-cell .ant-picker { 
+    margin: 0; 
+    display: block; 
+    
+} 
+
+/* Hover and focus to match input/select */ 
+.ant-picker:hover, .ant-picker-focused { 
+    border-color: #4096ff !important; 
+    
+}
+
+.label-cell { 
+    width: 180px; 
+    padding: 6px 12px;
+    font-weight: 600; 
+    color: #1022a9; 
+    vertical-align: top; 
+    white-space: nowrap; 
+} 
+
+.input-cell { 
+    padding: 6px 12px; /* 40px space to the right */
+}
+
+.gutter { 
+    width: 100px; /* adjust to taste */ 
+}
+
+.input-cell input, .input-cell select, .input-cell .dateField { 
+    width: 100%; 
+    padding: 6px 8px; 
+    border: 1px solid #d9d9d9; 
+    border-radius: 4px; 
+    font-size: 20px; 
+    cursor: pointer;
+}
+
+.button-row td { 
+    padding-top: 20px; 
+}
+
+.button-group { 
+    display: flex; 
+    gap: 20px; 
+    margin: 20px 0px;
+}
+
+@media (max-width: 768px) { 
+  .entry-Tab { 
+      border-spacing: 0 8px; 
+  } 
+  .label-cell { 
+      width: 120px; 
+  } 
+} 
+
+@media (max-width: 600px) { 
+  .entry-Tab tr { 
+      display: block; 
+      margin-bottom: 16px; 
+  } 
+  .label-cell, .input-cell { 
+      display: block; 
+      width: 100%; 
+  } 
+  .empty { 
+      display: none; 
+  } 
+  .button-group { 
+      flex-direction: column; 
+      width: 100%; 
+  } 
+  .form-button { 
+      width: 100%; 
+  } 
 }
 

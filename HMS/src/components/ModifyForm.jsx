@@ -1,7 +1,9 @@
+
+import React from 'react';
+import { useState, useEffect} from 'react';
 import { Typography, Space, message, DatePicker} from 'antd';
 import axios from 'axios';
 import dayjs from "dayjs";
-import { useState, useEffect} from 'react';
 import { useNavigate, useLocation} from 'react-router';
 import { getAccessToken } from "../functions/getAccessToken.js";
 import { fetchInitLov } from "../functions/fetchInitLov.js";
@@ -241,77 +243,92 @@ export function ModifyForm(props){
         setTabDataNoChar(cleaned);
     }, [tabData]);
 
-    
-    return(
-        <div className="form-table">
-            <Space size={15} direction="vertical">
-                <Typography.Text className='Title'>
-                    {formName}
-                </Typography.Text>
-                
-                <form  >
-                <table className='entry-Tab'>
-                    <tbody>  
-                        {(tabData)?
-                            tabData.map(fieldName =>
-                                fieldName in excludeFields ? null :
-                                    lovMap.has(fieldName)||lovMap.has(localLovMap)
-                                    ?
-                                        <tr>					  	
-                                            <td>
-                                                <label htmlFor="name">{toSpacedWords(fieldName)}:</label></td>
-                                            <td key={fieldName}><select  name={fieldName} value={formData[fieldName] ?? ""} disabled={disabledFields?disabledFields.includes(fieldName):false} onChange={handleLovChange} className='selectInput'>
-                                                <option value="">-- Select --</option>
-                                                {Array.from(lovMap.get(fieldName) || localLovMap.get(fieldName)|| []).map((opt) => (
-                                                    <option  value={resolvePrimaryKey(opt)}>
-                                                        {opt.name?opt.name:opt.username?opt.username:opt.description}
-                                                    </option>
-                                                ))}
-                                                </select>
-                                            </td>
-                                            </tr>
-                                    :
-                                    dateCols.includes(fieldName)                                                
-                                        ?
-                                            <tr>				  	
-                                                <td><label htmlFor="name">{toSpacedWords(fieldName)}:</label></td>
-                                                <td key={fieldName}><DatePicker    id={fieldName} 
-                                                                                    name={fieldName} 
-                                                                                    value={formData[fieldName] ? dayjs(formData[fieldName], "YYYY-MM-DD  HH:mm:ss") : null}
-                                                                                    disabled={disabledFields?disabledFields.includes(fieldName):false}
-                                                                                    showTime={{ 
-                                                                                        format: 'hh:mm:ss',
-                                                                                        minuteStep: 1,
-                                                                                        hideDisabledOptions: true
-                                                                                        }}
-                                                                                    format="MM/DD/YYYY HH:mm:ss" 
-                                                                                    placeholder="Select date"
-                                                                                    onChange={(date) => {
-                                                                                        setFormData((prev) => ({
-                                                                                        ...prev,
-                                                                                        [fieldName]: dayjs(date).format("YYYY-MM-DDTHH:mm:ss") , // store as ISO string
-                                                                                        }));
-                                                                                    }}
-                                                                                    className='dateField'
-    
-                                                                    />
-                                                </td>
-                                            </tr>
-                                        :
-                                            <tr>					  	
-                                                <td><label htmlFor="name">{toSpacedWords(fieldName)}:</label></td>
-                                                <td key={fieldName}><input type="text"  id={fieldName} name={fieldName} value={formData[fieldName] ?? "" } disabled={disabledFields?disabledFields.includes(fieldName):false} onChange={handleChange}/></td>
-                                            </tr>) :null
-                                                								  	
-                        }	
-                        <tr>
-                            <td><button className="form-button" onClick={updateClicked}>Update</button></td>
-                            <td><button className="form-button" onClick={deleteClicked}>Delete</button></td>
-                            <td><button className="form-button" onClick={cancelClicked}>Cancel</button></td>
-                        </tr>
-                    </tbody>
-                </table>
-		    </form>
+    // Build pairs for 2-column layout 
+    const fieldPairs = []; 
+    for (let i = 0; i < tabData.length; i += 2){ 
+        fieldPairs.push(tabData.slice(i, i + 2));
+    }
+
+    // Helper to render label + input cells 
+    const renderFieldCells = (fieldName) => { 
+        if (!fieldName || fieldName in excludeFields) { 
+            return ( 
+                <> 
+                    <td className="label-cell empty"></td> 
+                    <td className="input-cell empty"></td> 
+                </> 
+            ); 
+        }
+
+        const isLov = lovMap.has(fieldName) || lovMap.has(localLovMap); 
+        const isDate = dateCols.includes(fieldName);
+
+        return ( 
+            <> 
+                <td className="label-cell"> <label>{toSpacedWords(fieldName)}:</label> </td> 
+                <td className="input-cell"> 
+                    {isLov ? ( 
+                        <select name={fieldName} value={formData[fieldName] ?? ""} disabled={disabledFields?.includes(fieldName)} onChange={handleLovChange} className="selectInput" > 
+                            <option value="">-- Select --</option> 
+                            {Array.from(lovMap.get(fieldName) || localLovMap.get(fieldName) || []).map((opt) => ( 
+                                <option value={resolvePrimaryKey(opt)}> {opt.name || opt.username || opt.description} 
+                                </option> 
+                            ))} 
+                        </select> ) 
+                    : isDate ? ( 
+                        <DatePicker id={fieldName} 
+                                    name={fieldName} 
+                                    value={formData[fieldName] ? dayjs(formData[fieldName], "YYYY-MM-DD") : null} 
+                                    disabled={disabledFields?.includes(fieldName)} format="MM/DD/YYYY" 
+                                    onChange={(date) => setFormData((prev) => ({ ...prev, [fieldName]: date ? date.format("YYYY-MM-DD") : null })) } 
+                                    className="dateField" /> ) 
+                    : ( 
+                        <input type="text" id={fieldName} name={fieldName} value={formData[fieldName] ?? ""} disabled={disabledFields?.includes(fieldName)} onChange={handleChange} /> )} 
+                </td> 
+            </> 
+        ); 
+    };
+
+
+
+    return ( 
+        <div className="form-table"> 
+            <Space size={15} direction="vertical"> 
+                <Typography.Text className="Title">{formName}</Typography.Text> 
+                <form> 
+                    <table className="entry-Tab"> 
+                        <tbody> 
+                            {fieldPairs.map((pair, rowIndex) => ( 
+                                <tr key={rowIndex}> 
+                                    {/* LEFT FIELD */} 
+                                    {renderFieldCells(pair[0])} 
+                                    {/* FIXED GAP COLUMN */} 
+                                    <td className="gutter"></td> 
+                                    {/* RIGHT FIELD OR EMPTY */} 
+                                    {pair.length === 2 
+                                        ? renderFieldCells(pair[1]) 
+                                        : (
+                                        <>
+                                            <td className="label-cell empty"></td>
+                                            <td className="input-cell empty"></td>
+                                        </>
+                                    )}
+                                </tr>
+                            ))}
+
+                            <tr className="button-row"> 
+                                <td colSpan={4}> 
+                                    <div className="button-group"> 
+                                        <button className="form-button" onClick={updateClicked}>Update</button> 
+                                        <button className="form-button" onClick={deleteClicked}>Delete</button> 
+                                        <button className="form-button" onClick={cancelClicked}>Cancel</button> 
+                                    </div> 
+                                </td> 
+                            </tr>
+
+                        </tbody>
+                    </table>
+                </form>
             </Space>
         </div>
     );

@@ -11,6 +11,7 @@ export function ApproveMaterialRequest() {
                   forwardKey="materialRequestId"
                   excludeFields={{id: '', createdBy: '', createdDate: '', materialRequestStatus: '', productRequestPriority: '', approvedDate: '', requestedDate: '', requester: '', approver: '', purpose: '', costCenter: '', productIssueStatus: ''}}
                   detailExcludeFields={{id: '', createdBy: '', createdDate: ''}}
+                  disabledFields={{materialRequestId: '', productType: '', productDivision: '', productGroup: '', productCategory: '', itemNumber: '', quantity: ''}}
                   entryView = "view"/>
     </div>
   );

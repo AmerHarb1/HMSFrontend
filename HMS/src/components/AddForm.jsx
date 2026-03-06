@@ -142,7 +142,6 @@ export function AddForm(props){
     };
 
   useEffect(() => {
-    console.log('here')
     getLovData(tabData, tabDataValues, setParentChildLovMap, setLovMap, linkLov, headers, setDateCols);
   }, []);
 

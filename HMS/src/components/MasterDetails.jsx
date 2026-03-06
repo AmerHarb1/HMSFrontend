@@ -31,13 +31,14 @@ export function MasterDetails(props) {
     const masterDefaultValues = useState(props.masterDefaultValues);
     const excludeFields = props.excludeFields;
     const detailExcludeFields = props.detailExcludeFields;
+    const disabledFields = props.disabledFields;
     const entryView = props.entryView;      //usage of this field is dscribed in addTable
+    const modifyView = props.entryView;     //usage of this field is dscribed in addTable
     const detailChild = props.detailChild;  //usage of this field is dscribed in addTable
     const detailLink = props.detailLink;    //usage of this field is dscribed in addTable
-    console.log(detailChild)
-    console.log(detailLink)
+
     const lnk = detailChild?detailChild:detailLink?detailLink:props.lnk;
-    console.log(lnk)
+
     const detail = props.detail;
     const title = props.title;
     const masterId = props.masterId;    
@@ -51,8 +52,6 @@ export function MasterDetails(props) {
     const forwardKey = props.forwardKey;
     const localLovMapRef = props.masterLocalLovMap;
 
-    console.log(lnk)
-
     const getData = async(page, pageSize, sortField, sortOrder, filters={}) => {
         setloading(true);
         // Build filter query string
@@ -62,13 +61,13 @@ export function MasterDetails(props) {
             .join("&");
         
         const link = 'http://localhost:9002/hms/'+lnk + 'Get' + '?page=' + page + '&size=' + pageSize+ '&sort=' + sortField+ ',' + sortOrder + '&filterParams=' + filterParams ;	
-        console.log(link)
+
         axios.post(link,masterId,{headers: headers}
             ).then(res => {                                
                 setTabData(res.data.content);   //res.data.content is an array of objects
                 setTotalPages(res.data.totalPages);
                 setTotalRecords(res.data.totalElements);
-                console.log(res.data.content)
+
                 })
             .catch((error) => {
                 console.warn("response", error.response?.data);                
@@ -113,7 +112,7 @@ export function MasterDetails(props) {
                     }                   
 
                     // 👇 Add hyperlink rendering for IDs
-                    if (key === "id" || key==="code") {
+                    if (modifyView !== "view" && (key === "id" || key==="code")) {
                         col.render = (text, record) => {
                             const display =
                                 text ??    
@@ -128,9 +127,10 @@ export function MasterDetails(props) {
                                                 page={title + ' ' + detail} 
                                                 btn_type='link' lnk={lnk} 
                                                 excludeFields={excludeFields} 
-                                                detailExcludeFields={detailExcludeFields} 
+                                                detailExcludeFields={detailExcludeFields}
+                                                disabledFields={disabledFields} 
                                                 actionLink={modifyLink} 
-                                                name={record.id?record.id:record.code?record.code:record.pk?record.pk.code?record.pk.code:record.pk.itemNumber:null} 
+                                                name={ record.id ?? record.code ?? record.pk?.code ?? record.pk?.itemNumber ?? null } 
                                                 bodyData={tabData} 
                                                 rec= {record} 
                                                 backLink={backLink}
@@ -233,6 +233,7 @@ export function MasterDetails(props) {
                                 serviceFormData={props.serviceFormData} 
                                 excludeFields={excludeFields} 
                                 detailExcludeFields={detailExcludeFields} 
+                                disabledFields={disabledFields}
                                 masterFields={masterFields}
                                 masterCode = {masterCode} 
                                 masterCodeValue={masterCodeValue}

@@ -14,6 +14,7 @@ import { AddPage } from './AddPage';
 import { ModifyForm } from './ModifyForm';
 import { ModifyPage } from './ModifyPage';
 import  {Master } from '../components/Master';
+import  {MasterDetails } from '../components/MasterDetails';
 import { GlobalRegion } from '../pages/GlobalRegion';
 import { Phone } from '../pages/Phone';
 import { PhoneType } from '../pages/PhoneType';
@@ -77,7 +78,7 @@ import { EmployeeStatus } from '../pages/EmployeeStatus';
 import { PurchaseStatus } from '../pages/PurchaseStatus';
 import { PurchaseOrder } from '../pages/PurchaseOrder';
 import { ReceivePurchaseOrder } from '../pages/ReceivePurchaseOrder';
-import { Supplier } from '../pages/Supplier';
+import { Vendor } from '../pages/Vendor';
 import { ProductSupplier } from '../pages/ProductSupplier';
 import { QuotationRequest } from '../pages/QuotationRequest';
 import { QuotationResponse } from '../pages/QuotationResponse';
@@ -90,6 +91,21 @@ import { ProductIcd10Relation } from '../pages/ProductIcd10Relation';
 import { ProductRequestApproval } from '../pages/ProductRequestApproval';
 import { ProductRequestPriority } from '../pages/ProductRequestPriority';
 import { ApproveMaterialRequest } from '../pages/ApproveMaterialRequest';
+import { QuotationRequestStatus } from '../pages/QuotationRequestStatus';
+import { QuotationResponseStatus } from '../pages/QuotationResponseStatus';
+import { ApproveQuotationResponse } from '../pages/ApproveQuotationResponse';
+import { ApproveQuotationResponseStatus } from '../pages/ApproveQuotationResponseStatus';
+import { ReceivePurchaseOrderStatus } from '../pages/ReceivePurchaseOrderStatus';
+import { CostMethod } from '../pages/CostMethod';
+import { CostCenterProduct } from '../pages/CostCenterProduct';
+import { VendorInvoiceDetail } from '../pages/VendorInvoiceDetail';
+import { VendorInvoice } from '../pages/VendorInvoice';
+import { VendorPayment } from '../pages/VendorPayment';
+import { TransactionDetail } from '../pages/TransactionDetail';
+import { Transaction } from '../pages/Transaction';
+import { TransactionType } from '../pages/TransactionType';
+import { ProductUseType } from '../pages/ProductUseType';
+
 
 export function AppRoutes(){
     return(
@@ -300,9 +316,9 @@ export function AppRoutes(){
                 <Route path="/ReceivePurchaseOrder" element={<ReceivePurchaseOrder/>}/> 
                 <Route path="/ReceivePurchaseOrder/add" element={<AddPage/>}/>                
                 <Route path="/ReceivePurchaseOrder/modify" element={<ModifyForm/>}/>
-                <Route path="/Supplier" element={<Supplier/>}/> 
-                <Route path="/Supplier/add" element={<AddPage/>}/>                
-                <Route path="/Supplier/modify" element={<ModifyForm/>}/>
+                <Route path="/Vendor" element={<Vendor/>}/> 
+                <Route path="/Vendor/add" element={<AddPage/>}/>                
+                <Route path="/Vendor/modify" element={<ModifyForm/>}/>
                 <Route path="/ProductSupplier" element={<ProductSupplier/>}/> 
                 <Route path="/ProductSupplier/add" element={<AddPage/>}/>                
                 <Route path="/ProductSupplier/modify" element={<ModifyForm/>}/>
@@ -348,14 +364,72 @@ export function AppRoutes(){
                 <Route path="/ApproveMaterialRequest" element={<ApproveMaterialRequest/>}/>    
                 <Route path="/ApproveMaterialRequest/modify" element={<Master/>}/>
 
+                <Route path="/ApproveQuotationResponse" element={<ApproveQuotationResponse/>}/>    
+                <Route path="/ApproveQuotationResponse/modify" element={<Master/>}/>
+
                 <Route path="/productIssuance" element={<ProductIssuance/>}/>           
                 <Route path="/productIssuance/modify" element={<Master/>}/>
                 <Route path="/productIssuance/entry" element={<ModifyForm/>}/>
+
+                <Route path="/QuotationRequestStatus" element={<QuotationRequestStatus/>}/> 
+                <Route path="/QuotationRequestStatus/add" element={<AddPage/>}/>                
+                <Route path="/QuotationRequestStatus/modify" element={<ModifyForm/>}/>
+
+                <Route path="/QuotationResponseStatus" element={<QuotationResponseStatus/>}/> 
+                <Route path="/QuotationResponseStatus/add" element={<AddPage/>}/>                
+                <Route path="/QuotationResponseStatus/modify" element={<ModifyForm/>}/>
+
+                <Route path="/ApproveQuotationResponseStatus" element={<ApproveQuotationResponseStatus/>}/> 
+                <Route path="/ApproveQuotationResponseStatus/add" element={<AddPage/>}/>                
+                <Route path="/ApproveQuotationResponseStatus/modify" element={<ModifyForm/>}/>
+
+                <Route path="/ReceivePurchaseOrderStatus" element={<ReceivePurchaseOrderStatus/>}/> 
+                <Route path="/ReceivePurchaseOrderStatus/add" element={<AddPage/>}/>                
+                <Route path="/ReceivePurchaseOrderStatus/modify" element={<ModifyForm/>}/>
+
+                <Route path="/QuotationRequestStatus" element={<QuotationRequestStatus/>}/> 
+                <Route path="/QuotationRequestStatus/add" element={<AddPage/>}/>                
+                <Route path="/QuotationRequestStatus/modify" element={<ModifyForm/>}/>
+
+                <Route path="/TransactionType" element={<TransactionType/>}/> 
+                <Route path="/TransactionType/add" element={<AddPage/>}/>                
+                <Route path="/TransactionType/modify" element={<ModifyForm/>}/>
+
+                <Route path="/Transaction" element={<Transaction/>}/> 
+                <Route path="/Transaction/add" element={<AddPage/>}/>                
+                <Route path="/Transaction/modify" element={<ModifyForm/>}/>
+
+                <Route path="/TransactionDetail" element={<TransactionDetail/>}/> 
+                <Route path="/TransactionDetail/add" element={<AddPage/>}/>                
+                <Route path="/TransactionDetail/modify" element={<ModifyForm/>}/>
+
+                <Route path="/VendorPayment" element={<VendorPayment/>}/> 
+                <Route path="/VendorPayment/add" element={<AddPage/>}/>                
+                <Route path="/VendorPayment/modify" element={<ModifyForm/>}/>
+
+                <Route path="/VendorInvoice" element={<VendorInvoice/>}/> 
+                <Route path="/VendorInvoice/add" element={<AddPage/>}/>                
+                <Route path="/VendorInvoice/modify" element={<ModifyForm/>}/>
+
+                <Route path="/VendorInvoiceDetail" element={<VendorInvoiceDetail/>}/> 
+                <Route path="/VendorInvoiceDetail/add" element={<AddPage/>}/>                
+                <Route path="/VendorInvoiceDetail/modify" element={<ModifyForm/>}/>
+
+                <Route path="/CostCenterProduct" element={<CostCenterProduct/>}/> 
+                <Route path="/CostCenterProduct/add" element={<AddPage/>}/>                
+                <Route path="/CostCenterProduct/modify" element={<ModifyForm/>}/>
+
+                <Route path="/CostMethod" element={<CostMethod/>}/> 
+                <Route path="/CostMethod/add" element={<AddPage/>}/>                
+                <Route path="/CostMethod/modify" element={<ModifyForm/>}/>
+
+                <Route path="/ProductUseType" element={<ProductUseType/>}/> 
+                <Route path="/ProductUseType/add" element={<AddPage/>}/>                
+                <Route path="/ProductUseType/modify" element={<ModifyForm/>}/>
             </Routes>
         </div>
     );
 }
-
 
 
 

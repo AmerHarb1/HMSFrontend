@@ -26,6 +26,7 @@ export function AddTable(props){
     const [pageSize, setpPageSize] = useState(10);
     const [sortField, setSortField] = useState('');//chaged to comments from id, because all tables have field comments but not id
     const [sortOrder, setSortOrder] = useState('asc');
+    const [tableExcludeFields] = useState(props.tableExcludeFields ?? {});//used to exclude fields from showing in the table display
     
     const excludeFields = props.excludeFields?props.excludeFields:{id: '', createdBy: '', createdDate: ''};
 
@@ -44,11 +45,12 @@ export function AddTable(props){
     
     const detailLink = props.detailLink;        //used in master detail to retrieve the detail data where some List Master pages are not the real or strait master (e.g., Approve Material Request).
     const entryView = props.entryView;          //used with value view to not disply the add button on table and master detail
+    const modifyView = props.modifyView;         //used with value view to not disply the modify link on table and master detail
+    const updateMaster = props.updateMaster;    //used to determine if update buttons shows for master
   	const actionLink = props.lnk+'/add';
     const modifyLink = props.lnk+'/modify';
     const detailChild = props.detailChild;      //for a child of master detail pages, where the enry and modification need to be on the child fields and the mater detail id is one of the child fields (e.g., Product Issuance). 
                                                 // also used as an alternative lnk to get the master detail data joined with child data to be displayed together in the master detail data.
-
                                                
     const getData = async(page, pageSize, sortField, sortOrder, filters={}) => {
         setloading(true);
@@ -87,7 +89,7 @@ export function AddTable(props){
             const cols = Object.keys(tabData[0])
                 .filter((key) => {
                     const type = getValueType(tabData[0][key]);
-                    return type !== "other";   // 👈 exclude non simple types 
+                    return type !== "other" && !(key in tableExcludeFields);   // 👈 exclude non simple types 
                 })
                 .map((key) => {
                     const col = {
@@ -110,15 +112,15 @@ export function AddTable(props){
                     }                   
 
                     // 👇 Add hyperlink rendering for IDs
-                    if (key === "id" || key==="code") {
+                    if (modifyView !== "view" && (key === "id" || key==="code")) {
                         col.render = (text, record) => {
-                            const display =
+                            let display =
                                 text ??    
                                 record.id ??
                                 record.code ??
                                 record.pk?.code ??
-                                "";  
-                            //    console.log(record.id)  ;                    
+                                ""; 
+                                                   
                             return(
                                 <AddButton  class='AddLinkButton' 
                                             page={props.name} 
@@ -129,7 +131,7 @@ export function AddTable(props){
                                             backLink={backLink} 
                                             excludeFields={excludeFields} 
                                             actionLink={modifyLink} 
-                                            name={record.id?record.id:record.code} 
+                                            name={record.id ?? record.code} 
                                             bodyData={tabData}
                                             detailExcludeFields={detailExcludeFields}
                                             masterFields = {masterFields}
@@ -138,6 +140,7 @@ export function AddTable(props){
                                             disabledFields={disabledFields}
                                             detailChild={detailChild}
                                             entryView={entryView}
+                                            updateMaster={updateMaster}
                                             forwardKey={forwardKey}
                                             masterId={record.id}
                                             rec= {record} 
@@ -154,7 +157,7 @@ export function AddTable(props){
             const spacedCols = cols.map(col => ({ ...col, title: toSpacedWords(col.title) }));
             setTabColumns(spacedCols);
         }
-    }, [tabData, sortField, sortOrder]);
+    }, [tabData, sortField, sortOrder, tableExcludeFields]);
 
     useEffect(() => {
 	//    console.log('totalPages =' + totalPages);

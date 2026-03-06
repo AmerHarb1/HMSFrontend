@@ -3,7 +3,10 @@ import  {AddTable } from '../components/AddTable';
 export function PurchaseOrder() {
   return (
     <div >  	
-        <AddTable name= "Purchase Order" lnk="purchaseOrder" />
+        <AddTable name= "Purchase Order" 
+                  lnk="purchaseOrder"
+                  entryView = "view"
+        />
     </div>
   );
 }

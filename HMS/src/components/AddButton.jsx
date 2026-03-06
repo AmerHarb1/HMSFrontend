@@ -21,6 +21,7 @@ export function AddButton(props){
 	const safeMasterDefaultValues = JSON.parse(JSON.stringify(masterDefaultValues ?? {}));
 	const localLovMapRef = props.masterLocalLovMap;
 	const entryView = props.entryView;
+	const updateMaster = props.updateMaster;
 	const detailLink = props.detailLink;
 	const detailChild = props.detailChild;
     const forwardKey = props.forwardKey;
@@ -58,6 +59,7 @@ export function AddButton(props){
 						disabledFields:disabledFields,
 						detailLink:detailLink,
 						entryView:entryView,
+						updateMaster:updateMaster,
 						detailChild:detailChild,
 						serviceFormDate:props.serviceFormDate,
 						createdBy:props.createdBy,

@@ -20,19 +20,21 @@ export function TrialBalance() {
                 const rows = res.data;
                 // Build arrays first
                 const a = [];
-                
+                console.log(res.data)
 
                 rows.forEach(row => {
                     let mapped
                     if(row.accountType === 'Assets' || row.accountType === 'Expenses' || row.accountType === 'Dividants'){
                         mapped = {
-                            account: row.accountName,
+                            accountType: row.accountType,
+                            accountSubType: row.accountSubType,
                             debit: row.amount,
                             credit: null,
                         };
                     }else{
                         mapped = {
-                            account: row.accountName,
+                            accountType: row.accountType,                            
+                            accountSubType: row.accountSubType,
                             debit: null,
                             credit: row.amount
                         };
@@ -69,7 +71,8 @@ export function TrialBalance() {
 function DashboardCard({ title, data }) {
 
     const tabColumns = [        
-        { title: 'Account', dataIndex: 'account', key: 'account' },
+        { title: 'Account Type', dataIndex: 'accountType', key: 'accountType' },
+        { title: 'Account Sub Type', dataIndex: 'accountSubType', key: 'accountSubType' },
         { title: 'Debit'  , dataIndex: 'debit', key: 'debit' },
         { title: 'Credit' , dataIndex: 'credit', key: 'credit' }
     ];
@@ -81,15 +84,17 @@ function DashboardCard({ title, data }) {
                 <table className="Report">
                     <thead>
                         <tr>
-                        <th>Account</th>
-                        <th>Debit</th>
-                        <th>Credit</th>
+                            <th>Account Type</th>
+                            <th>Account Sub Type</th>
+                            <th>Debit</th>
+                            <th>Credit</th>
                         </tr>
                     </thead>
                     <tbody>            	
                         {data.map((row, index) => (
-                                <tr key={index}>					  	
-                                    <td>{row.account}</td>
+                                <tr key={index}>
+                                    <td>{row.accountType}</td>					  	
+                                    <td>{row.accountSubType}</td>
                                     <td>{row.debit ?? 0}</td>
                                     <td>{row.credit ?? 0}</td>
                                 </tr>) 

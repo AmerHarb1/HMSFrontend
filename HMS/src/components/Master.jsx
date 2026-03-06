@@ -46,6 +46,7 @@ export function Master(props) {
     //const tabData = ['productType', 'productDivision', 'productGroup', 'productCategory', 'itemNumber'];
     const excludeFields = state?.excludeFields ?? props.excludeFields; 
     const detailExcludeFields = state?.detailExcludeFields ?? props.detailExcludeFields;
+    const disabledFields = state?state.disabledFields: props.disabledFields;
     const rec = JSON.parse(JSON.stringify(state?state.rec ?? {}:{}));
     const [formData, setFormData] = useState(rec);    
     let backId = state?state.backId:formData.id;
@@ -55,6 +56,7 @@ export function Master(props) {
     const comments = state?state.comments:null;
     const detailLink = state?state.detailLink:props.detailLink;
     const entryView = state?state.entryView:props.entryView;
+    const updateMaster = state?state.updateMaster:props.updateMaster;
     const apiLnk = `http://localhost:9002/hms/${lnk}/${masterId}`;
     const navigate = useNavigate();
 
@@ -221,9 +223,11 @@ export function Master(props) {
                         )}
                           <tr>
                             {entryView !== "view"?
-                              <td><button className="form-button" type="submit">Get Details</button></td>
-                              :<td><button className="form-button" onClick={updateClicked}>Update</button></td>}
-                              {masterId && entryView !== "view"?
+                              <td><button className="form-button" type="submit">Get Details</button></td>:null}
+
+                            {entryView === "view" && updateMaster !== "no"?  
+                              <td><button className="form-button" onClick={updateClicked}>Update</button></td>:null}
+                            {masterId && entryView !== "view"?
                                 <div>
                                     <td><button className="form-button" onClick={updateClicked}>Update</button></td>
                                     <td><button className="form-button" onClick={deleteClicked}>Delete</button></td>
@@ -232,7 +236,7 @@ export function Master(props) {
                           </tr>
                       </tbody>
               </table>
-                  {console.log(masterId)/* ✅ Render the Detail rows */}
+                  {/* ✅ Render the Detail rows */}
                   {ready&&masterId? (                    
                       <MasterDetails    serviceFormData={formData} 
                                         forwardKey={forwardKey} 
@@ -241,6 +245,7 @@ export function Master(props) {
                                         backLink={backLink} 
                                         excludeFields={excludeFields}
                                         detailExcludeFields={detailExcludeFields}
+                                        disabledFields={disabledFields}
                                         lnk={lnk+detail}
                                         detailLink={detailLink}
                                         detail={detail}

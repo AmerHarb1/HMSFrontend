@@ -12,11 +12,11 @@ export function getLovData(tabData, tabDataValues, setParentChildLovMap, setLovM
         const value = row[key];
         const parent = value.substring(value.indexOf(String.fromCharCode(31)) + 1).trim();
         if (parent) {
-            console.log(parent)
+            //console.log(parent)
             setParentChildLovMap((prev) => new Map(prev).set(parent, key)); //create map that holds the parent child
             setLovMap((prev) => new Map(prev).set(key, []));
         } else {
-            console.log(key)
+            //console.log(key)
             fetchLov(linkLov, key, headers, setLovMap);
         }
     });
