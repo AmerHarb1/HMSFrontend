@@ -1,5 +1,6 @@
 import { Routes, Route } from 'react-router'
 import './AppPage.css';
+
 import { Dashboard } from '../pages/Dashboard';
 import { Register } from '../pages/Register';
 import { SubMenu } from '../pages/SubMenu';
@@ -97,7 +98,7 @@ import { ApproveQuotationResponse } from '../pages/ApproveQuotationResponse';
 import { ApproveQuotationResponseStatus } from '../pages/ApproveQuotationResponseStatus';
 import { ReceivePurchaseOrderStatus } from '../pages/ReceivePurchaseOrderStatus';
 import { CostMethod } from '../pages/CostMethod';
-import { CostCenterProduct } from '../pages/CostCenterProduct';
+import { CostCenterInventory } from '../pages/CostCenterInventory';
 import { VendorInvoiceDetail } from '../pages/VendorInvoiceDetail';
 import { VendorInvoice } from '../pages/VendorInvoice';
 import { VendorPayment } from '../pages/VendorPayment';
@@ -105,6 +106,57 @@ import { TransactionDetail } from '../pages/TransactionDetail';
 import { Transaction } from '../pages/Transaction';
 import { TransactionType } from '../pages/TransactionType';
 import { ProductUseType } from '../pages/ProductUseType';
+import { ReceiveMaterialRequest } from '../pages/ReceiveMaterialRequest';
+import { Ethnicity } from '../pages/Ethnicity';
+import { EmploymentType } from '../pages/EmploymentType';
+import { BloodType } from '../pages/BloodType';
+import { EyeColor } from '../pages/EyeColor';
+import { HairColor } from '../pages/HairColor';
+import { Race } from '../pages/Race';
+import { Patient } from '../pages/Patient';
+import { PatientStatus } from '../pages/PatientStatus';
+import { Gender } from '../pages/Gender';
+import { Clinic } from '../pages/Clinic';
+import { ClinicDoctors } from '../pages/ClinicDoctors';
+import { ClinicRoom } from '../pages/ClinicRoom';
+import { ClinicRoomType } from '../pages/ClinicRoomType';
+import { MedicalSubSpecialty } from '../pages/MedicalSubSpecialty';
+import { MedicalSpecialty } from '../pages/MedicalSpecialty';
+import { Doctor } from '../pages/Doctor';
+import { DoctorType } from '../pages/DoctorType';
+import { DoctorPositionType } from '../pages/DoctorPositionType';
+import { Bed } from '../pages/Bed';
+import { Room } from '../pages/Room';
+import { Ward } from '../pages/Ward';
+import { Floor } from '../pages/Floor';
+import { Building } from '../pages/Building';
+import { DrugInteractionType } from '../pages/DrugInteractionType';
+import { DrugInteraction } from '../pages/DrugInteraction';
+import { ProductDrugDetail } from '../pages/ProductDrugDetail';
+import { DrugConsumptionFrequency } from '../pages/DrugConsumptionFrequency';
+import { DrugConsumptionRoute } from '../pages/DrugConsumptionRoute';
+import { PaymentType } from '../pages/PaymentType';
+import { DoctorVisitType } from '../pages/DoctorVisitType';
+import { InsuranceCompany } from '../pages/InsuranceCompany';
+import { DrugRestriction } from '../pages/DrugRestriction';
+import { DoctorVisit } from '../pages/DoctorVisit';
+import { DoctorVisitOrder } from '../pages/DoctorVisitOrder';
+import { DoctorVisitDiagnoses } from '../pages/DoctorVisitDiagnoses';
+import { PatientMedication } from '../pages/PatientMedication';
+import { PatientDiagnoses } from '../pages/PatientDiagnoses';
+import { User } from '../pages/User';
+import { PatientSearch } from '../pages/PatientSearch';
+import { DoctorVisitTabs } from '../pages/DoctorVisitTabs';
+import { Person } from '../pages/Person';
+import { PatientInsurance } from '../pages/PatientInsurance';
+import { PatientCreditCard } from '../pages/PatientCreditCard';
+import { PersonEmail } from '../pages/PersonEmail';
+import { PersonPhone } from '../pages/PersonPhone';
+import { PersonAddress } from '../pages/PersonAddress';
+import { CreditCardType } from '../pages/CreditCardType';
+import { InsuranceType } from '../pages/InsuranceType';
+import { InsureeType } from '../pages/InsureeType';
+
 
 
 export function AppRoutes(){
@@ -415,9 +467,9 @@ export function AppRoutes(){
                 <Route path="/VendorInvoiceDetail/add" element={<AddPage/>}/>                
                 <Route path="/VendorInvoiceDetail/modify" element={<ModifyForm/>}/>
 
-                <Route path="/CostCenterProduct" element={<CostCenterProduct/>}/> 
-                <Route path="/CostCenterProduct/add" element={<AddPage/>}/>                
-                <Route path="/CostCenterProduct/modify" element={<ModifyForm/>}/>
+                <Route path="/CostCenterInventory" element={<CostCenterInventory/>}/> 
+                <Route path="/CostCenterInventory/add" element={<AddPage/>}/>                
+                <Route path="/CostCenterInventory/modify" element={<ModifyForm/>}/>
 
                 <Route path="/CostMethod" element={<CostMethod/>}/> 
                 <Route path="/CostMethod/add" element={<AddPage/>}/>                
@@ -426,6 +478,205 @@ export function AppRoutes(){
                 <Route path="/ProductUseType" element={<ProductUseType/>}/> 
                 <Route path="/ProductUseType/add" element={<AddPage/>}/>                
                 <Route path="/ProductUseType/modify" element={<ModifyForm/>}/>
+
+                <Route path="/ReceiveMaterialRequest" element={<ReceiveMaterialRequest/>}/> 
+                <Route path="/ReceiveMaterialRequest/add" element={<AddPage/>}/>                
+                <Route path="/ReceiveMaterialRequest/modify" element={<ModifyForm/>}/>
+
+                <Route path="/Race" element={<Race/>}/> 
+                <Route path="/Race/add" element={<AddPage/>}/>                
+                <Route path="/Race/modify" element={<ModifyForm/>}/>
+
+                <Route path="/HairColor" element={<HairColor/>}/> 
+                <Route path="/HairColor/add" element={<AddPage/>}/>                
+                <Route path="/HairColor/modify" element={<ModifyForm/>}/>
+
+                <Route path="/EyeColor" element={<EyeColor/>}/> 
+                <Route path="/EyeColor/add" element={<AddPage/>}/>                
+                <Route path="/EyeColor/modify" element={<ModifyForm/>}/>
+
+                <Route path="/BloodType" element={<BloodType/>}/> 
+                <Route path="/BloodType/add" element={<AddPage/>}/>                
+                <Route path="/BloodType/modify" element={<ModifyForm/>}/>
+
+                <Route path="/EmploymentType" element={<EmploymentType/>}/> 
+                <Route path="/EmploymentType/add" element={<AddPage/>}/>                
+                <Route path="/EmploymentType/modify" element={<ModifyForm/>}/>
+
+                <Route path="/Ethnicity" element={<Ethnicity/>}/> 
+                <Route path="/Ethnicity/add" element={<AddPage/>}/>                
+                <Route path="/Ethnicity/modify" element={<ModifyForm/>}/>
+
+                <Route path="/Patient" element={<Patient/>}/> 
+                <Route path="/Patient/add" element={<AddPage/>}/>                
+                <Route path="/Patient/modify" element={<ModifyForm/>}/>
+
+                <Route path="/PatientStatus" element={<PatientStatus/>}/> 
+                <Route path="/PatientStatus/add" element={<AddPage/>}/>                
+                <Route path="/PatientStatus/modify" element={<ModifyForm/>}/>
+
+                <Route path="/Gender" element={<Gender/>}/> 
+                <Route path="/Gender/add" element={<AddPage/>}/>                
+                <Route path="/Gender/modify" element={<ModifyForm/>}/>
+
+                <Route path="/Clinic" element={<Clinic/>}/> 
+                <Route path="/Clinic/add" element={<AddPage/>}/>                
+                <Route path="/Clinic/modify" element={<ModifyForm/>}/>
+
+                <Route path="/ClinicDoctors" element={<ClinicDoctors/>}/> 
+                <Route path="/ClinicDoctors/add" element={<AddPage/>}/>                
+                <Route path="/ClinicDoctors/modify" element={<ModifyForm/>}/>
+
+                <Route path="/ClinicRoom" element={<ClinicRoom/>}/> 
+                <Route path="/ClinicRoom/add" element={<AddPage/>}/>                
+                <Route path="/ClinicRoom/modify" element={<ModifyForm/>}/>
+
+                <Route path="/ClinicRoomType" element={<ClinicRoomType/>}/> 
+                <Route path="/ClinicRoomType/add" element={<AddPage/>}/>                
+                <Route path="/ClinicRoomType/modify" element={<ModifyForm/>}/>
+
+                <Route path="/MedicalSubSpecialty" element={<MedicalSubSpecialty/>}/> 
+                <Route path="/MedicalSubSpecialty/add" element={<AddPage/>}/>                
+                <Route path="/MedicalSubSpecialty/modify" element={<ModifyForm/>}/>
+
+                <Route path="/MedicalSpecialty" element={<MedicalSpecialty/>}/> 
+                <Route path="/MedicalSpecialty/add" element={<AddPage/>}/>                
+                <Route path="/MedicalSpecialty/modify" element={<ModifyForm/>}/>
+
+                <Route path="/Doctor" element={<Doctor/>}/> 
+                <Route path="/Doctor/add" element={<AddPage/>}/>                
+                <Route path="/Doctor/modify" element={<ModifyForm/>}/>
+
+                <Route path="/DoctorType" element={<DoctorType/>}/> 
+                <Route path="/DoctorType/add" element={<AddPage/>}/>                
+                <Route path="/DoctorType/modify" element={<ModifyForm/>}/>
+                
+                <Route path="/DoctorPositionType" element={<DoctorPositionType/>}/> 
+                <Route path="/DoctorPositionType/add" element={<AddPage/>}/>                
+                <Route path="/DoctorPositionType/modify" element={<ModifyForm/>}/>
+
+                <Route path="/Bed" element={<Bed/>}/> 
+                <Route path="/Bed/add" element={<AddPage/>}/>                
+                <Route path="/Bed/modify" element={<ModifyForm/>}/>
+
+                <Route path="/Room" element={<Room/>}/> 
+                <Route path="/Room/add" element={<AddPage/>}/>                
+                <Route path="/Room/modify" element={<ModifyForm/>}/>
+
+                <Route path="/Ward" element={<Ward/>}/> 
+                <Route path="/Ward/add" element={<AddPage/>}/>                
+                <Route path="/Ward/modify" element={<ModifyForm/>}/>
+
+                <Route path="/Floor" element={<Floor/>}/> 
+                <Route path="/Floor/add" element={<AddPage/>}/>                
+                <Route path="/Floor/modify" element={<ModifyForm/>}/>
+
+                <Route path="/Building" element={<Building/>}/> 
+                <Route path="/Building/add" element={<AddPage/>}/>                
+                <Route path="/Building/modify" element={<ModifyForm/>}/>
+
+                <Route path="/DoctorVisitType" element={<DoctorVisitType/>}/> 
+                <Route path="/DoctorVisitType/add" element={<AddPage/>}/>                
+                <Route path="/DoctorVisitType/modify" element={<ModifyForm/>}/>
+                
+                <Route path="/PaymentType" element={<PaymentType/>}/> 
+                <Route path="/PaymentType/add" element={<AddPage/>}/>                
+                <Route path="/PaymentType/modify" element={<ModifyForm/>}/>
+
+                <Route path="/DrugConsumptionRoute" element={<DrugConsumptionRoute/>}/> 
+                <Route path="/DrugConsumptionRoute/add" element={<AddPage/>}/>                
+                <Route path="/DrugConsumptionRoute/modify" element={<ModifyForm/>}/>
+
+                <Route path="/DrugConsumptionFrequency" element={<DrugConsumptionFrequency/>}/> 
+                <Route path="/DrugConsumptionFrequency/add" element={<AddPage/>}/>                
+                <Route path="/DrugConsumptionFrequency/modify" element={<ModifyForm/>}/>
+
+                <Route path="/ProductDrugDetail" element={<ProductDrugDetail/>}/> 
+                <Route path="/ProductDrugDetail/add" element={<AddPage/>}/>                
+                <Route path="/ProductDrugDetail/modify" element={<ModifyForm/>}/>
+
+                <Route path="/DrugInteraction" element={<DrugInteraction/>}/> 
+                <Route path="/DrugInteraction/add" element={<AddPage/>}/>                
+                <Route path="/DrugInteraction/modify" element={<ModifyForm/>}/>
+
+                <Route path="/DrugInteractionType" element={<DrugInteractionType/>}/> 
+                <Route path="/DrugInteractionType/add" element={<AddPage/>}/>                
+                <Route path="/DrugInteractionType/modify" element={<ModifyForm/>}/>
+
+                <Route path="/InsuranceCompany" element={<InsuranceCompany/>}/> 
+                <Route path="/InsuranceCompany/add" element={<AddPage/>}/>                
+                <Route path="/InsuranceCompany/modify" element={<ModifyForm/>}/>
+
+                <Route path="/PatientDiagnoses" element={<PatientDiagnoses/>}/> 
+                <Route path="/PatientDiagnoses/add" element={<AddPage/>}/>                
+                <Route path="/PatientDiagnoses/modify" element={<ModifyForm/>}/>
+                
+                <Route path="/PatientMedication" element={<PatientMedication/>}/> 
+                <Route path="/PatientMedication/add" element={<AddPage/>}/>                
+                <Route path="/PatientMedication/modify" element={<ModifyForm/>}/>
+
+                <Route path="/ProductDrugDetail" element={<ProductDrugDetail/>}/> 
+                <Route path="/ProductDrugDetail/add" element={<AddPage/>}/>                
+                <Route path="/ProductDrugDetail/modify" element={<ModifyForm/>}/>
+
+                <Route path="/DoctorVisitDiagnoses" element={<DoctorVisitDiagnoses/>}/> 
+                <Route path="/DoctorVisitDiagnoses/add" element={<AddPage/>}/>                
+                <Route path="/DoctorVisitDiagnoses/modify" element={<ModifyForm/>}/>
+
+                <Route path="/DoctorVisitOrder" element={<DoctorVisitOrder/>}/> 
+                <Route path="/DoctorVisitOrder/add" element={<AddPage/>}/>                
+                <Route path="/DoctorVisitOrder/modify" element={<ModifyForm/>}/>
+
+                <Route path="/DoctorVisit" element={<DoctorVisit/>}/> 
+                <Route path="/DoctorVisit/add" element={<AddPage/>}/>                
+                <Route path="/DoctorVisit/modify" element={<ModifyForm/>}/>
+
+                <Route path="/DrugRestriction" element={<DrugRestriction/>}/> 
+                <Route path="/DrugRestriction/add" element={<AddPage/>}/>                
+                <Route path="/DrugRestriction/modify" element={<ModifyForm/>}/>
+
+                <Route path="/User" element={<User/>}/> 
+                <Route path="/User/add" element={<AddPage/>}/>                
+                <Route path="/User/modify" element={<ModifyForm/>}/>
+
+                <Route path="/PatientSearch" element={<PatientSearch/>}/> 
+                <Route path="/DoctorVisitTabs" element={<DoctorVisitTabs/>}/>
+
+                <Route path="/Person" element={<Person/>}/> 
+                <Route path="/Person/add" element={<AddPage/>}/>                
+                <Route path="/Person/modify" element={<ModifyForm/>}/>
+
+                <Route path="/PatientInsurance" element={<PatientInsurance/>}/> 
+                <Route path="/PatientInsurance/add" element={<AddPage/>}/>                
+                <Route path="/PatientInsurance/modify" element={<ModifyForm/>}/>
+
+                <Route path="/PatientCreditCard" element={<PatientCreditCard/>}/> 
+                <Route path="/PatientCreditCard/add" element={<AddPage/>}/>                
+                <Route path="/PatientCreditCard/modify" element={<ModifyForm/>}/>
+
+                <Route path="/PersonEmail" element={<PersonEmail/>}/> 
+                <Route path="/PersonEmail/add" element={<AddPage/>}/>                
+                <Route path="/PersonEmail/modify" element={<ModifyForm/>}/>
+
+                <Route path="/PersonPhone" element={<PersonPhone/>}/> 
+                <Route path="/PersonPhone/add" element={<AddPage/>}/>                
+                <Route path="/PersonPhone/modify" element={<ModifyForm/>}/>
+
+                <Route path="/PersonAddress" element={<PersonAddress/>}/> 
+                <Route path="/PersonAddress/add" element={<AddPage/>}/>                
+                <Route path="/PersonAddress/modify" element={<ModifyForm/>}/>
+
+                <Route path="/CreditCardType" element={<CreditCardType/>}/> 
+                <Route path="/CreditCardType/add" element={<AddPage/>}/>                
+                <Route path="/CreditCardType/modify" element={<ModifyForm/>}/>
+
+                <Route path="/InsuranceType" element={<InsuranceType/>}/> 
+                <Route path="/InsuranceType/add" element={<AddPage/>}/>                
+                <Route path="/InsuranceType/modify" element={<ModifyForm/>}/>
+
+                <Route path="/InsureeType" element={<InsureeType/>}/> 
+                <Route path="/InsureeType/add" element={<AddPage/>}/>                
+                <Route path="/InsureeType/modify" element={<ModifyForm/>}/>
             </Routes>
         </div>
     );

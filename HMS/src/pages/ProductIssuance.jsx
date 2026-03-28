@@ -10,9 +10,29 @@ export function ProductIssuance() {
                   detail="Detail"
                   detailChild="productIssuance"
                   forwardKey="materialRequestId"
-                  excludeFields={{id: '', createdBy: '', createdDate: '', materialRequestStatus: '', productRequestPriority: '', approvedDate: '', requestedDate: '', requester: '', approver: '', purpose: '', costCenter: '', productRequestApproval: '', issuer: '', issuedDate: ''}}
+                  excludeFields={{id: ''
+                                , createdBy: ''
+                                , createdDate: ''
+                                , materialRequestStatus: ''
+                                , productRequestPriority: ''
+                                , approvedDate: ''
+                                , requestedDate: ''
+                                , requester: ''
+                                , approver: ''
+                                , purpose: ''
+                                , costCenter: ''
+                                , productRequestApproval: ''
+                                , issuer: ''
+                                , issuedDate: ''
+                                , materialRequestId: ''
+                                , materialRequestDetailId: ''
+                                , productCode: ''
+                                , requestedQuantity: ''
+                                , productUseType: ''
+                              }}
                   detailExcludeFields={{id: '', createdBy: '', createdDate: ''}}
                   disabledFields={{materialRequestDetailId: '', productCode: '', requestedQuantity: ''}}
+                  masterDefaultValues = {{id: '', productIssueStatus: '\x1F', requestedDate: '', purpose: ''}}
                   entryView = "view"/>
     </div>
   );

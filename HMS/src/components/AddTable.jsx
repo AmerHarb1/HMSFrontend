@@ -1,4 +1,4 @@
-import { Table, Typography, Space, message} from 'antd';
+import { Table, Typography, Space} from 'antd';
 import axios from 'axios';
 import React,{ useState, useEffect} from 'react';
 import { AddButton } from './AddButton';
@@ -38,7 +38,7 @@ export function AddTable(props){
     const pageTitle = props.name;
     const backLink = props.backLink;
     const lnk = props.lnk;
-
+    const lnkId = props.lnkId;    //used with Tabs to pass an id to the api to get data for that id
     const disabledFieldsRaw = props.disabledFields; 
     const disabledFields = Array.isArray(disabledFieldsRaw) ? disabledFieldsRaw : Object.keys(disabledFieldsRaw || {}); // if you used object-as-set    //used to dislay the included fields as disabled
 
@@ -49,10 +49,12 @@ export function AddTable(props){
     const updateMaster = props.updateMaster;    //used to determine if update buttons shows for master
   	const actionLink = props.lnk+'/add';
     const modifyLink = props.lnk+'/modify';
-    const detailChild = props.detailChild;      //for a child of master detail pages, where the enry and modification need to be on the child fields and the mater detail id is one of the child fields (e.g., Product Issuance). 
-                                                // also used as an alternative lnk to get the master detail data joined with child data to be displayed together in the master detail data.
-                                               
-    const getData = async(page, pageSize, sortField, sortOrder, filters={}) => {
+    const detailChild = props.detailChild;      //for a child of master detail pages, where the enry and modification need to be on the child fields and the master detail id is one of the child fields (e.g., Product Issuance). 
+     
+                                               // also used as an alternative lnk to get the master detail data joined with child data to be displayed together in the master detail data.
+    console.log(lnkId)                                               
+
+    const getData = async(page, pageSize, sortField, sortOrder,lnkId, filters={}) => {
         setloading(true);
         //console.log('page = ' + page +' pageSize = ' + pageSize + ' sortField = ' + sortField + '  sortOrder = ' + sortOrder);
 
@@ -62,24 +64,43 @@ export function AddTable(props){
             .map(([key, value]) => `${key}=${value.join(",")}`)
             .join("&");
 
-        const link = 'http://localhost:9002/hms/' + props.lnk + '?page=' + page + '&size=' + pageSize+ '&sort=' + sortField+ ',' + sortOrder + '&filterParams=' + filterParams ;	 
-        axios.get(link,{headers: headers}
-  			).then(res => {                                
-                setTabData(res.data.content);   //res.data.content is an array of objects
-                //console.log(res.data)
-                setTotalPages(res.data.totalPages);
-                setTotalRecords(res.data.totalElements);
+        if(typeof lnkId === "number" && lnkId > 0){
+            console.log(lnkId)
+            const link = 'http://localhost:9002/hms/'+lnk + 'Get' + '?page=' + page + '&size=' + pageSize+ '&sort=' + sortField+ ',' + sortOrder + '&filterParams=' + filterParams ;	
+
+            axios.post(link,lnkId,{headers: headers}
+                ).then(res => {                                
+                    setTabData(res.data.content);   //res.data.content is an array of objects
+                    setTotalPages(res.data.totalPages);
+                    setTotalRecords(res.data.totalElements);
+
+                    })
+                .catch((error) => {
+                    console.warn("response", error.response?.data);                
                 })
-			  .catch((error) => {
-                console.warn("response", error.response?.data);                
-              })
-              .finally(()=>{
-                 setloading(false);
-              });	
+                .finally(()=>{
+                    setloading(false);
+                });
+        }else{
+            const link = 'http://localhost:9002/hms/' + props.lnk + '?page=' + page + '&size=' + pageSize+ '&sort=' + sortField+ ',' + sortOrder + '&filterParams=' + filterParams ;	 
+            axios.get(link,{headers: headers}
+                ).then(res => {                                
+                    setTabData(res.data.content);   //res.data.content is an array of objects
+                    //console.log(res.data)
+                    setTotalPages(res.data.totalPages);
+                    setTotalRecords(res.data.totalElements);
+                    })
+                .catch((error) => {
+                    console.warn("response", error.response?.data);                
+                })
+                .finally(()=>{
+                    setloading(false);
+                });	
+        }
     }
 
     useEffect(() => {
-	    getData(0,10,'','asc');
+	    getData(0,10,'','asc',lnkId);
 	  }, []);
 
     // build columns whenever data or sort state changes
@@ -109,7 +130,7 @@ export function AddTable(props){
                     // Format dates
                     if (/^\d{4}-\d{2}-\d{2}T*/.test(tabData[0][key])) {
                     col.render = (text) => formatDate(text);
-                    }                   
+                    }
 
                     // 👇 Add hyperlink rendering for IDs
                     if (modifyView !== "view" && (key === "id" || key==="code")) {
@@ -120,7 +141,7 @@ export function AddTable(props){
                                 record.code ??
                                 record.pk?.code ??
                                 ""; 
-                                                   
+
                             return(
                                 <AddButton  class='AddLinkButton' 
                                             page={props.name} 
@@ -142,6 +163,7 @@ export function AddTable(props){
                                             entryView={entryView}
                                             updateMaster={updateMaster}
                                             forwardKey={forwardKey}
+                                            detailId={record[forwardKey]}
                                             masterId={record.id}
                                             rec= {record} 
                                             createdBy={record.createdBy} 

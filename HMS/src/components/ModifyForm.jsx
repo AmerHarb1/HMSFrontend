@@ -13,15 +13,17 @@ import {  lovChange } from "../functions/lovChange.js";
 import {  lovInit } from "../functions/lovInit.js";
 import { getHeader } from "../functions/getHeader";
 import { toSpacedWords } from "../functions/toSpacedWords.js";
+import {isDateTime} from "../functions/isDateTime.js";
 import '../styles/page.css';
 
 export function ModifyForm(props){
-    const { state } = useLocation();
+    const location = useLocation();
+    const state = props.state || location.state || {};
     const accessToken = getAccessToken();
 
     const lnk =state?state.lnk:props.lnk;
-    const { rec } = useLocation().state;
-    const [formData, setFormData] = useState(rec);
+    const  rec  = state?.rec || {};
+    const [formData, setFormData] = useState(() => rec || {});
     const [lovMap, setLovMap] = useState(new Map());
     const [parentChildLovMap, setParentChildLovMap] = useState(() => new Map());
     
@@ -54,6 +56,7 @@ export function ModifyForm(props){
     const entryView = state?state.entryView:null;
     const detail = state.detail;
     const serviceFormData = state.serviceFormData;
+    const noNavigate = state?state.noNavigate : null;
     const navigate = useNavigate();
     const headers = getHeader();
 
@@ -61,7 +64,7 @@ export function ModifyForm(props){
     /*  Amer on 02/15/2026
         modify form is populated by setting formData to the rec state variable passed from addButton.
         tabData and tabDataValues are populated from tabData and initialData state variables
-        getLovData function will be triggered to run when either tabData or tabDataValues values are changed this happens once when the page is visited).
+        getLovData function will be triggered to run when either tabData or tabDataValues values are changed this happens atleast once when the page is visited).
         getLovData uses formData, tabData and tabDataValues to populate the lovMap, ParentChildMap and dateCols, which are used in the HTML to build and populate the page.
     */
     
@@ -84,7 +87,7 @@ export function ModifyForm(props){
     
     const updateClicked = (event) => {
   		event.preventDefault();
-  		console.log(backLink);
+  		console.log(formData);
 		const obj = tabData.reduce((o, key) => ({ ...o, [key]: key=="id"?rec.id
                                                         :key=="code"?rec.code
                                                         :key=="pk"?rec.pk.code
@@ -93,55 +96,62 @@ export function ModifyForm(props){
                                                         :key=="comments"?comments
 														: formData[key]==''?initialData[tabData.indexOf(key)]:formData[key]}), {})//Object.assign({}, ...Object.entries({...formObj}).map(([a,b]) => ({ [b]: formData[b] })))							
                                                   
-	  	axios.put(apiLnk,obj,{headers: headers}
+	  	const response =  axios.put(apiLnk,obj,{headers: headers}
   				).then(() => {
-                    if (backLink) {
-                        if(backLink === 'back'){
-                            navigate(-1, { 
-                                                state: { 
-                                                    backId: backId, 
-                                                    masterId: masterId,
-                                                    excludeFields: excludeFields, 
-                                                    detailExcludeFields: detailExcludeFields,
-                                                    detail: detail,
-                                                    tabData:tabData,
-                                                    rec: serviceFormData,
-                                                    masterFields: masterFields,
-                                                    masterCode: masterCode,
-                                                    masterCodeValue:masterCodeValue,
-                                                    masterLocalLovMap:localLovMapRef,
-                                                    backLink:backLink,
-                                                    title:formName,
-                                                    entryView:entryView,                                
-                                                    from: formName } 
-                                                    });
-                        }else{
-                            navigate("/" + backLink, { 
-                                state: { 
-                                    backId: backId, 
-                                    masterId: masterId,
-                                    excludeFields: excludeFields, 
-                                    detailExcludeFields: detailExcludeFields,
-                                    detail: detail,
-                                    tabData:tabData,
-                                    rec: serviceFormData,
-                                    masterFields: masterFields,
-                                    masterCode: masterCode,
-                                    masterCodeValue:masterCodeValue,
-                                    masterLocalLovMap:localLovMapRef,
-                                    backLink:backLink,
-                                    title:formName, 
-                                    entryView:entryView,                               
-                                    from: formName } 
-                                
-                            });
-                        } 
-                    } else 
-                        { 
-                            navigate("/" + lnk, { 
-                                state: { serviceFormData: obj } 
-                            });
-                        } 
+
+                    if (props.onSaved) {
+                        props.onSaved();
+                    }
+
+                    if(!noNavigate){
+                        if (backLink) {
+                            if(backLink === 'back'){
+                                navigate(-1, { 
+                                                    state: { 
+                                                        backId: backId, 
+                                                        masterId: masterId,
+                                                        excludeFields: excludeFields, 
+                                                        detailExcludeFields: detailExcludeFields,
+                                                        detail: detail,
+                                                        tabData:tabData,
+                                                        rec: serviceFormData,
+                                                        masterFields: masterFields,
+                                                        masterCode: masterCode,
+                                                        masterCodeValue:masterCodeValue,
+                                                        masterLocalLovMap:localLovMapRef,
+                                                        backLink:backLink,
+                                                        title:formName,
+                                                        entryView:entryView,                                
+                                                        from: formName } 
+                                                        });
+                            }else{
+                                navigate("/" + backLink, { 
+                                    state: { 
+                                        backId: backId, 
+                                        masterId: masterId,
+                                        excludeFields: excludeFields, 
+                                        detailExcludeFields: detailExcludeFields,
+                                        detail: detail,
+                                        tabData:tabData,
+                                        rec: serviceFormData,
+                                        masterFields: masterFields,
+                                        masterCode: masterCode,
+                                        masterCodeValue:masterCodeValue,
+                                        masterLocalLovMap:localLovMapRef,
+                                        backLink:backLink,
+                                        title:formName, 
+                                        entryView:entryView,                               
+                                        from: formName } 
+                                    
+                                });
+                            } 
+                        } else 
+                            { 
+                                navigate("/" + lnk, { 
+                                    state: { serviceFormData: obj } 
+                                });
+                        }
+                    }
                 })
   				  .catch((error) => {
                     if (Array.isArray(error.response?.data)) {
@@ -184,9 +194,11 @@ export function ModifyForm(props){
             const value = row[key]; 
             const parent = value.substring(value.indexOf(String.fromCharCode(31)) + 1).trim(); //get string after chr(13), it's parent
             if (parent) { 
+                //console.log(key)
                 // parent can have multiple children; store as array 
-                //const existing = localParentChildMap.get(parent) || []; 
-                localParentChildMap.set(parent, key); 
+                const existing = localParentChildMap.get(parent) || []; 
+                //console.log(existing)
+                localParentChildMap.set(parent, [...existing, key]);    //localParentChildMap.set(parent, key);
             } 
         }
 
@@ -195,7 +207,7 @@ export function ModifyForm(props){
             const value = row[key]; 
             const parent = value.substring(value.indexOf(String.fromCharCode(31)) + 1) .trim(); 
             if (!parent) { // Root LOV
-                const lov = await fetchInitLov(linkLov, key, headers);
+                const lov = await fetchInitLov(linkLov, key, headers, row[key].split(String.fromCharCode(31))[0]);
                 localLovMap.set(key, lov);
             } 
         }
@@ -232,6 +244,7 @@ export function ModifyForm(props){
   }, [lovMap]);
     
     useEffect(() => {
+
         const cleaned = {};
         Object.entries(state.rec).forEach(([key, value]) => {
             if (typeof value === "string" && value.includes(String.fromCharCode(31))) {
@@ -243,15 +256,20 @@ export function ModifyForm(props){
         setTabDataNoChar(cleaned);
     }, [tabData]);
 
+    // get fields to be displayed 
+    const displayField = tabData.filter(key=>{
+        return  !(key in excludeFields); 
+    }); 
+
     // Build pairs for 2-column layout 
     const fieldPairs = []; 
-    for (let i = 0; i < tabData.length; i += 2){ 
-        fieldPairs.push(tabData.slice(i, i + 2));
+    for (let i = 0; i < displayField.length; i += 2){ 
+        fieldPairs.push(displayField.slice(i, i + 2));
     }
 
     // Helper to render label + input cells 
     const renderFieldCells = (fieldName) => { 
-        if (!fieldName || fieldName in excludeFields) { 
+        if (!fieldName || fieldName in excludeFields) { // not needed anymore
             return ( 
                 <> 
                     <td className="label-cell empty"></td> 
@@ -278,9 +296,25 @@ export function ModifyForm(props){
                     : isDate ? ( 
                         <DatePicker id={fieldName} 
                                     name={fieldName} 
-                                    value={formData[fieldName] ? dayjs(formData[fieldName], "YYYY-MM-DD") : null} 
-                                    disabled={disabledFields?.includes(fieldName)} format="MM/DD/YYYY" 
-                                    onChange={(date) => setFormData((prev) => ({ ...prev, [fieldName]: date ? date.format("YYYY-MM-DD") : null })) } 
+                                    value={formData[fieldName]
+                                        ? dayjs(
+                                            formData[fieldName],
+                                            isDateTime(formData[fieldName]) ? "YYYY-MM-DD HH:mm:ss" : "YYYY-MM-DD"
+                                            )
+                                        : null}  
+                                    disabled={disabledFields?.includes(fieldName)} 
+                                    format={isDateTime(formData[fieldName]) ? "MM-DD-YYYY HH:mm:ss" : "MM-DD-YYYY"}
+                                    onChange={(date) => 
+                                        setFormData((prev) => (
+                                            { ...prev, [fieldName]: date
+                                                 ? date.format(isDateTime(formData[fieldName]) 
+                                                    ? "YYYY-MM-DD HH:mm:ss" 
+                                                    : "YYYY-MM-DD") 
+                                                : null 
+                                            }
+                                        )
+                                    )} 
+                                    //onChange={(date) => setFormData((prev) => ({ ...prev, [fieldName]: date ? date.format("YYYY-MM-DD") : null })) } 
                                     className="dateField" /> ) 
                     : ( 
                         <input type="text" id={fieldName} name={fieldName} value={formData[fieldName] ?? ""} disabled={disabledFields?.includes(fieldName)} onChange={handleChange} /> )} 

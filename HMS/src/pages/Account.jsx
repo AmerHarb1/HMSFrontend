@@ -4,7 +4,7 @@ export function Account() {
   const excludeFields = { id: "", createdBy: "", createdDate: "", accountNumber:"" }
   return (
     <div >  	
-        <AddTable name= "Account" lnk="account" excludeFields={excludeFields}/>
+        <AddTable name= "Accounts" lnk="account" excludeFields={excludeFields}/>
     </div>
   );
 }

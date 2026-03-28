@@ -10,9 +10,18 @@ export function QuotationResponse() {
                   detail=""
                   detailChild="quotationResponse"
                   forwardKey="quotationResponseId"
-                  excludeFields={{id: '', createdBy: '', createdDate: '', materialRequestStatus: '', productRequestPriority: '', approvedDate: '', requestedDate: '', requester: '', approver: '', responseDate: ''}}
+                  excludeFields={{id: '', createdBy: ''
+                                , createdDate: ''
+                                , materialRequestStatus: ''
+                                , productRequestPriority: ''
+                                , approvedDate: ''
+                                , requestedDate: ''
+                                , requester: ''
+                                , approver: ''
+                                , approveQuotationResponseStatus: ''
+                                , responseDate: ''}}
                   detailExcludeFields={{id: '', createdBy: '', createdDate: ''}}
-                  disabledFields={{quotationRequestId: '', productCode: '', supplier: '', requestDate: '', requestedQuantity: '', requestUnitOfMeasure: ''}}
+                  disabledFields={{quotationRequestId: '', productCode: '', vendor: '', requestDate: '', requestedQuantity: '', requestUnitOfMeasure: ''}}
                   entryView = "view"/>
     </div>
   );

@@ -5,20 +5,21 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation} from 'react-router';
 import { getHeader } from "../functions/getHeader";
 import {  lovChange } from "../functions/lovChange.js";
-import {resolvePrimaryKey} from "../functions/resolvePrimaryKey.js";
-import {resolveDescription} from "../functions/resolveDescription.js";
 import { MasterDetails } from './MasterDetails';
 import {  getLovData } from "../functions/getLovData.js";
+import {  selectCodeDesc } from "../functions/selectCodeDesc.js";
+import {  resolvePrimaryKey } from "../functions/resolvePrimaryKey.js";
 import {  getParentsFormValues } from "../functions/getParentsFormValues.js";
 import { fetchInitLov } from "../functions/fetchInitLov.js";
 import {  lovInit } from "../functions/lovInit.js";
 import {  getLovVal } from "../functions/getLovVal.js";
 import { toSpacedWords } from "../functions/toSpacedWords.js";
-import '../styles/report.css';
+import '../styles/page.css';
 
 export function Master(props) {
     const { state } = useLocation();
-    let localLovMapRef = useRef(new Map());
+    const localLovMapRef = useRef(new Map()); //once this page is visited, lovMap will be set up. when the page is submitted, lovMap wil be reseted, 
+                                            // so not to reload it again, localLovMapRef is passed to the masterDetail and from it back to Master be reload lovMap 
     const safeFormData = state?.serviceFormData ?? {};
     const [ready, setReady] = useState(false);
     const [backReady, setBackReady] = useState(false);
@@ -40,7 +41,7 @@ export function Master(props) {
     const title = props.title?props.title:state.title;
     const masterCode = props.masterCode?props.masterCode:state?state.masterCode:null;
     const masterCodeValue = props.masterCodeValue?props.masterCodeValue:state?state.masterCodeValue:null;
-    const masterLocalLovMap = state?state.masterLocalLovMap:{};
+    const masterLocalLovMap = state?state.masterLocalLovMap:{}; 
     const forwardKey = state?state.forwardKey: props.forwardKey;
     const initialData = state?state.initialData: props.initialData;
     //const tabData = ['productType', 'productDivision', 'productGroup', 'productCategory', 'itemNumber'];
@@ -61,18 +62,28 @@ export function Master(props) {
     const navigate = useNavigate();
 
      if(masterLocalLovMap !== undefined && masterLocalLovMap.current !== undefined && masterLocalLovMap.current.size > 0){        
-        localLovMapRef = masterLocalLovMap;
-        //console.log(localLovMapRef.current)
+         localLovMapRef.current = new Map(masterLocalLovMap.current);// If parent passed a ref, copy its contents, but DO NOT replace the ref object
+        console.log(localLovMapRef.current)
      }
-    
+
+    useEffect(() => {
+        if (localLovMapRef.current === null) {
+            localLovMapRef.current = new Map();
+        }
+
+        if (masterLocalLovMap?.current instanceof Map) {
+            localLovMapRef.current = new Map(masterLocalLovMap.current);
+        }
+    }, []);
+
     useEffect(() => { 
         const run = async () => { 
-            setBackReady(false); 
-            if (backId) { 
+            setBackReady(false);  
+            if (backId || masterId) { 
                 if(localLovMapRef === undefined || localLovMapRef.current === undefined || localLovMapRef.current.size === 0){
-                    await populateMaster();
+                    await populateMaster(formData);
                 }else{
-                    setLovMap(localLovMapRef.current);
+                    setLovMap(localLovMapRef.current);  //see comments on top for localLovMapRef
                 }
                  
                 setBackReady(true); 
@@ -82,7 +93,7 @@ export function Master(props) {
             } 
         }; 
         run(); 
-    }, [backId]);
+    }, [backId,masterId]);
     
     const masterLink = 'http://localhost:9002/hms/'+lnk;
 
@@ -96,7 +107,13 @@ export function Master(props) {
         const { name, value } = event.target;         
         const updatedFormData = { ...formData, [name]: value }; // Build the updated formData manually
         setFormData(updatedFormData);
-        lovChange(updatedFormData, name, parentChildLovMap, setLovMap, headers, linkLov);
+        lovChange(updatedFormData, name, parentChildLovMap, setLovMap, headers, linkLov, localLovMapRef);
+        // This runs for ALL LOV fields, including root
+        setLovMap((prev) => {
+            const updated = new Map(prev);
+            localLovMapRef.current = updated;
+            return updated;
+        });
     };
 
     const handleSubmit = (event) => {
@@ -122,6 +139,7 @@ export function Master(props) {
             //getLovDataNoParent(tabData, formData, setParentChildLovMap, setLovMap, linkLov, headers, setDateCols, setFormData);            
          }else{
             if(masterDefaultValues){
+                //console.log(masterDefaultValues)
                 getLovData(tabData, masterDefaultValues, setParentChildLovMap, setLovMap, linkLov, headers, setDateCols);
             }             
          }
@@ -135,16 +153,17 @@ export function Master(props) {
 
     const updateClicked = (event) => {
   		event.preventDefault();
-		const obj = tabData.reduce((o, key) => ({ ...o, [key]: key=="id"?rec.id
-                                                        :key=="code"?rec.code
-                                                        :key=="pk"?rec.pk.code
-														:key=="createdBy"?createdBy
-														:key=="createdon"?createdOn
-                                                        :key=="comments"?comments
-                                                        :lovMap.has(key)?getLovVal(lovMap.get(key), formData[key])
-														:formData[key]                                                    
+		const obj = tabData.reduce((o, key) => ({ ...o, [key]: key=="id"? rec.id
+                                                                        : key=="code"       ? rec.code
+                                                                        : key=="pk"         ? rec.pk.code
+                                                                        : key=="createdBy"  ? createdBy
+                                                                        : key=="createdon"  ? createdOn
+                                                                        : key=="comments"   ? comments
+                                                                        : lovMap.has(key)   ? getLovVal(lovMap.get(key), formData[key])
+                                                                        : formData[key]                                                    
                                                 }), {}
-                                   )//Object.assign({}, ...Object.entries({...formObj}).map(([a,b]) => ({ [b]: formData[b] })))	                                            
+                                   )//Object.assign({}, ...Object.entries({...formObj}).map(([a,b]) => ({ [b]: formData[b] })))	 
+        console.log(obj)                                            
 	  	axios.put(apiLnk,obj,{headers: headers});
     }
 	
@@ -162,117 +181,141 @@ export function Master(props) {
 		}
 	};
 
-    return (
-        <div className="form-table">
-            <Space size={15} direction="vertical">
-              <Typography.Title className='TitleRep'>{title}</Typography.Title>
-              <form onSubmit={handleSubmit}>
-                  <table className='entry-Tab'>
-                      <tbody>
-                        {Object.keys(tabData).map(s=>{                             
-                            const field = tabData[s];                        
-                            return(
-                                field in excludeFields
-                                    ?
-                                        null
-                                    :                                            
-                                        lovMap.has(field)||lovMap.has(localLovMapRef.current)
-                                        ?
-                                            <tr>				  	
-                                                <td><label htmlFor="name">{toSpacedWords(field)}:</label></td>
-                                                <td key={field}><select  id={field} name={field} value={formData[field] ?? ""} onChange={handleLovChange} className='selectInput'>
-                                                    <option value="">-- Select --</option>                                               
-                                                    {Array.from(lovMap.get(field)|| localLovMapRef.current.get(field) || []).map((opt) => (
-                                                        <option key={resolvePrimaryKey(opt)} value={ backLink==='back'?resolveDescription(opt):resolvePrimaryKey(opt)}> {/*backLink==='back'when List Master otherwise it's equal the page name*/ }
-                                                            {resolveDescription(opt)}
-                                                        </option>
-                                                    ))}
-                                                    </select>
-                                                </td>
-                                            </tr>
-                                        :
-                                            dateCols.includes(field)                                                
-                                                ?
-                                                    <tr>				  	
-                                                        <td><label htmlFor="name">{toSpacedWords(field)}:</label></td>
-                                                        <td key={field}><DatePicker id={field} 
-                                                                                    name={field} 
-                                                                                    value={state?formData?dayjs(formData[field]):null:null} 
-                                                                                    format="MM/DD/YYYY HH:mm:ss" 
-                                                                                    placeholder="Select date"
-                                                                                    onChange={(date) => {
-                                                                                        console.log(date)
-                                                                                        setFormData((prev) => ({
-                                                                                        ...prev,
-                                                                                        [field]: date ? date.format("YYYY-MM-DDTHH:mm:ss") : null, // store as ISO string
-                                                                                        }));
-                                                                                    }}
-                                                                                    className='dateField'
-            
-                                                                            />
-                                                        </td>
-                                                    </tr>
-                                                :
-                                                    <tr>					  	
-                                                        <td><label htmlFor="name">{toSpacedWords(field)}:</label></td>
-                                                        <td key={field}><input type="text"  id={field} name={field} value={state?formData?formData[field]:null:null} onChange={handleChange}/></td>
-                                                    </tr> 
-                            )
-                        }
-                          
-                        )}
-                          <tr>
-                            {entryView !== "view"?
-                              <td><button className="form-button" type="submit">Get Details</button></td>:null}
+    // get fields to be displayed 
+    const displayField = tabData.filter(key=>{
+        return  !(key in excludeFields); 
+    }); 
 
-                            {entryView === "view" && updateMaster !== "no"?  
-                              <td><button className="form-button" onClick={updateClicked}>Update</button></td>:null}
-                            {masterId && entryView !== "view"?
-                                <div>
-                                    <td><button className="form-button" onClick={updateClicked}>Update</button></td>
-                                    <td><button className="form-button" onClick={deleteClicked}>Delete</button></td>
-                                </div>
-                              :null}
-                          </tr>
-                      </tbody>
-              </table>
-                  {/* ✅ Render the Detail rows */}
-                  {ready&&masterId? (                    
-                      <MasterDetails    serviceFormData={formData} 
-                                        forwardKey={forwardKey} 
-                                        masterId={masterId}
-                                        serviceAddFormData= {serviceAddFormData}
-                                        backLink={backLink} 
-                                        excludeFields={excludeFields}
-                                        detailExcludeFields={detailExcludeFields}
-                                        disabledFields={disabledFields}
-                                        lnk={lnk+detail}
-                                        detailLink={detailLink}
-                                        detail={detail}
-                                        entryView={entryView}
-                                        detailChild={detailChild}
-                                        title={title}
-                                        masterCode={masterCode} 
-                                        masterCodeValue={detail === undefined?getParentsFormValues(formData, masterCode):null} 
-                                        masterFields={masterFields}
-                                        masterDefaultValues={masterDefaultValues}
-                                        masterLocalLovMap={localLovMapRef}/>
-                  ):null}
-            </form>  
-          </Space>         	
-        </div>
-    );
+    // Build pairs for 2-column layout 
+    const fieldPairs = []; 
+    for (let i = 0; i < displayField.length; i += 2){ 
+        fieldPairs.push(displayField.slice(i, i + 2));
+    }
+
+    // Helper to render label + input cells 
+    const renderFieldCells = (fieldName) => { 
+        if (!fieldName || fieldName in excludeFields) { // not needed anymore
+            return ( 
+                <> 
+                    <td className="label-cell empty"></td> 
+                    <td className="input-cell empty"></td> 
+                </> 
+            ); 
+        }
+
+        const isLov = lovMap.has(fieldName) || (localLovMapRef.current && localLovMapRef.current.has(fieldName)); 
+        const isDate = dateCols.includes(fieldName);
+
+    return ( 
+                <> 
+                    <td className="label-cell"> <label>{toSpacedWords(fieldName)}:</label> </td> 
+                    <td className="input-cell"> 
+                        {isLov ? ( 
+                            <select name={fieldName} value={formData[fieldName] ?? ""} disabled={disabledFields?.includes(fieldName)} onChange={handleLovChange} className="selectInput" > 
+                                <option value="">-- Select --</option> 
+                                {Array.from(lovMap.get(fieldName) || localLovMapRef.current.get(fieldName) || []).map((opt) => ( 
+                                    <option key={resolvePrimaryKey(opt)} value={selectCodeDesc(opt, formData[fieldName])}>
+                                        {opt.name || opt.username || opt.description}
+                                    </option>
+                                ))} 
+                            </select> ) 
+                        : isDate ? ( 
+                            <DatePicker id={fieldName} 
+                                        name={fieldName} 
+                                        value={formData[fieldName] ? dayjs(formData[fieldName], "YYYY-MM-DD") : null} 
+                                        disabled={disabledFields?.includes(fieldName)} format="MM/DD/YYYY" 
+                                        onChange={(date) => setFormData((prev) => ({ ...prev, [fieldName]: date ? date.format("YYYY-MM-DD") : null })) } 
+                                        className="dateField" /> ) 
+                        : ( 
+                            <input type="text" id={fieldName} name={fieldName} value={formData[fieldName] ?? ""} disabled={disabledFields?.includes(fieldName)} onChange={handleChange} /> )} 
+                    </td> 
+                </> 
+            ); 
+        };
+    
+    
+    
+        return ( 
+            <div className="form-table"> 
+                <Space size={15} direction="vertical"> 
+                    <Typography.Text className="Title">{title}</Typography.Text> 
+                    <form onSubmit={handleSubmit}> 
+                        <table className="entry-Tab"> 
+                            <tbody> 
+                                {fieldPairs.map((pair, rowIndex) => ( 
+                                    <tr key={rowIndex}> 
+                                        {/* LEFT FIELD */} 
+                                        {renderFieldCells(pair[0])} 
+                                        {/* FIXED GAP COLUMN */} 
+                                        <td className="gutter"></td> 
+                                        {/* RIGHT FIELD OR EMPTY */} 
+                                        {pair.length === 2 
+                                            ? renderFieldCells(pair[1]) 
+                                            : (
+                                            <>
+                                                <td className="label-cell empty"></td>
+                                                <td className="input-cell empty"></td>
+                                            </>
+                                        )}
+                                    </tr>
+                                ))}
+                          
+                       
+                                <tr className="button-row">
+                                    {entryView !== "view"?
+                                    <td><button className="form-button" type="submit">Get Details</button></td>:null}
+
+                                    {entryView === "view" && updateMaster !== "no"?  
+                                    <td><button className="form-button" onClick={updateClicked}>Update</button></td>:null}
+                                    {masterId && entryView !== "view"?
+                                        <div>
+                                            <td><button className="form-button" onClick={updateClicked}>Update</button></td>
+                                            <td><button className="form-button" onClick={deleteClicked}>Delete</button></td>
+                                        </div>
+                                    :null}
+                                </tr>
+                            </tbody>
+                        </table>
+                        {/* ✅ Render the Detail rows */}
+                        {ready||masterId? (                    
+                            <MasterDetails  serviceFormData={formData} 
+                                            forwardKey={forwardKey} 
+                                            masterId={masterId}
+                                            serviceAddFormData= {serviceAddFormData}
+                                            backLink={backLink} 
+                                            excludeFields={excludeFields}
+                                            detailExcludeFields={detailExcludeFields}
+                                            disabledFields={disabledFields}
+                                            lnk={lnk+detail}
+                                            detailLink={detailLink}
+                                            detail={detail}
+                                            entryView={entryView}
+                                            detailChild={detailChild}
+                                            title={title}
+                                            masterCode={masterCode} 
+                                            masterCodeValue={detail === undefined?getParentsFormValues(formData, masterCode):null} 
+                                            masterFields={masterFields}
+                                            masterDefaultValues={masterDefaultValues}
+                                            masterLocalLovMap={localLovMapRef}/>
+                        ):null}
+                    </form>  
+                </Space>         	
+            </div>
+        );
 
     function saveMaster() {
         const obj = tabData.reduce((o, key) => ({ ...o, [key]: formData[key] }), {});
         setBackReady(false);
+        console.log(obj)
+        console.log(masterLink)
+
         axios
             .post(masterLink, obj, { headers })
             .then((res) => {
                 setFormData((prev) => ({ ...prev, [forwardKey]: res.data.id }));
                 setBackReady(true);
                 setMasterId(res.data.id)
-                console.log(res.data.id)
+                console.log(res.data)
             })
             .catch((error) => {
                 alert(error.response?.data);
@@ -318,13 +361,12 @@ export function Master(props) {
 
     async function populateMaster(){
         const keys = Array.isArray(tabDataFields) && tabDataFields.length > 0?tabDataFields:masterFields;
-        let row
-        if(Array.isArray(tabDataFields) && tabDataFields.length > 0){
-            row = Array.isArray(initialData) && initialData.length > 0 && typeof initialData[0] === "object" && !Array.isArray(initialData[0]) ? initialData[0] : initialData;// if initialData is an array of objects, then get the first object but if it's an object then get it back
-        }else{
-            row = masterDefaultValues;
-        }
-        
+
+        let row =  (Array.isArray(tabDataFields) && tabDataFields.length > 0
+                            ? initialData[0]
+                            : masterDefaultValues);
+        const localLovMap = new Map();
+    
         if (!row) return;
         const lovCols = keys.filter(  
         (key) =>
@@ -346,15 +388,14 @@ export function Master(props) {
 
         // 3. Load root LOVs first
         for (const key of lovCols) {
-            const value = row[key];
+            const value = row[key]; 
             const parent = value.substring(value.indexOf(String.fromCharCode(31)) + 1) .trim(); 
             if (!parent) { // Root LOV               
-                const lov = await fetchInitLov(linkLov, key, headers);
-            //    localLovMap.set(key, lov);
+                const lov = await fetchInitLov(linkLov, key, headers, localLovMapRef);
+                localLovMap.set(key, lov);
                 localLovMapRef.current.set(key, lov);
             } 
         }
-
 
         // 4. Load child LOVs after roots are ready 
         for (const key of lovCols) { 
@@ -362,7 +403,7 @@ export function Master(props) {
             const parent = value.substring(value.indexOf(String.fromCharCode(31)) + 1).trim(); 
             if (parent) { 
                 const lov = await lovInit(formData, key, localParentChildMap, headers, linkLov); 
-            //    localLovMap.set(key, lov);
+                localLovMap.set(key, lov);
                 localLovMapRef.current.set(key, lov);
             } 
         }

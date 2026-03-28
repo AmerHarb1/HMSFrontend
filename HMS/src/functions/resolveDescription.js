@@ -1,8 +1,10 @@
 export function resolveDescription(rec) {
+
   if (!rec) return null;
 
   // Prefer numeric id if present
   if (rec.name !== undefined && rec.name !== null) {
+    //console.log(rec.name)
     return rec.name;
   }
 

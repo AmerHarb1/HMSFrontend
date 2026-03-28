@@ -33,7 +33,7 @@ export function MasterDetails(props) {
     const detailExcludeFields = props.detailExcludeFields;
     const disabledFields = props.disabledFields;
     const entryView = props.entryView;      //usage of this field is dscribed in addTable
-    const modifyView = props.entryView;     //usage of this field is dscribed in addTable
+    const modifyView = props.modifyView;     //usage of this field is dscribed in addTable
     const detailChild = props.detailChild;  //usage of this field is dscribed in addTable
     const detailLink = props.detailLink;    //usage of this field is dscribed in addTable
 
@@ -53,28 +53,28 @@ export function MasterDetails(props) {
     const localLovMapRef = props.masterLocalLovMap;
 
     const getData = async(page, pageSize, sortField, sortOrder, filters={}) => {
-        setloading(true);
-        // Build filter query string
-        const filterParams = Object.entries(filters)
-            .filter(([_, value]) => value && value.length > 0)
-            .map(([key, value]) => `${key}=${value.join(",")}`)
-            .join("&");
-        
-        const link = 'http://localhost:9002/hms/'+lnk + 'Get' + '?page=' + page + '&size=' + pageSize+ '&sort=' + sortField+ ',' + sortOrder + '&filterParams=' + filterParams ;	
+    setloading(true);
+    // Build filter query string
+    const filterParams = Object.entries(filters)
+        .filter(([_, value]) => value && value.length > 0)
+        .map(([key, value]) => `${key}=${value.join(",")}`)
+        .join("&");
+    
+    const link = 'http://localhost:9002/hms/'+lnk + 'Get' + '?page=' + page + '&size=' + pageSize+ '&sort=' + sortField+ ',' + sortOrder + '&filterParams=' + filterParams ;	
 
-        axios.post(link,masterId,{headers: headers}
-            ).then(res => {                                
-                setTabData(res.data.content);   //res.data.content is an array of objects
-                setTotalPages(res.data.totalPages);
-                setTotalRecords(res.data.totalElements);
+    axios.post(link,masterId,{headers: headers}
+        ).then(res => {                                
+            setTabData(res.data.content);   //res.data.content is an array of objects
+            setTotalPages(res.data.totalPages);
+            setTotalRecords(res.data.totalElements);
 
-                })
-            .catch((error) => {
-                console.warn("response", error.response?.data);                
             })
-            .finally(()=>{
-                setloading(false);
-            });
+        .catch((error) => {
+            console.warn("response", error.response?.data);                
+        })
+        .finally(()=>{
+            setloading(false);
+        });
     }
 
     useEffect(() => {
@@ -122,7 +122,7 @@ export function MasterDetails(props) {
                                 record.pk?.itemNumber ??
                                 "";                   
                             return(
-                                entryView !== "view" || detailChild !== 'undefined'?
+                                modifyView !== "view" || detailChild !== 'undefined'?
                                     <AddButton  class='AddLinkButton' 
                                                 page={title + ' ' + detail} 
                                                 btn_type='link' lnk={lnk} 

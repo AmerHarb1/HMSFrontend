@@ -8,7 +8,7 @@ export function AddButton(props){
 	const page = props.page;
 	const backLink = props.backLink;
 	const backId = props.backId;
-	const masterId = props.masterId;
+	const masterId = props.masterId?props.masterId:props.detailId;
 	const masterFields=props.masterFields;
 	const masterCode=props.masterCode;
 	const masterCodeValue=props.masterCodeValue;
@@ -26,7 +26,9 @@ export function AddButton(props){
 	const detailChild = props.detailChild;
     const forwardKey = props.forwardKey;
 	const title = props.title;
-   //console.log(masterId)
+	const formTabLink = props.formTabLink;
+	const formTabId = props.formTabId;
+   
 	const navigate = useNavigate();
 
 	const buttonClicked = () => {		
@@ -37,39 +39,41 @@ export function AddButton(props){
 			keys = masterFields;
 		}
 
-		
-			navigate('/'+props.actionLink
-					,{state:{
-						initialData:tabData,
-						tabData:keys,						
-						page:page,
-						lnk:props.lnk,
-						rec:props.rec,
-						excludeFields:excludeFields,
-						detailExcludeFields:detailExcludeFields,
-						name:props.name,
-						serviceFormData:serviceFormData,
-						backLink:backLink,
-						masterId:masterId,
-						backId:masterId,
-						masterFields:masterFields,
-						masterCode:masterCode,
-						masterCodeValue:masterCodeValue,
-						detail: detail,
-						disabledFields:disabledFields,
-						detailLink:detailLink,
-						entryView:entryView,
-						updateMaster:updateMaster,
-						detailChild:detailChild,
-						serviceFormDate:props.serviceFormDate,
-						createdBy:props.createdBy,
-						createdOn:props.createdOn,
-						title:title,
-						forwardKey:forwardKey,
-						masterDefaultValues:safeMasterDefaultValues,
-						masterLocalLovMap:localLovMapRef
-					}
-				});
+		//console.log(props.formTabId)
+		navigate('/'+props.actionLink
+				,{state:{
+					initialData:tabData,
+					tabData:keys,						
+					page:page,
+					lnk:props.lnk,
+					rec:props.rec,
+					excludeFields:excludeFields,
+					detailExcludeFields:detailExcludeFields,
+					name:props.name,
+					serviceFormData:serviceFormData,
+					backLink:backLink,
+					masterId:masterId,
+					backId:masterId,
+					masterFields:masterFields,
+					masterCode:masterCode,
+					masterCodeValue:masterCodeValue,
+					detail: detail,
+					disabledFields:disabledFields,
+					detailLink:detailLink,
+					entryView:entryView,
+					updateMaster:updateMaster,
+					detailChild:detailChild,
+					serviceFormDate:props.serviceFormDate,
+					createdBy:props.createdBy,
+					createdOn:props.createdOn,
+					title:title,
+					forwardKey:forwardKey,
+					masterDefaultValues:safeMasterDefaultValues,
+					masterLocalLovMap:localLovMapRef,
+					formTabLink:formTabLink,
+					formTabId:formTabId
+				}
+			});
 		
     };
 

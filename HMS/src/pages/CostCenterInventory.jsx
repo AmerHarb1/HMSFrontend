@@ -1,10 +1,10 @@
 import  {AddTable } from '../components/AddTable';
 
-export function CostCenterProduct() {
+export function CostCenterInventory() {
   return (
     <div >  	
-        <AddTable name= "Cost Center Product" 
-                  lnk="costCenterProduct"
+        <AddTable name= "Cost Center Inventory" 
+                  lnk="costCenterInventory"
                   excludeFields={{id: '', createdBy: '', createdDate: '', accountTypeSubType: ''}}
                   entryView = "view"
                   modifyView = "view"

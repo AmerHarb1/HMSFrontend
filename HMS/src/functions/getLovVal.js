@@ -1,9 +1,8 @@
 export function getLovVal(lov, descr) {
-
     if (!Array.isArray(lov)) 
         return null; 
     const clean = s => s?.trim().toLowerCase(); 
-    const match = lov.find(item => clean(item.description) === clean(descr) || clean(item.name) === clean(descr));
+    const match = lov.find(item => clean(item.description) === clean(descr) || clean(item.name) === clean(descr) || clean(item.code) === clean(descr));
 
     if (!match) 
         return null; // Case A: code at top level 

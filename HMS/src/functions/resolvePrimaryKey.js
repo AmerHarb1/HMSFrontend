@@ -1,6 +1,5 @@
-
 export function resolvePrimaryKey(rec) {
-  if (!rec) return null;
+  if (!rec) return null;  
 
   // Prefer numeric id if present
   if (rec.id !== undefined && rec.id !== null) {
@@ -12,15 +11,16 @@ export function resolvePrimaryKey(rec) {
     return rec.code;
   }
 
-  // combound primary key
-  if (rec.pk.code !== undefined && rec.pk.code !== null) {
+  // compound primary key: pk.code
+  if (rec.pk?.code !== undefined && rec.pk.code !== null) {
     return rec.pk.code;
   }
 
-  // combound primary key
-  if (rec.pk.itemNumber !== undefined && rec.pk.itemNumber !== null) {
+  // compound primary key: pk.itemNumber
+  if (rec.pk?.itemNumber !== undefined && rec.pk.itemNumber !== null) {
     return rec.pk.itemNumber;
-  }
+  }  
 
-  return null; // nothing usable
+  // Final fallback: use description (so it matches formData)
+  return null;
 }
