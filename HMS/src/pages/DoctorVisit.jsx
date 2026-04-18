@@ -6,11 +6,12 @@ export function DoctorVisit() {
         <Search name= "Patient Search" 
                 lnk="patientSearch"
                 searchLink="doctorVisitTabs"
-                formTabLink="doctorVisit"
+                formTabLink="doctorVisitPatient"
+                formTabEntity="patient"
                 searchFields = {['PatientId','FirstName', 'LastName', 'BithDate']}
                 searchValues = {{PatientId: '', FirstName: '', LastName: '', BirthDate: ''}}
                 disabledFields={'patient'}
-                excludeFields={{id: '', createdBy: '', createdDate: ''}}
+                excludeFields={{ createdBy: '', createdDate: ''}}
         />
     </div>
   );

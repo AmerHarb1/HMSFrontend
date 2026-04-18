@@ -10,6 +10,8 @@ import { fetchInitLov } from "../functions/fetchInitLov.js";
 import {resolvePrimaryKey} from "../functions/resolvePrimaryKey.js";
 import {fixFormDataLov} from "../functions/fixFormDataLov.js";
 import {  lovChange } from "../functions/lovChange.js";
+import {  getCheckBoxData } from "../functions/getCheckBoxData.js";
+import {  normalizeBoolean } from "../functions/normalizeBoolean.js";
 import {  lovInit } from "../functions/lovInit.js";
 import { getHeader } from "../functions/getHeader";
 import { toSpacedWords } from "../functions/toSpacedWords.js";
@@ -23,8 +25,11 @@ export function ModifyForm(props){
 
     const lnk =state?state.lnk:props.lnk;
     const  rec  = state?.rec || {};
+    const [checkBoxMap, setCheckBoxMap] = useState([]);
     const [formData, setFormData] = useState(() => rec || {});
+
     const [lovMap, setLovMap] = useState(new Map());
+    
     const [parentChildLovMap, setParentChildLovMap] = useState(() => new Map());
     
   //const apiLnk ='http://localhost:9002/hms/' +lnk+'/'+ (rec.id == null ? rec.code? rec.id:null:null);
@@ -84,7 +89,7 @@ export function ModifyForm(props){
         setFormData(updatedFormData);
         lovChange(updatedFormData, name, parentChildLovMap, setLovMap, headers, linkLov);
     };
-    
+    //console.log(initialData)
     const updateClicked = (event) => {
   		event.preventDefault();
   		console.log(formData);
@@ -94,7 +99,8 @@ export function ModifyForm(props){
 														:key=="createdBy"?createdBy
 														:key=="createdon"?createdOn
                                                         :key=="comments"?comments
-														: formData[key]==''?initialData[tabData.indexOf(key)]:formData[key]}), {})//Object.assign({}, ...Object.entries({...formObj}).map(([a,b]) => ({ [b]: formData[b] })))							
+														: formData[key]
+                                                }), {})//Object.assign({}, ...Object.entries({...formObj}).map(([a,b]) => ({ [b]: formData[b] })))							
                                                   
 	  	const response =  axios.put(apiLnk,obj,{headers: headers}
   				).then(() => {
@@ -236,11 +242,25 @@ export function ModifyForm(props){
     useEffect(() => { 
         (async () => { 
             await getLovData(); 
+            getCheckBoxData(tabData, tabDataValues, setCheckBoxMap)
         })(); 
     }, [tabData, tabDataValues]);
 
     useEffect(() => {
-        fixFormDataLov(lovMap, formData, tabData, setFormData);
+        // Wait until checkBoxMap is populated
+        if (!checkBoxMap || checkBoxMap.length === 0) return;
+        setFormData(prev => {
+            const next = { ...prev };
+            checkBoxMap.forEach(field => {
+                next[field] = normalizeBoolean(prev[field]);
+            });
+           // console.log("Normalized booleans:", next);
+            return next;
+        });
+    }, [checkBoxMap]);
+
+    useEffect(() => {
+        fixFormDataLov(lovMap, formData, tabData, setFormData, checkBoxMap);
   }, [lovMap]);
     
     useEffect(() => {
@@ -280,6 +300,7 @@ export function ModifyForm(props){
 
         const isLov = lovMap.has(fieldName) || lovMap.has(localLovMap); 
         const isDate = dateCols.includes(fieldName);
+        const isBoolean = checkBoxMap.includes(fieldName);
 
         return ( 
             <> 
@@ -316,6 +337,28 @@ export function ModifyForm(props){
                                     )} 
                                     //onChange={(date) => setFormData((prev) => ({ ...prev, [fieldName]: date ? date.format("YYYY-MM-DD") : null })) } 
                                     className="dateField" /> ) 
+                    : isBoolean ? (
+                        <div className="checkbox-wrapper">
+                            <input
+                                type="checkbox"
+                                className="checkBoxField"
+                                id={fieldName}
+                                name={fieldName}
+                                checked={Boolean(formData[fieldName])}
+                                disabled={disabledFields?.includes(fieldName)}
+                                onChange={(e) =>
+                                    setFormData(prev => {
+                                        const next = {
+                                            ...prev,
+                                            [fieldName]: e.target.checked
+                                        };
+                                        //console.log("onChange:", fieldName, "checked =", e.target.checked, "stored =", next[fieldName]);
+                                        return next;
+                                    })
+                                }
+                            />
+                        </div>
+                    )
                     : ( 
                         <input type="text" id={fieldName} name={fieldName} value={formData[fieldName] ?? ""} disabled={disabledFields?.includes(fieldName)} onChange={handleChange} /> )} 
                 </td> 

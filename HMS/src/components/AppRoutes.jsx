@@ -51,6 +51,7 @@ import { LedgerPeriodStatus } from '../pages/LedgerPeriodStatus';
 import { BalanceSheet } from '../pages/BalanceSheet';
 import { TrialBalance } from '../pages/TrialBalance';
 import { IncomeStatement } from '../pages/IncomeStatement';
+import { Product } from '../pages/Product';
 import { Item } from '../pages/Item';
 import { ProductType } from '../pages/ProductType';
 import { ProductDivision } from '../pages/ProductDivision';
@@ -156,6 +157,20 @@ import { PersonAddress } from '../pages/PersonAddress';
 import { CreditCardType } from '../pages/CreditCardType';
 import { InsuranceType } from '../pages/InsuranceType';
 import { InsureeType } from '../pages/InsureeType';
+import { DoctorVisitView } from '../pages/DoctorVisitView';
+import { DoctorVisitSearch } from '../pages/DoctorVisitSearch';
+
+import { InsurancePlan } from '../pages/InsurancePlan';
+import { CoverageRule } from '../pages/CoverageRule';
+import { CoverageRuleDetail } from '../pages/CoverageRuleDetail';
+import { CoverageRuleDiagnoses } from '../pages/CoverageRuleDiagnoses';
+import { PatientPlanAccumulator } from '../pages/PatientPlanAccumulator';
+import { PatientPlanAccumulatorDetail } from '../pages/PatientPlanAccumulatorDetail';
+import { DoctorNetworkType } from '../pages/DoctorNetworkType';
+import { PlanBenefitCategory } from '../pages/PlanBenefitCategory';
+import { PatientVisitType } from '../pages/PatientVisitType';
+import { DoctorVisitFollowupPeriod } from '../pages/DoctorVisitFollowupPeriod';
+
 
 
 
@@ -319,7 +334,11 @@ export function AppRoutes(){
                 <Route path="/stockingCondition/modify" element={<ModifyForm/>}/>
                 <Route path="/abcCategory/modify" element={<ModifyForm/>}/>
                 <Route path="/xyzCategory/modify" element={<ModifyForm/>}/>
-                <Route path="/lifeTimeType/modify" element={<ModifyForm/>}/>   
+                <Route path="/lifeTimeType/modify" element={<ModifyForm/>}/>  
+                <Route path="/Product" element={<Product/>}/> 
+                <Route path="/Product/add" element={<AddPage/>}/>                
+                <Route path="/Product/modify" element={<ModifyForm/>}/>
+
                 <Route path="/service" element={<Service/>}/>                                
                 <Route path="/service/add" element={<AddPage/>}/>
                 <Route path="/service/modify" element={<ModifyForm/>}/> 
@@ -419,9 +438,9 @@ export function AppRoutes(){
                 <Route path="/ApproveQuotationResponse" element={<ApproveQuotationResponse/>}/>    
                 <Route path="/ApproveQuotationResponse/modify" element={<Master/>}/>
 
-                <Route path="/productIssuance" element={<ProductIssuance/>}/>           
+                <Route path="/productIssuance" element={<ProductIssuance/>}/>  
+                <Route path="/productIssuance/entry" element={<ModifyForm/>}/>         
                 <Route path="/productIssuance/modify" element={<Master/>}/>
-                <Route path="/productIssuance/entry" element={<ModifyForm/>}/>
 
                 <Route path="/QuotationRequestStatus" element={<QuotationRequestStatus/>}/> 
                 <Route path="/QuotationRequestStatus/add" element={<AddPage/>}/>                
@@ -677,13 +696,61 @@ export function AppRoutes(){
                 <Route path="/InsureeType" element={<InsureeType/>}/> 
                 <Route path="/InsureeType/add" element={<AddPage/>}/>                
                 <Route path="/InsureeType/modify" element={<ModifyForm/>}/>
+
+                <Route path="/DoctorVisitView" element={<DoctorVisitView/>}/> 
+                <Route path="/DoctorVisitView/add" element={<DoctorVisit/>}/>                
+                <Route path="/DoctorVisitView/modify" element={<DoctorVisitTabs/>}/>
+
+                <Route path="/DoctorVisitSearch" element={<DoctorVisitSearch/>}/> 
+                <Route path="/DoctorVisitSearch/add" element={<AddPage/>}/>                
+                <Route path="/DoctorVisitSearch/modify" element={<DoctorVisitTabs/>}/>
+
+
+
+                <Route path="/InsurancePlan" element={<InsurancePlan/>}/> 
+                <Route path="/InsurancePlan/add" element={<AddPage/>}/>                
+                <Route path="/InsurancePlan/modify" element={<ModifyForm/>}/>
+
+                <Route path="/CoverageRule" element={<CoverageRule/>}/> 
+                <Route path="/CoverageRule/add" element={<AddPage/>}/>                
+                <Route path="/CoverageRule/modify" element={<ModifyForm/>}/>
+
+                <Route path="/CoverageRuleDetail" element={<CoverageRuleDetail/>}/> 
+                <Route path="/CoverageRuleDetail/add" element={<AddPage/>}/>                
+                <Route path="/CoverageRuleDetail/modify" element={<ModifyForm/>}/>
+
+                <Route path="/CoverageRuleDiagnoses" element={<CoverageRuleDiagnoses/>}/> 
+                <Route path="/CoverageRuleDiagnoses/add" element={<AddPage/>}/>                
+                <Route path="/CoverageRuleDiagnoses/modify" element={<ModifyForm/>}/>
+
+                <Route path="/PatientPlanAccumulator" element={<PatientPlanAccumulator/>}/> 
+                <Route path="/PatientPlanAccumulator/add" element={<AddPage/>}/>                
+                <Route path="/PatientPlanAccumulator/modify" element={<ModifyForm/>}/>
+
+                <Route path="/PatientPlanAccumulatorDetail" element={<PatientPlanAccumulatorDetail/>}/> 
+                <Route path="/PatientPlanAccumulatorDetail/add" element={<AddPage/>}/>                
+                <Route path="/PatientPlanAccumulatorDetail/modify" element={<ModifyForm/>}/>
+
+                <Route path="/DoctorNetworkType" element={<DoctorNetworkType/>}/> 
+                <Route path="/DoctorNetworkType/add" element={<AddPage/>}/>                
+                <Route path="/DoctorNetworkType/modify" element={<ModifyForm/>}/>
+
+                <Route path="/PlanBenefitCategory" element={<PlanBenefitCategory/>}/> 
+                <Route path="/PlanBenefitCategory/add" element={<AddPage/>}/>                
+                <Route path="/PlanBenefitCategory/modify" element={<ModifyForm/>}/>
+
+                <Route path="/PatientVisitType" element={<PatientVisitType/>}/> 
+                <Route path="/PatientVisitType/add" element={<AddPage/>}/>                
+                <Route path="/PatientVisitType/modify" element={<DoctorVisitTabs/>}/>
+
+                <Route path="/DoctorVisitFollowupPeriod" element={<DoctorVisitFollowupPeriod/>}/> 
+                <Route path="/DoctorVisitFollowupPeriod/add" element={<AddPage/>}/>                
+                <Route path="/DoctorVisitFollowupPeriod/modify" element={<DoctorVisitTabs/>}/>
+
             </Routes>
         </div>
     );
 }
-
-
-
 
 
 

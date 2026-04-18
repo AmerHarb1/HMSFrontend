@@ -32,8 +32,10 @@ export function ProductIssuance() {
                               }}
                   detailExcludeFields={{id: '', createdBy: '', createdDate: ''}}
                   disabledFields={{materialRequestDetailId: '', productCode: '', requestedQuantity: ''}}
-                  masterDefaultValues = {{id: '', productIssueStatus: '\x1F', requestedDate: '', purpose: ''}}
-                  entryView = "view"/>
+                  masterDefaultValues = {{id: ''}}
+                  entryView = "view"
+                  updateMaster="no"
+          />
     </div>
   );
 }

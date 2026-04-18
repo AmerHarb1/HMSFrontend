@@ -27,8 +27,10 @@ export function SearchDetails(props) {
     const lnk = props.lnk;
     const searchLink = props.searchLink;
     const formTabLink = props.formTabLink;
+    const formTabEntity = props.formTabEntity;
     const disabledFields = props.disabledFields;
     const excludeFields = props.excludeFields;
+
     
     const getData = async(page, pageSize, sortField, sortOrder, filters={}) => {
     setloading(true);
@@ -68,7 +70,7 @@ export function SearchDetails(props) {
             const cols = Object.keys(tabData[0])
                 .filter((key) => {
                     const type = getValueType(tabData[0][key]);
-                    return type !== "other";   // 👈 exclude non simple types 
+                    return (type !== "other" && !(key in excludeFields))   // 👈 exclude non simple types 
                 })
                 .map((key) => {
                     const col = {
@@ -107,6 +109,7 @@ export function SearchDetails(props) {
                                                 rec= {record} 
                                                 formTabId= {record.id}
                                                 actionLink={searchLink}
+                                                formTabEntity={formTabEntity}
                                                 formTabLink={formTabLink} 
                                                 disabledFields={disabledFields}
                                                 excludeFields={excludeFields}

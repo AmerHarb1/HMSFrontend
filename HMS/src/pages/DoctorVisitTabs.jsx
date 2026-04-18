@@ -12,24 +12,41 @@ export function DoctorVisitTabs(props) {
 
     const link = state?state.formTabLink:props.formTabLink;
     const patientLink = 'patient';
-    const patientId = state?state.formTabId:props.formTabId;
+    const formTabId = state?state.formTabId:props.formTabId;
+    const formTabEntity = state?state.formTabEntity:props.formTabEntity;
     const disabledFields = state?state.disabledFields:props.disabledFields;
     const excludeFields = state?state.excludeFields:props.excludeFields;
+
+    console.log(formTabId)
 
     const [tabData, setTabData] = useState({});
     const [doctorVisitData, setDoctorVisitData] = useState({});
     const [demographicsData, setDemographicsData] = useState({});
     const [loading, setLoading] = useState(true);
 
+    const cleanedRecord = useMemo(() => {
+        if (!tabData) return {};
+        const cleaned = {};
+        Object.entries(tabData).forEach(([key, value]) => {
+            if (typeof value === "string" && value.includes(String.fromCharCode(31))) {
+                cleaned[key] = value.substring(0, value.indexOf(String.fromCharCode(31)));
+            } else {
+                cleaned[key] = value;
+            }
+        });
+        return cleaned;
+    }, [tabData]);
+console.log(tabData)
     const fakeState =  useMemo(() => ({
         tabData: Object.keys(tabData),   // schema
         initialData: tabData,            // record
+        bodyData: cleanedRecord,   // cleaned record 
         page: "Doctor Visit",
         lnk: "doctorVisit",
         noNavigate:true,
         disabledFields: disabledFields,
         excludeFields: {id: '', createdBy: '', createdDate: '', patientId: '', personId: '', bodyTemperature: '', pulseRate: '', respirationRate: '', bloodPressure: '', bloodSugar: '', weight: '', height: '', doctorNotes: '', nurseNotes: ''}
-}), [tabData, disabledFields]);
+}), [tabData, cleanedRecord, disabledFields]);
 
     const vitalState = useMemo(() => ({
         tabData: Object.keys(doctorVisitData),   // schema
@@ -55,8 +72,11 @@ export function DoctorVisitTabs(props) {
         {label: 'Vital Signs',  content:    <Tab title= 'Vital Signs'>
                                                 <ModifyForm key={doctorVisitData.id} state={vitalState}/>
                                             </Tab>},
-        {label: 'Diagnoses',    content:    <Tab title= 'Diagnoses'>{console.log(doctorVisitData.id)}
+        {label: 'Visit Diagnoses',    content:    <Tab title= 'Visit Diagnoses'>
                                                 <AddModifyTableForm key={doctorVisitData.id} lnk="doctorVisitDiagnoses" lnkId = {doctorVisitData.id}/>
+                                            </Tab>},
+        {label: 'Visit Orders',  content:    <Tab title= 'Visit Orders'>
+                                                <AddModifyTableForm key={doctorVisitData.id} lnk="doctorVisitOrder" lnkId = {doctorVisitData.id}/>
                                             </Tab>},
         {label: 'Medications',  content:    <Tab title= 'Medications'></Tab>},
         {label: 'Demographics',  content:   <Tab title= 'Demographics'>
@@ -66,7 +86,7 @@ export function DoctorVisitTabs(props) {
 
     useEffect(() => {
         async function loadVisit() {
-            const visitDiagnoses = await fetchRecordById('doctorVisitDiagnosis', doctorVisitData.id); 
+            const visitDiagnoses = await fetchRecordById('doctorVisitDiagnoses', doctorVisitData.id); 
 
         }
         loadVisit();
@@ -74,16 +94,24 @@ export function DoctorVisitTabs(props) {
     
     useEffect(() => {
         async function load() {
-            const doctorVisit = await fetchRecordById(link, patientId);
-            const person = await fetchRecordById(patientLink, patientId);
-        //console.log(doctorVisit)
+            let doctorVisit;
+            let person
+            if(formTabEntity === 'doctorVisit'){
+                doctorVisit = await fetchRecordById(link, formTabId);   //link would be doctorVisit
+                person = await fetchRecordById(patientLink, doctorVisit.patientId);
+            }else if(formTabEntity === 'patient'){
+                doctorVisit = await fetchRecordById(link, formTabId);   //link would be doctorVisitPatient
+                person = await fetchRecordById(patientLink, formTabId);
+            }
+            console.log(doctorVisit) 
             setTabData(doctorVisit || {});
             setDoctorVisitData(doctorVisit || {});
             setDemographicsData(person || {});
             setLoading(false);
+            
         }
         load();
-    }, [link, patientId]);
+    }, [link, formTabId]);
 
     return(
     <>

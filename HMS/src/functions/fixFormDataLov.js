@@ -1,8 +1,9 @@
 import {resolvePrimaryKey} from "./resolvePrimaryKey.js";
-export function fixFormDataLov(lovMap, formData, tabData, setFormData) {
+export function fixFormDataLov(lovMap, formData, tabData, setFormData, checkBoxMap) {
     if (lovMap.size > 0 ) {
         const updated = { ...formData };
         tabData.forEach(key => {
+            if (checkBoxMap.includes(key)) return; // ← skip booleans
             if (lovMap.has(key)) {
                 const options = lovMap.get(key) || [];
                 const rawValue = formData[key]; // ✅ use the correct row

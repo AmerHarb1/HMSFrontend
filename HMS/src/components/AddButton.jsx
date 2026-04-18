@@ -27,6 +27,7 @@ export function AddButton(props){
     const forwardKey = props.forwardKey;
 	const title = props.title;
 	const formTabLink = props.formTabLink;
+	const formTabEntity = props.formTabEntity;
 	const formTabId = props.formTabId;
    
 	const navigate = useNavigate();
@@ -39,7 +40,7 @@ export function AddButton(props){
 			keys = masterFields;
 		}
 
-		//console.log(props.formTabId)
+		//console.log(props.rec)
 		navigate('/'+props.actionLink
 				,{state:{
 					initialData:tabData,
@@ -71,6 +72,7 @@ export function AddButton(props){
 					masterDefaultValues:safeMasterDefaultValues,
 					masterLocalLovMap:localLovMapRef,
 					formTabLink:formTabLink,
+					formTabEntity:formTabEntity,
 					formTabId:formTabId
 				}
 			});

@@ -146,7 +146,7 @@
     padding: 3px 20px;
 }
 
-.entry-Tab tbody td input {
+.entry-Tab tbody td input:not(.checkBoxField) {
     font-size: 20px; 
     min-width: 100px;
     height: 40px;
@@ -190,6 +190,41 @@
     padding-left: 0px
 }
 
+.checkBoxField {
+    width: 33px;
+    height: 33px;
+    cursor: pointer;
+    border-radius: 5px;
+    border: none;
+    box-shadow: 1rem 1rem 40px rgba(0, 0, 0, 0.15);
+    accent-color: #0078ff;
+    margin-top: 4px;
+    padding: 0;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.checkbox-wrapper {
+    width: 400px;          /* same visual width as text/select/date */
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;   /* or flex-start if you want it higher */
+    padding: 0;
+    margin: 0;
+}
+
+/* Only affect boolean checkbox cells */
+.bool-cell {
+    text-align: left !important;
+    vertical-align: top !important;
+}
+
+/* Checkbox itself */
+.bool-cell .checkBoxField {
+    margin-top: 4px;
+    display: inline-block;
+}
+
 /* Normalize height and padding */ 
 .dateField .ant-picker-input > input { 
     height: 32px !important; 
@@ -225,11 +260,18 @@
     padding: 6px 12px; /* 40px space to the right */
 }
 
+.input-cell.checkbox-cell {
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    padding-left: 0;
+}
+
 .gutter { 
     width: 100px; /* adjust to taste */ 
 }
 
-.input-cell input, .input-cell select, .input-cell .dateField { 
+.input-cell input:not(.checkBoxField), .input-cell select, .input-cell .dateField { 
     padding: 6px 8px; 
     border: 1px solid #d9d9d9; 
     border-radius: 4px; 

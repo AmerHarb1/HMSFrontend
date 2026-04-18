@@ -75,14 +75,17 @@ export function Master(props) {
             localLovMapRef.current = new Map(masterLocalLovMap.current);
         }
     }, []);
-
+console.log('backId = '+backId+'  masterId = '+masterId)
     useEffect(() => { 
         const run = async () => { 
+            console.log('Here10')
             setBackReady(false);  
             if (backId || masterId) { 
                 if(localLovMapRef === undefined || localLovMapRef.current === undefined || localLovMapRef.current.size === 0){
+                    console.log('Here1')
                     await populateMaster(formData);
                 }else{
+                    console.log('Here2')
                     setLovMap(localLovMapRef.current);  //see comments on top for localLovMapRef
                 }
                  

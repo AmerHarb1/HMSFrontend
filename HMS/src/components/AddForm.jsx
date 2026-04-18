@@ -7,6 +7,7 @@ import { getAccessToken } from "../functions/getAccessToken.js";
 import {resolvePrimaryKey} from "../functions/resolvePrimaryKey.js";
 import {  selectCodeDesc } from "../functions/selectCodeDesc.js";
 import {  getLovData } from "../functions/getLovData.js";
+import {  getCheckBoxData } from "../functions/getCheckBoxData.js";
 import {  lovChange } from "../functions/lovChange.js";
 import {isDateTime} from "../functions/isDateTime.js";
 import { toSpacedWords } from "../functions/toSpacedWords.js";
@@ -19,12 +20,17 @@ export function AddForm(props){
     const forwardKey = state?state.forwardKey:props.forwardKey;
     const accessToken = getAccessToken();    
     const serviceFormData = state.serviceFormData;
-    const [formData, setFormData] = useState(
-            () => { const base = state ? (state.tabData ||[]).reduce((a, v) => ({ ...a, [v]: "" }), {}) : props.tabData; 
-            if (forwardKey) { 
-                return { ...base, [forwardKey]: masterId }; 
-            }
-            return base; 
+    const [formData, setFormData] = useState(() => { 
+        const schema = state.tabData || [];
+        const raw = state.initialData || {};
+
+        // Build formData from raw record (so LOV engine sees ASCII‑31)
+        const base = schema.reduce((a, key) => ({
+            ...a,
+            [key]: raw[key] ?? ""
+        }), {});
+
+        return base;
     });
    // 
    // const [formData, setFormData] = useState(serviceFormData);
@@ -46,6 +52,7 @@ export function AddForm(props){
     const masterLocalLovMap = state?state.masterLocalLovMap:props.masterLocalLovMap;
     const [disabledFields, setDisabledFields] = useState(state?state.disabledFields: null);
     const [excludeFields, setExcludeFields] = useState(state?state.excludeFields: null);
+    const [initialLovApplied, setInitialLovApplied] = useState(false);  // used to stop infinit reloading when AddForm is invoked in the main tab
     const detail = props.detail;
     const noNavigate = state?state.noNavigate : null;
     //setFormData(prev => ({ ...prev, serviceProductId: tabDataValues?.serviceProductId ?? "" }));
@@ -53,6 +60,7 @@ export function AddForm(props){
     const navigate = useNavigate();
     const linkLov = "http://localhost:9002/hms/";
     const [lovMap, setLovMap] = useState(new Map());
+    const [checkBoxMap, setCheckBoxMap] = useState([]);
     const [dateCols, setDateCols] = useState([]);
     const [parentChildLovMap, setParentChildLovMap] = useState(new Map());
     const link = "http://localhost:9002/hms/" + lnk;
@@ -153,6 +161,7 @@ export function AddForm(props){
 
   useEffect(() => {
     getLovData(tabData, tabDataValues, setParentChildLovMap, setLovMap, linkLov, headers, setDateCols);
+    getCheckBoxData(tabData, tabDataValues, setCheckBoxMap)
   }, [tabData]);
 
   useEffect(() => {
@@ -167,20 +176,36 @@ export function AddForm(props){
     setFormData((prev) => ({ ...prev, [forwardKey]: masterId }));
   }, [forwardKey, tabDataValues]);
 
-  useEffect(() => { 
+  useEffect(() => {
+    if (!tabDataValues || Object.keys(tabDataValues).length === 0) return;
+
     const cleaned = {};
-        Object.entries(tabDataValues).forEach(([key, value]) => {
-            if (typeof value === "string" && value.includes(String.fromCharCode(31))) {
-                cleaned[key] = value.substring(0, value.indexOf(String.fromCharCode(31)));
-            } else {
-                cleaned[key] = value;
+    Object.entries(tabDataValues).forEach(([key, value]) => {
+        if (typeof value === "string" && value.includes(String.fromCharCode(31))) {
+            cleaned[key] = value.substring(0, value.indexOf(String.fromCharCode(31)));
+        } else {
+            cleaned[key] = value;
+        }
+    });
+
+    setFormData(prev => ({ ...prev, ...cleaned }));
+}, [tabDataValues]);
+
+    useEffect(() => {
+      //  if (initialLovApplied) return;                     // prevent loop
+        if (!parentChildLovMap || parentChildLovMap.size === 0) return;
+        if (!formData) return;
+
+        // Only run once
+        setInitialLovApplied(true);
+
+        // Replay parent LOV changes
+        Object.keys(formData).forEach((name) => {
+            if (parentChildLovMap.has(name) && formData[name]) {
+                lovChange(formData, name, parentChildLovMap, setLovMap, headers, linkLov);
             }
         });
-    setFormData(cleaned)
-    if (Array.isArray(tabDataValues) && tabDataValues[0]?.serviceProductId) { 
-        setFormData(prev => ({ ...prev, forwardKey: tabDataValues[0].forwardKey })); 
-    } 
-}, [tabDataValues]);
+    }, [parentChildLovMap]);
 
     // get fields to be displayed 
     const displayField = (tabData || []).filter(key=>{
@@ -206,11 +231,12 @@ export function AddForm(props){
 
         const isLov = lovMap.has(fieldName) ; 
         const isDate = dateCols.includes(fieldName);
-
+        const isBoolean = checkBoxMap.includes(fieldName);
+        
         return ( 
             <> 
                 <td className="label-cell"> <label>{toSpacedWords(fieldName)}:</label> </td> 
-                <td className="input-cell"> 
+                <td className={`input-cell ${isBoolean ? "bool-cell" : ""}`}> 
                     {isLov ? ( 
                         <select name={fieldName} value={formData[fieldName] ?? ""} disabled={disabledFields?.includes(fieldName)} onChange={handleLovChange} className="selectInput" > 
                             <option value="">-- Select --</option> 
@@ -242,6 +268,28 @@ export function AddForm(props){
                                         )
                                     )} 
                                     className="dateField" /> ) 
+                    : isBoolean ? (
+                        <div className="checkbox-wrapper">
+                            <input
+                                type="checkbox"
+                                className="checkBoxField"
+                                id={fieldName}
+                                name={fieldName}
+                                checked={formData[fieldName] === true}
+                                disabled={disabledFields?.includes(fieldName)}
+                                onChange={(e) =>
+                                    setFormData(prev => {
+                                        const next = {
+                                            ...prev,
+                                            [fieldName]: e.target.checked
+                                        };
+                                        //console.log("onChange:", fieldName, "checked =", e.target.checked, "stored =", next[fieldName]);
+                                        return next;
+                                    })
+                                }
+                            />
+                        </div>
+                    )
                     : ( 
                         <input type="text" id={fieldName} name={fieldName} value={formData[fieldName] ?? ""} disabled={disabledFields?.includes(fieldName)} onChange={handleChange} /> )} 
                 </td> 

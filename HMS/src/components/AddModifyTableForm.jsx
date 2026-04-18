@@ -10,7 +10,7 @@ import {formatDate} from '../functions/formatDateVal.js';
 import { getValueType } from '../functions/getValueType.js';
 import { getHeader } from "../functions/getHeader";
 import { toSpacedWords } from "../functions/toSpacedWords.js";
-import { PlusOutlined } from '@ant-design/icons';
+import {  fetchRecordById } from "../functions/fetchRecordById.js";
 
 
 export function AddModifyTableForm(props){
@@ -29,7 +29,7 @@ export function AddModifyTableForm(props){
     const [sortOrder, setSortOrder] = useState('asc');
     const [tableExcludeFields] = useState(props.tableExcludeFields ?? {});//used to exclude fields from showing in the table display
     const [formData, setFormData] = useState({});
-    
+    const [addState, setAddState] = useState(null);
     
     const excludeFields = props.excludeFields?props.excludeFields:{id: '', createdBy: '', createdDate: ''};
     
@@ -61,7 +61,6 @@ export function AddModifyTableForm(props){
                 setFormData(res.data.content);
                 setTotalPages(res.data.totalPages);
                 setTotalRecords(res.data.totalElements);
-
                 })
             .catch((error) => {
                 console.warn("response", error.response?.data);                
@@ -77,7 +76,7 @@ export function AddModifyTableForm(props){
 
     // build columns whenever data or sort state changes
     useEffect(() => {
-        console.log(tabData)
+        //console.log(tabData)
         if (tabData.length > 0) {
         //    setTabDataNoChar(tabData);
             const cols = Object.keys(tabData[0])
@@ -105,9 +104,9 @@ export function AddModifyTableForm(props){
                     col.render = (text) => formatDate(text);
                     }
                     
-                    const buildModifyState = (record) => ({
+                    const buildModifyState = (record, rowData) => ({
                         tabData: Object.keys(tabData[0]),
-                        initialData: tabData[0],
+                        initialData: rowData,
                         rec: record,
                         name: record.id ?? record.code,
                         lnk,
@@ -119,7 +118,7 @@ export function AddModifyTableForm(props){
 
                     // 👇 Add hyperlink rendering for IDs
                     if (modifyView !== "view" && (key === "id" || key==="code")) {
-                        col.render = (text, record) => {
+                        col.render = (text, record, index) => {
                             let display =
                                 text ??    
                                 record.id ??
@@ -127,11 +126,13 @@ export function AddModifyTableForm(props){
                                 record.pk?.code ??
                                 "";                         
 
+
                             return(
-                                <a  class='AddLinkButton'  
+                                <a  className='AddLinkButton'  
                                 
                                     onClick={() => {
-                                        setModifyForm(buildModifyState(record));
+                                        console.log(tabData[index])
+                                        setModifyForm(buildModifyState(record, tabData[index]));
                                         getData(0,10,'','asc',lnkId);
                                         
                                     }}
@@ -177,6 +178,10 @@ export function AddModifyTableForm(props){
         setTabDataNoChar(cleaned);  //Updates tabDataNoChar with the cleaned version.
 	}, [tabData]);
 
+    useEffect(() => {
+        getData(0, 10, '', 'asc', lnkId);
+    }, [lnk, lnkId]);
+
     //extracts unique values for each field from your dataset.
     function buildFilters(data, field) {
         const uniqueValues = [...new Set(data.map(item => item[field]))];
@@ -185,30 +190,34 @@ export function AddModifyTableForm(props){
             .map(val => ({ text: String(val), value: val }));
     }
 
-    const addState = useMemo(() => {
-        if (!Array.isArray(tabData) || tabData.length === 0) {
-            return null; // or {}
-        }
+    useEffect(() => {
+    if (!Array.isArray(tabData) || tabData.length === 0) return;
 
-        return {
-            tabData: Object.keys(tabData[0]),   // schema
-            initialData: tabData[0],               // record(s)
-            bodyData: tabData[0],
+    async function loadBlank() {
+        const blankObj = await fetchRecordById(lnk + "Blank", lnkId);
+
+        setAddState({
+            tabData: Object.keys(blankObj),   // schema from blank object
+            initialData: blankObj,            // raw blank record
+            bodyData: blankObj,
             lnk,
             noNavigate: true,
             disabledFields,
             excludeFields: {
-                id: '',
-                createdBy: '',
-                createdDate: ''
+                id: "",
+                createdBy: "",
+                createdDate: ""
             }
-        };
-    }, [tabData]);
+        });
+    }
+
+    loadBlank();
+}, [tabData, lnk, lnkId]);
 	
     return(
         <div>
             <Space size={15} direction="vertical">
-                {console.log(addForm + ' - ' + modifyForm)}
+                
                 {!addForm && !modifyForm?
                 <Table
                     className="Tab"
@@ -232,7 +241,7 @@ export function AddModifyTableForm(props){
                         setpPage(pagination.current - 1);
                         setpPageSize(pagination.pageSize);
                         // call backend with new sort
-                        getData(pagination.current - 1, pagination.pageSize, field, order, filters);                        
+                        getData(pagination.current - 1, pagination.pageSize, field, order, lnkId, filters);                        
                     }}
                 >
                 </Table>
@@ -240,9 +249,10 @@ export function AddModifyTableForm(props){
                 }
                {addForm && !modifyForm
                     ?
-                        <AddForm state={addState} onSaved={() => {
-                        setAddForm(false);
-                        getData(0,10,'','asc',lnkId);
+                        <AddForm state={addState} 
+                            onSaved={() => {
+                                setAddForm(false);
+                                getData(0,10,'','asc',lnkId);   //used to refresh the table list after adding a new record
                     }}/>
                     :!modifyForm
                         ?
@@ -251,12 +261,12 @@ export function AddModifyTableForm(props){
                 }
                 {modifyForm && !addForm &&(
                     <ModifyForm
-                        state={modifyForm}
-                        
+                        state={modifyForm}                        
                         onSaved={() => {
-                            console.log(addForm + ' - ' + modifyForm); 
                             setModifyForm(null);
-                            getData(0,10,'','asc',lnkId);}}
+                            getData(0,10,'','asc',lnkId);
+                        }
+                    }
                     />
                 )}
                                 

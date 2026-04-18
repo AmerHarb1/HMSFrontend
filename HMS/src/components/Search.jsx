@@ -23,6 +23,7 @@ export function Search(props) {
     const excludeFields = props.excludeFields;
     const [searchCriteria, setSearchCriteria] = useState({});
     const formTabLink = props.formTabLink;
+    const formTabEntity = props.formTabEntity;
     const headers = getHeader();
     const linkLov = "http://localhost:9002/hms/";
     const lnk = props.lnk?props.lnk:state.lnk;
@@ -46,6 +47,7 @@ export function Search(props) {
         const { name, value } = event.target;         
         const updatedFormData = { ...formData, [name]: value }; // Build the updated formData manually
         setFormData(updatedFormData);
+        setSearchCriteria(prev => ({ ...prev, [name]: value }));
         lovChange(updatedFormData, name, parentChildLovMap, setLovMap, headers, linkLov);
         // This runs for ALL LOV fields, including root
         setLovMap((prev) => {
@@ -57,6 +59,7 @@ export function Search(props) {
 
     const handleSubmit = (event) => {
         event.preventDefault();
+        console.log(searchCriteria)
         setReady(true);     
     };
 
@@ -135,6 +138,7 @@ export function Search(props) {
                                             searchLink={searchLink}
                                             title={title}
                                             formTabLink={formTabLink}
+                                            formTabEntity={formTabEntity}
                                             disabledFields={disabledFields}
                                             excludeFields={excludeFields}
                             />

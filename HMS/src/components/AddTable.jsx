@@ -39,6 +39,8 @@ export function AddTable(props){
     const backLink = props.backLink;
     const lnk = props.lnk;
     const lnkId = props.lnkId;    //used with Tabs to pass an id to the api to get data for that id
+    const formTabLink = props.formTabLink;    //used with Tabs as the link with an id to the api to get data for that id
+    const formTabEntity = props.formTabEntity;    //used to identify the entity of the record 
     const disabledFieldsRaw = props.disabledFields; 
     const disabledFields = Array.isArray(disabledFieldsRaw) ? disabledFieldsRaw : Object.keys(disabledFieldsRaw || {}); // if you used object-as-set    //used to dislay the included fields as disabled
 
@@ -52,7 +54,7 @@ export function AddTable(props){
     const detailChild = props.detailChild;      //for a child of master detail pages, where the enry and modification need to be on the child fields and the master detail id is one of the child fields (e.g., Product Issuance). 
      
                                                // also used as an alternative lnk to get the master detail data joined with child data to be displayed together in the master detail data.
-    console.log(lnkId)                                               
+                                             
 
     const getData = async(page, pageSize, sortField, sortOrder,lnkId, filters={}) => {
         setloading(true);
@@ -107,6 +109,7 @@ export function AddTable(props){
     useEffect(() => {
         if (tabData.length > 0) {
         //    setTabDataNoChar(tabData);
+        
             const cols = Object.keys(tabData[0])
                 .filter((key) => {
                     const type = getValueType(tabData[0][key]);
@@ -127,9 +130,15 @@ export function AddTable(props){
                         filters: buildFilters(tabData, key),
                         onFilter: (value, record) => record[key] === value,
                     };  
+
                     // Format dates
                     if (/^\d{4}-\d{2}-\d{2}T*/.test(tabData[0][key])) {
                     col.render = (text) => formatDate(text);
+                    }
+
+                    // 👇 Universal boolean renderer (never mutates record)
+                    if (typeof tabData[0][key] === "boolean") {
+                        col.render = (_, record) => (record[key] ? "Yes" : "No");
                     }
 
                     // 👇 Add hyperlink rendering for IDs
@@ -141,7 +150,7 @@ export function AddTable(props){
                                 record.code ??
                                 record.pk?.code ??
                                 ""; 
-
+                            //console.log(col)
                             return(
                                 <AddButton  class='AddLinkButton' 
                                             page={props.name} 
@@ -165,6 +174,9 @@ export function AddTable(props){
                                             forwardKey={forwardKey}
                                             detailId={record[forwardKey]}
                                             masterId={record.id}
+                                            formTabId={record.id}
+                                            formTabLink={formTabLink}
+                                            formTabEntity={formTabEntity}
                                             rec= {record} 
                                             createdBy={record.createdBy} 
                                             createdOn={record.createdOn} 
@@ -189,15 +201,19 @@ export function AddTable(props){
 	  }, [totalRecords]);
 
     useEffect(() => {
+        //console.log(tabData)
         if (!Array.isArray(tabData)) return;
         const cleaned = tabData.map(row => {        //Builds a new cleaned array (cleaned) by iterating over the array and then over each object’s keys
             const newRow = {};                      
             Object.entries(row).forEach(([key, value]) => {     //Loops through each field (key → value) in that record.
                 if (typeof value === "string" && value.includes(String.fromCharCode(31))) {
                     newRow[key] = value.substring(0, value.indexOf(String.fromCharCode(31)));   //If the value contains ASCII 31, it strips everything after it.
-                } else {
+            //    } else if (typeof value === "boolean" ) {
+            //        newRow[key] = value ? "Yes" : "No";
+                }else{
                     newRow[key] = value;
                 }
+                
             });
             return newRow;
         });

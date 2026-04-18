@@ -4,12 +4,14 @@ export function resolveDescription(rec) {
 
   // Prefer numeric id if present
   if (rec.name !== undefined && rec.name !== null) {
-    //console.log(rec.name)
     return rec.name;
   }
 
   // Fallback to code if id is missing
   if (rec.description !== undefined && rec.description !== null) {
+    //if(rec.description.indexOf('-') > 0){
+      //return rec.description.substring(rec.description.substring(rec.description.indexOf('-') + 1));
+    //}
     return rec.description;
   }
 

@@ -52,29 +52,31 @@ export function MasterDetails(props) {
     const forwardKey = props.forwardKey;
     const localLovMapRef = props.masterLocalLovMap;
 
+    console.log(lnk)
+
     const getData = async(page, pageSize, sortField, sortOrder, filters={}) => {
-    setloading(true);
-    // Build filter query string
-    const filterParams = Object.entries(filters)
-        .filter(([_, value]) => value && value.length > 0)
-        .map(([key, value]) => `${key}=${value.join(",")}`)
-        .join("&");
-    
-    const link = 'http://localhost:9002/hms/'+lnk + 'Get' + '?page=' + page + '&size=' + pageSize+ '&sort=' + sortField+ ',' + sortOrder + '&filterParams=' + filterParams ;	
+        setloading(true);
+        // Build filter query string
+        const filterParams = Object.entries(filters)
+            .filter(([_, value]) => value && value.length > 0)
+            .map(([key, value]) => `${key}=${value.join(",")}`)
+            .join("&");
+        
+        const link = 'http://localhost:9002/hms/'+lnk + 'Get' + '?page=' + page + '&size=' + pageSize+ '&sort=' + sortField+ ',' + sortOrder + '&filterParams=' + filterParams ;	
 
-    axios.post(link,masterId,{headers: headers}
-        ).then(res => {                                
-            setTabData(res.data.content);   //res.data.content is an array of objects
-            setTotalPages(res.data.totalPages);
-            setTotalRecords(res.data.totalElements);
+        axios.post(link,masterId,{headers: headers}
+            ).then(res => {                                
+                setTabData(res.data.content);   //res.data.content is an array of objects
+                setTotalPages(res.data.totalPages);
+                setTotalRecords(res.data.totalElements);
 
+                })
+            .catch((error) => {
+                console.warn("response", error.response?.data);                
             })
-        .catch((error) => {
-            console.warn("response", error.response?.data);                
-        })
-        .finally(()=>{
-            setloading(false);
-        });
+            .finally(()=>{
+                setloading(false);
+            });
     }
 
     useEffect(() => {
