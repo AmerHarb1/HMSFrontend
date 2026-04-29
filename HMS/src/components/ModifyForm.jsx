@@ -5,6 +5,7 @@ import { Typography, Space, message, DatePicker} from 'antd';
 import axios from 'axios';
 import dayjs from "dayjs";
 import { useNavigate, useLocation} from 'react-router';
+import { ProductAutoFill } from './ProductAutoFill';
 import { getAccessToken } from "../functions/getAccessToken.js";
 import { fetchInitLov } from "../functions/fetchInitLov.js";
 import {resolvePrimaryKey} from "../functions/resolvePrimaryKey.js";
@@ -62,6 +63,9 @@ export function ModifyForm(props){
     const detail = state.detail;
     const serviceFormData = state.serviceFormData;
     const noNavigate = state?state.noNavigate : null;
+    const autoFill = state?state.autoFill: null;
+    const autoFillLink = state?state.autoFillLink: null;
+    const [initialProduct, setInitialProduct] = useState({});
     const navigate = useNavigate();
     const headers = getHeader();
 
@@ -79,6 +83,7 @@ export function ModifyForm(props){
 
     const handleChange = (event) => {
     	const { name, value } = event.target;
+        console.log(name +' , '+ value)
     	setFormData((prevFormData) => ({  ...prevFormData,[name]: value }));   
   	};
 
@@ -240,11 +245,18 @@ export function ModifyForm(props){
     };
 
     useEffect(() => { 
+        setInitialProduct({
+                id: formData.productId,
+                productId: formData.productId,
+                productDescription: formData.product
+            });
         (async () => { 
             await getLovData(); 
             getCheckBoxData(tabData, tabDataValues, setCheckBoxMap)
         })(); 
     }, [tabData, tabDataValues]);
+
+
 
     useEffect(() => {
         // Wait until checkBoxMap is populated
@@ -264,7 +276,6 @@ export function ModifyForm(props){
   }, [lovMap]);
     
     useEffect(() => {
-
         const cleaned = {};
         Object.entries(state.rec).forEach(([key, value]) => {
             if (typeof value === "string" && value.includes(String.fromCharCode(31))) {
@@ -274,7 +285,7 @@ export function ModifyForm(props){
             }
         });
         setTabDataNoChar(cleaned);
-    }, [tabData]);
+    }, [tabData]);     
 
     // get fields to be displayed 
     const displayField = tabData.filter(key=>{
@@ -306,14 +317,39 @@ export function ModifyForm(props){
             <> 
                 <td className="label-cell"> <label>{toSpacedWords(fieldName)}:</label> </td> 
                 <td className="input-cell"> 
-                    {isLov ? ( 
+                    {autoFill && fieldName === autoFill ?
+                            <ProductAutoFill
+                                value={initialProduct}    // <-- send initial value
+                                autoFillLink={autoFillLink}
+                                onSelect={(product) => {
+                                    if (!product) return;
+                                    {console.log(product.productDescription)}
+                                    // 1) update formData for saving
+                                    setFormData((prev) => ({    
+                                    ...prev,
+                                    productId: product.productId,
+                                    itemNumber: product.itemNumber,
+                                    product: product.productDescription
+                                    }));
+
+                                    // 2) update initialProduct so the UI reflects the new selection
+                                    setInitialProduct({
+                                        id: product.productId,
+                                        productId: product.productId,
+                                        productDescription: product.productDescription
+                                    });
+
+                                }}
+                            />
+
+                    : isLov ? 
                         <select name={fieldName} value={formData[fieldName] ?? ""} disabled={disabledFields?.includes(fieldName)} onChange={handleLovChange} className="selectInput" > 
                             <option value="">-- Select --</option> 
                             {Array.from(lovMap.get(fieldName) || localLovMap.get(fieldName) || []).map((opt) => ( 
                                 <option value={resolvePrimaryKey(opt)}> {opt.name || opt.username || opt.description} 
                                 </option> 
                             ))} 
-                        </select> ) 
+                        </select> 
                     : isDate ? ( 
                         <DatePicker id={fieldName} 
                                     name={fieldName} 
@@ -369,44 +405,55 @@ export function ModifyForm(props){
 
 
     return ( 
-        <div className="form-table"> 
-            <Space size={15} direction="vertical"> 
-                <Typography.Text className="Title">{formName}</Typography.Text> 
-                <form> 
-                    <table className="entry-Tab"> 
-                        <tbody> 
-                            {fieldPairs.map((pair, rowIndex) => ( 
-                                <tr key={rowIndex}> 
-                                    {/* LEFT FIELD */} 
-                                    {renderFieldCells(pair[0])} 
-                                    {/* FIXED GAP COLUMN */} 
-                                    <td className="gutter"></td> 
-                                    {/* RIGHT FIELD OR EMPTY */} 
-                                    {pair.length === 2 
-                                        ? renderFieldCells(pair[1]) 
-                                        : (
-                                        <>
-                                            <td className="label-cell empty"></td>
-                                            <td className="input-cell empty"></td>
-                                        </>
-                                    )}
+        <>
+            {autoFill ? 
+                        <div className="AutoFillSection">
+                            {autoFill}
+                        </div> 
+                    : null
+            }
+            <div className="form-table"> 
+                <Space size={15} direction="vertical"> 
+                    {formName ? 
+                        <Typography.Text className="Title">{formName}</Typography.Text> 
+                    : null
+                    }
+                    <form> 
+                        <table className="entry-Tab"> 
+                            <tbody> 
+                                {fieldPairs.map((pair, rowIndex) => ( 
+                                    <tr key={rowIndex}> 
+                                        {/* LEFT FIELD */} 
+                                        {renderFieldCells(pair[0])} 
+                                        {/* FIXED GAP COLUMN */} 
+                                        <td className="gutter"></td> 
+                                        {/* RIGHT FIELD OR EMPTY */} 
+                                        {pair.length === 2 
+                                            ? renderFieldCells(pair[1]) 
+                                            : (
+                                            <>
+                                                <td className="label-cell empty"></td>
+                                                <td className="input-cell empty"></td>
+                                            </>
+                                        )}
+                                    </tr>
+                                ))}
+
+                                <tr className="button-row"> 
+                                    <td colSpan={4}> 
+                                        <div className="button-group"> 
+                                            <button className="form-button" onClick={updateClicked}>Update</button> 
+                                            <button className="form-button" onClick={deleteClicked}>Delete</button> 
+                                            <button className="form-button" onClick={cancelClicked}>Cancel</button> 
+                                        </div> 
+                                    </td> 
                                 </tr>
-                            ))}
 
-                            <tr className="button-row"> 
-                                <td colSpan={4}> 
-                                    <div className="button-group"> 
-                                        <button className="form-button" onClick={updateClicked}>Update</button> 
-                                        <button className="form-button" onClick={deleteClicked}>Delete</button> 
-                                        <button className="form-button" onClick={cancelClicked}>Cancel</button> 
-                                    </div> 
-                                </td> 
-                            </tr>
-
-                        </tbody>
-                    </table>
-                </form>
-            </Space>
-        </div>
+                            </tbody>
+                        </table>
+                    </form>
+                </Space>
+            </div>
+        </>
     );
 }

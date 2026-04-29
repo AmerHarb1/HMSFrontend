@@ -17,7 +17,7 @@ export function DoctorVisitTabs(props) {
     const disabledFields = state?state.disabledFields:props.disabledFields;
     const excludeFields = state?state.excludeFields:props.excludeFields;
 
-    console.log(formTabId)
+    //console.log(formTabId)
 
     const [tabData, setTabData] = useState({});
     const [doctorVisitData, setDoctorVisitData] = useState({});
@@ -36,7 +36,7 @@ export function DoctorVisitTabs(props) {
         });
         return cleaned;
     }, [tabData]);
-console.log(tabData)
+//console.log(tabData)
     const fakeState =  useMemo(() => ({
         tabData: Object.keys(tabData),   // schema
         initialData: tabData,            // record
@@ -73,10 +73,10 @@ console.log(tabData)
                                                 <ModifyForm key={doctorVisitData.id} state={vitalState}/>
                                             </Tab>},
         {label: 'Visit Diagnoses',    content:    <Tab title= 'Visit Diagnoses'>
-                                                <AddModifyTableForm key={doctorVisitData.id} lnk="doctorVisitDiagnoses" lnkId = {doctorVisitData.id}/>
+                                                <AddModifyTableForm key={doctorVisitData.id} lnk="doctorVisitDiagnoses" lnkId = {doctorVisitData.id} autoFill = "diagnoses" autoFillLink = "diagnosesAutoFill"/>
                                             </Tab>},
         {label: 'Visit Orders',  content:    <Tab title= 'Visit Orders'>
-                                                <AddModifyTableForm key={doctorVisitData.id} lnk="doctorVisitOrder" lnkId = {doctorVisitData.id}/>
+                                                <AddModifyTableForm key={doctorVisitData.id} lnk="doctorVisitOrder" lnkId = {doctorVisitData.id} autoFill = "product" autoFillLink = "productAutoFill"/>
                                             </Tab>},
         {label: 'Medications',  content:    <Tab title= 'Medications'></Tab>},
         {label: 'Demographics',  content:   <Tab title= 'Demographics'>
@@ -103,7 +103,7 @@ console.log(tabData)
                 doctorVisit = await fetchRecordById(link, formTabId);   //link would be doctorVisitPatient
                 person = await fetchRecordById(patientLink, formTabId);
             }
-            console.log(doctorVisit) 
+            //console.log(doctorVisit) 
             setTabData(doctorVisit || {});
             setDoctorVisitData(doctorVisit || {});
             setDemographicsData(person || {});

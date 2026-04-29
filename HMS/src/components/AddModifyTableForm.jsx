@@ -41,7 +41,9 @@ export function AddModifyTableForm(props){
     const entryView = props.entryView;         
     const modifyView = props.modifyView;
   	const actionLink = props.lnk+'/add';
-    const modifyLink = props.lnk+'/modify';    
+    const modifyLink = props.lnk+'/modify';  
+    const autoFill = props.autoFill; 
+    const autoFillLink = props.autoFillLink;  
 
     const getData = async(page, pageSize, sortField, sortOrder,lnkId, filters={}) => {
         setloading(true);
@@ -110,6 +112,8 @@ export function AddModifyTableForm(props){
                         rec: record,
                         name: record.id ?? record.code,
                         lnk,
+                        autoFill: autoFill,
+                        autoFillLink: autoFillLink,
                         noNavigate: true,
                         disabledFields,
                         excludeFields,
@@ -131,7 +135,7 @@ export function AddModifyTableForm(props){
                                 <a  className='AddLinkButton'  
                                 
                                     onClick={() => {
-                                        console.log(tabData[index])
+                                        //console.log(tabData[index])
                                         setModifyForm(buildModifyState(record, tabData[index]));
                                         getData(0,10,'','asc',lnkId);
                                         
@@ -201,6 +205,8 @@ export function AddModifyTableForm(props){
             initialData: blankObj,            // raw blank record
             bodyData: blankObj,
             lnk,
+            autoFill: autoFill,
+            autoFillLink: autoFillLink,
             noNavigate: true,
             disabledFields,
             excludeFields: {

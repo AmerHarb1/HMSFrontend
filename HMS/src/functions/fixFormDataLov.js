@@ -4,6 +4,7 @@ export function fixFormDataLov(lovMap, formData, tabData, setFormData, checkBoxM
         const updated = { ...formData };
         tabData.forEach(key => {
             if (checkBoxMap.includes(key)) return; // ← skip booleans
+            //if (key.startsWith("product")) return;
             if (lovMap.has(key)) {
                 const options = lovMap.get(key) || [];
                 const rawValue = formData[key]; // ✅ use the correct row
