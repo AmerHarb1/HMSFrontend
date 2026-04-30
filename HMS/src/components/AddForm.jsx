@@ -258,8 +258,6 @@ export function AddForm(props){
                                                     value={initialProduct}    // <-- send initial value
                                                     autoFillLink={autoFillLink}
                                                     labelField="productDescription"
-                                                    valueField="productId"
-                                                    extraFields={["itemNumber"]}
                                                     onSelect={(product) => {
                                                         if (!product) return;
                                                         //{console.log(product.productDescription)}

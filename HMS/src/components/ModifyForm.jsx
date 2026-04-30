@@ -5,7 +5,8 @@ import { Typography, Space, message, DatePicker} from 'antd';
 import axios from 'axios';
 import dayjs from "dayjs";
 import { useNavigate, useLocation} from 'react-router';
-import { ProductAutoFill } from './ProductAutoFill';
+import { GenericAutoFill } from './GenericAutoFill';
+//import { ProductAutoFill } from './ProductAutoFill';
 import { getAccessToken } from "../functions/getAccessToken.js";
 import { fetchInitLov } from "../functions/fetchInitLov.js";
 import {resolvePrimaryKey} from "../functions/resolvePrimaryKey.js";
@@ -318,27 +319,29 @@ export function ModifyForm(props){
                 <td className="label-cell"> <label>{toSpacedWords(fieldName)}:</label> </td> 
                 <td className="input-cell"> 
                     {autoFill && fieldName === autoFill ?
-                            <ProductAutoFill
+                            <GenericAutoFill
                                 value={initialProduct}    // <-- send initial value
                                 autoFillLink={autoFillLink}
+                                labelField="productDescription"
+                                valueField="productId"
+                                extraFields={["itemNumber"]}
                                 onSelect={(product) => {
                                     if (!product) return;
-                                    {console.log(product.productDescription)}
+                                    //{console.log(product.productDescription)}
                                     // 1) update formData for saving
                                     setFormData((prev) => ({    
                                     ...prev,
                                     productId: product.productId,
                                     itemNumber: product.itemNumber,
                                     product: product.productDescription
-                                    }));
-
+                                    }));   
+                                    
                                     // 2) update initialProduct so the UI reflects the new selection
                                     setInitialProduct({
                                         id: product.productId,
                                         productId: product.productId,
                                         productDescription: product.productDescription
                                     });
-
                                 }}
                             />
 

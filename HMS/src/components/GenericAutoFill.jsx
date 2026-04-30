@@ -9,8 +9,6 @@ export function GenericAutoFill({
   value,            // initial selected object
   onSelect,         // callback when user selects
   labelField,       // field to display (e.g., "productDescription")
-  valueField,       // primary key field (e.g., "productId")
-  extraFields = []  // additional fields to return
 }) {
   const [query, setQuery] = useState("");
   const [options, setOptions] = useState([]);
@@ -42,16 +40,19 @@ export function GenericAutoFill({
       return () => clearTimeout(delay);
     }, [query]);
 
-console.log("query:", query);
-console.log("options:", options);
-const selectedOption = options.find(opt => opt.id === value?.id) || value || null;
+    const selectedOption =
+        options.find(opt =>
+            (value?.id && opt.id === value.id) ||
+            (value?.code && opt.code === value.code)
+        ) || value || null;
+
   return (
     <Autocomplete
-      value={selectedOption}
-      inputValue={inputValue}
+      value={selectedOption}    //the selected object
+      inputValue={inputValue}   //the text the user is typing
       options={options}
       loading={loading}
-      getOptionLabel={(item) => item.productDescription || ""}
+      getOptionLabel={(item) => item?.[labelField] || ""}
       onInputChange={(e, newInputValue) => {
         setInputValue(newInputValue);
         setQuery(newInputValue);

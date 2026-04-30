@@ -46,9 +46,9 @@ export function ProductAutoFill({ autoFillLink, value, onSelect }) {
     <Autocomplete 
       value={selectedOption} //the selected object
       options={options}
-      loading={loading} //the text the user is typing
+      loading={loading} 
       getOptionLabel={(item) => item.productDescription || ""}
-      inputValue={inputValue}
+      inputValue={inputValue}//the text the user is typing
       onInputChange={(e, newInputValue) => {
         setInputValue(newInputValue);
         setQuery(newInputValue);
