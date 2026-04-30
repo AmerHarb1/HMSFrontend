@@ -3,6 +3,8 @@ import axios from 'axios';
 import { useState, useEffect} from 'react';
 import { useNavigate, useLocation} from 'react-router';
 import dayjs from "dayjs";
+import { GenericAutoFill } from './GenericAutoFill';
+//import { ProductAutoFill } from './ProductAutoFill';
 import { getAccessToken } from "../functions/getAccessToken.js";
 import {resolvePrimaryKey} from "../functions/resolvePrimaryKey.js";
 import {  selectCodeDesc } from "../functions/selectCodeDesc.js";
@@ -64,6 +66,11 @@ export function AddForm(props){
     const [dateCols, setDateCols] = useState([]);
     const [parentChildLovMap, setParentChildLovMap] = useState(new Map());
     const link = "http://localhost:9002/hms/" + lnk;
+    const autoFill = state?state.autoFill: null;
+    const autoFillLink = state?state.autoFillLink: null;
+    const [initialProduct, setInitialProduct] = useState({});
+
+    console.log(autoFill)
 
     const headers = {
         "Content-Type": "application/json",
@@ -177,19 +184,28 @@ export function AddForm(props){
   }, [forwardKey, tabDataValues]);
 
   useEffect(() => {
-    if (!tabDataValues || Object.keys(tabDataValues).length === 0) return;
+        if (!tabDataValues || Object.keys(tabDataValues).length === 0) return;
 
-    const cleaned = {};
-    Object.entries(tabDataValues).forEach(([key, value]) => {
-        if (typeof value === "string" && value.includes(String.fromCharCode(31))) {
-            cleaned[key] = value.substring(0, value.indexOf(String.fromCharCode(31)));
-        } else {
-            cleaned[key] = value;
-        }
-    });
+        const cleaned = {};
+        Object.entries(tabDataValues).forEach(([key, value]) => {
+            if (typeof value === "string" && value.includes(String.fromCharCode(31))) {
+                cleaned[key] = value.substring(0, value.indexOf(String.fromCharCode(31)));
+            } else {
+                cleaned[key] = value;
+            }
+        });
 
-    setFormData(prev => ({ ...prev, ...cleaned }));
-}, [tabDataValues]);
+        setFormData(prev => ({ ...prev, ...cleaned }));
+    }, [tabDataValues]);
+
+    useEffect(() => {
+        setInitialProduct({
+                id: formData.productId,
+                productId: formData.productId,
+                productDescription: formData.product
+            });
+        
+    }, []);
 
     useEffect(() => {
       //  if (initialLovApplied) return;                     // prevent loop
@@ -237,7 +253,34 @@ export function AddForm(props){
             <> 
                 <td className="label-cell"> <label>{toSpacedWords(fieldName)}:</label> </td> 
                 <td className={`input-cell ${isBoolean ? "bool-cell" : ""}`}> 
-                    {isLov ? ( 
+                    {autoFill && fieldName === autoFill ?
+                                                <GenericAutoFill
+                                                    value={initialProduct}    // <-- send initial value
+                                                    autoFillLink={autoFillLink}
+                                                    labelField="productDescription"
+                                                    valueField="productId"
+                                                    extraFields={["itemNumber"]}
+                                                    onSelect={(product) => {
+                                                        if (!product) return;
+                                                        //{console.log(product.productDescription)}
+                                                        // 1) update formData for saving
+                                                        setFormData((prev) => ({    
+                                                        ...prev,
+                                                        productId: product.productId,
+                                                        itemNumber: product.itemNumber,
+                                                        product: product.productDescription
+                                                        }));   
+                                                        
+                                                        // 2) update initialProduct so the UI reflects the new selection
+                                                        setInitialProduct({
+                                                            id: product.productId,
+                                                            productId: product.productId,
+                                                            productDescription: product.productDescription
+                                                        });
+                                                    }}
+                                                />
+                    
+                                        :  isLov ? ( 
                         <select name={fieldName} value={formData[fieldName] ?? ""} disabled={disabledFields?.includes(fieldName)} onChange={handleLovChange} className="selectInput" > 
                             <option value="">-- Select --</option> 
                             

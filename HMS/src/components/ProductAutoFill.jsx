@@ -44,9 +44,9 @@ export function ProductAutoFill({ autoFillLink, value, onSelect }) {
 
   return (
     <Autocomplete 
-      value={selectedOption} 
+      value={selectedOption} //the selected object
       options={options}
-      loading={loading}
+      loading={loading} //the text the user is typing
       getOptionLabel={(item) => item.productDescription || ""}
       inputValue={inputValue}
       onInputChange={(e, newInputValue) => {
