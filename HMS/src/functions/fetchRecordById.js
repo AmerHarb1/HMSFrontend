@@ -11,6 +11,12 @@ export async function fetchRecordById(link, id) {
     return res.data;
    
   } catch (error) { 
-    console.warn("response", error.response?.data); 
+    const backendError = error.response?.data;
+
+    throw {
+      message: backendError?.message || "Failed to fetch record",
+      stackTrace: backendError?.stackTrace,
+      exceptionDate: backendError?.exceptionDate
+    };
   } 
 }

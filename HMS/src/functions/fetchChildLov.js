@@ -35,6 +35,12 @@ export async function fetchChildLov(linkLov, childKey, parentValue, headers, set
   localLovMapRef.current.set(childKey, lov);
    
   } catch (error) { 
-    console.warn("response", error.response?.data); 
+    const backendError = error.response?.data;
+
+    throw {
+      message: backendError?.message || "Failed to load LOV",
+      stackTrace: backendError?.stackTrace,
+      exceptionDate: backendError?.exceptionDate
+    }; 
   } 
 }

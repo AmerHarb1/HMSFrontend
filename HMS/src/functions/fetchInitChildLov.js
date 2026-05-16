@@ -6,6 +6,12 @@ export async function fetchInitChildLov(linkLov, childKey, parentValue, headers)
     const res = await axios.get(`${linkLov}${childKey}Lov/${parentValue}`, { headers }); 
     return res.data;   
   } catch (error) { 
-    console.warn("response", error.response?.data); 
+    const backendError = error.response?.data;
+
+    throw {
+      message: backendError?.message || "Failed to load LOV",
+      stackTrace: backendError?.stackTrace,
+      exceptionDate: backendError?.exceptionDate
+    }; 
   } 
 }

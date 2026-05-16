@@ -43,6 +43,7 @@ export function DoctorVisitTabs(props) {
         bodyData: cleanedRecord,   // cleaned record 
         page: "Doctor Visit",
         lnk: "doctorVisit",
+        payment:"doctorVisitTran",
         noNavigate:true,
         disabledFields: disabledFields,
         excludeFields: {id: '', createdBy: '', createdDate: '', patientId: '', personId: '', bodyTemperature: '', pulseRate: '', respirationRate: '', bloodPressure: '', bloodSugar: '', weight: '', height: '', doctorNotes: '', nurseNotes: ''}
@@ -73,7 +74,7 @@ export function DoctorVisitTabs(props) {
                                                 <ModifyForm key={doctorVisitData.id} state={vitalState}/>
                                             </Tab>},
         {label: 'Visit Diagnoses',    content:    <Tab title= 'Visit Diagnoses'>
-                                                <AddModifyTableForm key={doctorVisitData.id} lnk="doctorVisitDiagnoses" lnkId = {doctorVisitData.id} autoFill = "diagnoses" autoFillLink = "diagnosesAutoFill"/>
+                                                <AddModifyTableForm key={doctorVisitData.id} lnk="doctorVisitDiagnoses" lnkId = {doctorVisitData.id} autoFill = "diagnosesDescription" autoFillLink = "diagnosesAutoFill"/>
                                             </Tab>},
         {label: 'Visit Orders',  content:    <Tab title= 'Visit Orders'>
                                                 <AddModifyTableForm key={doctorVisitData.id} lnk="doctorVisitOrder" lnkId = {doctorVisitData.id} autoFill = "product" autoFillLink = "productAutoFill"/>

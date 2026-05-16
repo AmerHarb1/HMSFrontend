@@ -28,6 +28,12 @@ export async function fetchInitLov(linkLov, key, headers, currentValue, localLov
     return finalLov; // return LOV list
   } catch (error) {
     console.log(`${linkLov}${key}Lov`)
-    console.warn("response", error.response?.data);
+    const backendError = error.response?.data;
+
+    throw {
+      message: backendError?.message || "Failed to load LOV",
+      stackTrace: backendError?.stackTrace,
+      exceptionDate: backendError?.exceptionDate
+    };
   }
 }

@@ -13,6 +13,7 @@ import {  getCheckBoxData } from "../functions/getCheckBoxData.js";
 import {  lovChange } from "../functions/lovChange.js";
 import {isDateTime} from "../functions/isDateTime.js";
 import { toSpacedWords } from "../functions/toSpacedWords.js";
+import { getHeader } from "../functions/getHeader";
 import '../styles/page.css';
 
 export function AddForm(props){
@@ -56,6 +57,7 @@ export function AddForm(props){
     const [excludeFields, setExcludeFields] = useState(state?state.excludeFields: null);
     const [initialLovApplied, setInitialLovApplied] = useState(false);  // used to stop infinit reloading when AddForm is invoked in the main tab
     const detail = props.detail;
+    const payment = state?state.payment : null; //used to collect payment before proceeding with standard behavior of addForm
     const noNavigate = state?state.noNavigate : null;
     //setFormData(prev => ({ ...prev, serviceProductId: tabDataValues?.serviceProductId ?? "" }));
     
@@ -68,9 +70,10 @@ export function AddForm(props){
     const link = "http://localhost:9002/hms/" + lnk;
     const autoFill = state?state.autoFill: null;
     const autoFillLink = state?state.autoFillLink: null;
-    const [initialProduct, setInitialProduct] = useState({});
-
-    console.log(autoFill)
+    const base = (autoFill || "").replace(/Description$/, "");
+    const autoFillId = base+'Id';
+    const autoFillCode = base+'Code';
+    const [initialAutoFill, setInitialAutoFill] = useState({});
 
     const headers = {
         "Content-Type": "application/json",
@@ -79,6 +82,37 @@ export function AddForm(props){
     };
 
     const cancelClicked = () => navigate("/" + history.back());
+
+    async function paymentClicked () {
+        const headers = getHeader();
+        const payLink = linkLov + payment;
+        console.log(payLink)
+        console.log(payment)
+        try {
+            const res = await axios.post(payLink, formData,{headers: headers});
+            console.log(res.data);
+            navigate("/"+payment, {
+                state: {                
+                    tabData: Object.keys(res.data),   // schema from blank object
+                    initialData: res.data,            // raw blank record
+                    bodyData: res.data,
+                    lnk,
+                    excludeFields: {id: '', createdBy: '', createdDate: '', patientId: '', personId: '', bodyTemperature: '', pulseRate: '', respirationRate: ''
+                                  , bloodPressure: '', bloodSugar: '', weight: '', height: '', doctorNotes: '', nurseNotes: ''
+                                  , doctorVisitType: '', visitDate: '', patient: '', clinic: '', clinicRoom: '', doctor: '', paymentType: '', insuranceCompany: ''
+                                  , insuranceNumber: '', insuranceGroup: '', transactionId: '', insurancePlan: ''}
+                }
+            });
+        } catch (err) {
+            navigate("/exception", {
+                state: {
+                message: err.response?.data?.message,
+                stackTrace: err.response?.data?.stackTrace,
+                exceptionDate: err.response?.data?.exceptionDate
+                }
+            });   
+        }
+    }
 
     const handleChange = (event) => {
         const { name, value } = event.target;
@@ -94,7 +128,7 @@ export function AddForm(props){
 
     const handleSubmit = async (event) => {
         event.preventDefault();
-
+        console.log('Amer')
         const obj = tabData.reduce((o, key) => ({ ...o, [key]: formData[key] }), {});
 
         try {
@@ -154,15 +188,14 @@ export function AddForm(props){
                 }
             }
 
-            } catch (error) {
-                alert(error.response?.data);
-                if (Array.isArray(error.response?.data)) {
-                    message.error(error.response.data.join(", "));
-                } else if (error.response?.data?.message) {
-                    message.error(error.response.data.message);
-                } else {
-                    message.error("An error occurred");
-                }
+            } catch (err) {
+                navigate("/exception", {
+                    state: {
+                    message: err.response?.data?.message,
+                    stackTrace: err.response?.data?.stackTrace,
+                    exceptionDate: err.response?.data?.exceptionDate
+                    }
+                });
             }
         };
 
@@ -199,13 +232,15 @@ export function AddForm(props){
     }, [tabDataValues]);
 
     useEffect(() => {
-        setInitialProduct({
-                id: formData.productId,
-                productId: formData.productId,
-                productDescription: formData.product
-            });
-        
-    }, []);
+        if (!formData) return;
+        if (!formData[autoFillId] && !formData[autoFill]) return;
+
+        setInitialAutoFill({
+            autoFillObjId: formData[autoFillId],
+            autoFillObjCode: formData[autoFillCode],
+            autoFillObjDescription: formData[autoFill]
+        });
+    }, [formData, autoFillId, autoFillCode, autoFill]);
 
     useEffect(() => {
       //  if (initialLovApplied) return;                     // prevent loop
@@ -254,31 +289,31 @@ export function AddForm(props){
                 <td className="label-cell"> <label>{toSpacedWords(fieldName)}:</label> </td> 
                 <td className={`input-cell ${isBoolean ? "bool-cell" : ""}`}> 
                     {autoFill && fieldName === autoFill ?
-                                                <GenericAutoFill
-                                                    value={initialProduct}    // <-- send initial value
-                                                    autoFillLink={autoFillLink}
-                                                    labelField="productDescription"
-                                                    onSelect={(product) => {
-                                                        if (!product) return;
-                                                        //{console.log(product.productDescription)}
-                                                        // 1) update formData for saving
-                                                        setFormData((prev) => ({    
-                                                        ...prev,
-                                                        productId: product.productId,
-                                                        itemNumber: product.itemNumber,
-                                                        product: product.productDescription
-                                                        }));   
-                                                        
-                                                        // 2) update initialProduct so the UI reflects the new selection
-                                                        setInitialProduct({
-                                                            id: product.productId,
-                                                            productId: product.productId,
-                                                            productDescription: product.productDescription
-                                                        });
-                                                    }}
-                                                />
-                    
-                                        :  isLov ? ( 
+                            <GenericAutoFill
+                                value={initialAutoFill}    // <-- send initial value
+                                autoFillLink={autoFillLink}
+                                labelField="autoFillObjDescription"
+                                onSelect={(product) => {
+                                    if (!product) return;
+                                    //{console.log(product.productDescription)}
+                                    // 1) update formData for saving
+                                    setFormData((prev) => ({    
+                                    ...prev,
+                                    [autoFillId]: product.autoFillObjId,
+                                    [autoFillCode]: product.autoFillObjCode,
+                                    [autoFill]: product.autoFillObjDescription
+                                    }));   
+                                    
+                                    // 2) update initialProduct so the UI reflects the new selection
+                                    setInitialAutoFill({
+                                        autoFillObjId: formData[autoFillId],
+                                        autoFillObjCode: formData[autoFillCode],
+                                        autoFillObjDescription: formData[autoFill]
+                                    });
+                                }}
+                            />
+
+                    :  isLov ? ( 
                         <select name={fieldName} value={formData[fieldName] ?? ""} disabled={disabledFields?.includes(fieldName)} onChange={handleLovChange} className="selectInput" > 
                             <option value="">-- Select --</option> 
                             
@@ -364,8 +399,12 @@ export function AddForm(props){
                                 </tr>
                             ))}	
                             <tr className="button-row">
-                                <div className="button-group"> 
-                                    <td><button className="form-button" type="submit">Submit</button></td>
+                                <div className="button-group">
+                                    <td><button className="form-button" type="submit">Submit</button></td> 
+                                    {payment
+                                        ?<td><button className="form-button" type="button" onClick={paymentClicked}>Payment</button></td>
+                                        :null
+                                    }                                    
                                     <td><button className="form-button" onClick={cancelClicked}>Cancel</button></td>
                                 </div>
                             </tr>

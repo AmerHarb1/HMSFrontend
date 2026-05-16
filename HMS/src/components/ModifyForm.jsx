@@ -66,11 +66,14 @@ export function ModifyForm(props){
     const noNavigate = state?state.noNavigate : null;
     const autoFill = state?state.autoFill: null;
     const autoFillLink = state?state.autoFillLink: null;
-    const [initialProduct, setInitialProduct] = useState({});
+    const base = (autoFill || "").replace(/Description$/, "");
+    const autoFillId = base+'Id';
+    const autoFillCode = base+'Code';
+    const [initialAutoFill, setInitialAutoFill] = useState({});
     const navigate = useNavigate();
     const headers = getHeader();
 
-
+console.log(formData);
     /*  Amer on 02/15/2026
         modify form is populated by setting formData to the rec state variable passed from addButton.
         tabData and tabDataValues are populated from tabData and initialData state variables
@@ -95,7 +98,7 @@ export function ModifyForm(props){
         setFormData(updatedFormData);
         lovChange(updatedFormData, name, parentChildLovMap, setLovMap, headers, linkLov);
     };
-    //console.log(initialData)
+    
     const updateClicked = (event) => {
   		event.preventDefault();
   		console.log(formData);
@@ -165,14 +168,14 @@ export function ModifyForm(props){
                         }
                     }
                 })
-  				  .catch((error) => {
-                    if (Array.isArray(error.response?.data)) {
-                        message.error(error.response.data.join(", "));
-                    } else if (error.response?.data?.message) {
-                        message.error(error.response.data.message);
-                    } else {
-                        message.error("An error occurred");
-                    }                    
+  				  .catch((err) => {
+                    navigate("/exception", {
+                        state: {
+                        message: err.response?.data?.message,
+                        stackTrace: err.response?.data?.stackTrace,
+                        exceptionDate: err.response?.data?.exceptionDate
+                        }
+                    });               
                   });
 	};
 	
@@ -198,7 +201,7 @@ export function ModifyForm(props){
         (key) =>
             typeof row[key] === "string" && row[key].includes(String.fromCharCode(31)) //filter fields that their value includes ascii char 31, they are the Lov fields
         );
-
+        
         // 1) Build a local parent-child map (not state) 
         const localParentChildMap = new Map(); 
 
@@ -233,7 +236,7 @@ export function ModifyForm(props){
                 localLovMap.set(key, lov);
             } 
         }
-        
+        //console.log(localLovMap);
         // 5. Push final maps into React state 
         setLovMap(localLovMap); 
         setParentChildLovMap(localParentChildMap);
@@ -245,18 +248,23 @@ export function ModifyForm(props){
         })   
     };
 
-    useEffect(() => { 
-        setInitialProduct({
-                id: formData.productId,
-                productId: formData.productId,
-                productDescription: formData.product
-            });
+    useEffect(() => {
+        if (!formData) return;
+        if (!formData[autoFillId] && !formData[autoFill]) return;
+
+        setInitialAutoFill({
+            autoFillObjId: formData[autoFillId],
+            autoFillObjCode: formData[autoFillCode],
+            autoFillObjDescription: formData[autoFill]
+        });
+    }, [formData, autoFillId, autoFillCode, autoFill]);
+
+useEffect(() => { 
         (async () => { 
             await getLovData(); 
             getCheckBoxData(tabData, tabDataValues, setCheckBoxMap)
         })(); 
     }, [tabData, tabDataValues]);
-
 
 
     useEffect(() => {
@@ -320,27 +328,25 @@ export function ModifyForm(props){
                 <td className="input-cell"> 
                     {autoFill && fieldName === autoFill ?
                             <GenericAutoFill
-                                value={initialProduct}    // <-- send initial value
+                                value={initialAutoFill}    // <-- send initial value
                                 autoFillLink={autoFillLink}
-                                labelField="productDescription"
-                                valueField="productId"
-                                extraFields={["itemNumber"]}
+                                labelField="autoFillObjDescription"
                                 onSelect={(product) => {
                                     if (!product) return;
                                     //{console.log(product.productDescription)}
                                     // 1) update formData for saving
                                     setFormData((prev) => ({    
                                     ...prev,
-                                    productId: product.productId,
-                                    itemNumber: product.itemNumber,
-                                    product: product.productDescription
+                                    [autoFillId]: product.autoFillObjId,
+                                    [autoFillCode]: product.autoFillObjCode,
+                                    [autoFill]: product.autoFillObjDescription
                                     }));   
                                     
                                     // 2) update initialProduct so the UI reflects the new selection
-                                    setInitialProduct({
-                                        id: product.productId,
-                                        productId: product.productId,
-                                        productDescription: product.productDescription
+                                    setInitialAutoFill({
+                                        autoFillObjId: formData[autoFillId],
+                                        autoFillObjCode: formData[autoFillCode],
+                                        autoFillObjDescription: formData[autoFill]
                                     });
                                 }}
                             />

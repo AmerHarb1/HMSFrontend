@@ -25,6 +25,12 @@ export async function fetchLov(linkLov, key, headers, setLovMap, currentValue) {
     
   } catch (error) {
     console.log(`${linkLov}${key}`)
-    console.warn("response", error.response?.data);
+    const backendError = error.response?.data;
+
+    throw {
+      message: backendError?.message || "Failed to load LOV",
+      stackTrace: backendError?.stackTrace,
+      exceptionDate: backendError?.exceptionDate
+    };
   }
 }

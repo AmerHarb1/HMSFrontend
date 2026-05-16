@@ -15,6 +15,12 @@ export async function fetchInitParentLov(linkLov, field, parentValue, headers) {
       return res.data; 
     }  
   } catch (error) { 
-    console.warn("response", error.response?.data); 
+    const backendError = error.response?.data;
+
+    throw {
+      message: backendError?.message || "Failed to load LOV",
+      stackTrace: backendError?.stackTrace,
+      exceptionDate: backendError?.exceptionDate
+    };
   } 
 }

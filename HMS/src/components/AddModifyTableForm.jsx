@@ -1,6 +1,7 @@
 import { Table, message, Space} from 'antd';
 import axios from 'axios';
 import React,{ useState, useEffect, useMemo} from 'react';
+import { useNavigate} from 'react-router';
 import { AddButton } from './AddButton';
 import '../styles/page.css';
 import 'antd/dist/reset.css'; // for AntD v5
@@ -30,6 +31,7 @@ export function AddModifyTableForm(props){
     const [tableExcludeFields] = useState(props.tableExcludeFields ?? {});//used to exclude fields from showing in the table display
     const [formData, setFormData] = useState({});
     const [addState, setAddState] = useState(null);
+    const navigate = useNavigate();
     
     const excludeFields = props.excludeFields?props.excludeFields:{id: '', createdBy: '', createdDate: ''};
     
@@ -64,8 +66,14 @@ export function AddModifyTableForm(props){
                 setTotalPages(res.data.totalPages);
                 setTotalRecords(res.data.totalElements);
                 })
-            .catch((error) => {
-                console.warn("response", error.response?.data);                
+            .catch((err) => {
+                navigate("/exception", {
+                    state: {
+                    message: err.response?.data?.message,
+                    stackTrace: err.response?.data?.stackTrace,
+                    exceptionDate: err.response?.data?.exceptionDate
+                    }
+                });             
             })
             .finally(()=>{
                 setloading(false);

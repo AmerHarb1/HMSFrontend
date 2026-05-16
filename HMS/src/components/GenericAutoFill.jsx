@@ -40,10 +40,12 @@ export function GenericAutoFill({
       return () => clearTimeout(delay);
     }, [query]);
 
+    console.log(value)
+    console.log(options)
     const selectedOption =
         options.find(opt =>
-            (value?.id && opt.id === value.id) ||
-            (value?.code && opt.code === value.code)
+            (value?.id && opt.autoFillObjId === value.autoFillObjId) ||
+            (value?.autoFillObjCode && opt.autoFillObjCode === value.autoFillObjCode)
         ) || value || null;
 
   return (

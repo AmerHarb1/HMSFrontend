@@ -2,7 +2,7 @@ import { Routes, Route } from 'react-router'
 import './AppPage.css';
 
 import { Dashboard } from '../pages/Dashboard';
-import { Register } from '../pages/Register';
+import { ExceptionPage } from '../components/ExceptionPage';
 import { SubMenu } from '../pages/SubMenu';
 import { MenuHeader } from '../pages/MenuHeader';
 import { Menu } from '../pages/Menu';
@@ -159,7 +159,6 @@ import { InsuranceType } from '../pages/InsuranceType';
 import { InsureeType } from '../pages/InsureeType';
 import { DoctorVisitView } from '../pages/DoctorVisitView';
 import { DoctorVisitSearch } from '../pages/DoctorVisitSearch';
-
 import { InsurancePlan } from '../pages/InsurancePlan';
 import { CoverageRule } from '../pages/CoverageRule';
 import { CoverageRuleDetail } from '../pages/CoverageRuleDetail';
@@ -170,15 +169,19 @@ import { DoctorNetworkType } from '../pages/DoctorNetworkType';
 import { PlanBenefitCategory } from '../pages/PlanBenefitCategory';
 import { PatientVisitType } from '../pages/PatientVisitType';
 import { DoctorVisitFollowupPeriod } from '../pages/DoctorVisitFollowupPeriod';
-
-
-
+import { DoctorVisitTran } from '../pages/DoctorVisitTran';
+import { CoverageClinic } from '../pages/CoverageClinic';
+import { InsuranceAuthorizationRequest } from '../pages/InsuranceAuthorizationRequest36-cf91f1bbc3be&tag=9943_2024-08-29
+;
+import { InsuranceAuthorizationType } from '../pages/InsuranceAuthorizationType';
+import { InsuranceAuthorizationStatus } from '../pages/InsuranceAuthorizationStatus';
 
 export function AppRoutes(){
     return(
         <div className="AppRoutes">
             <Routes>
                 <Route index element={<Dashboard/>}/> {/* index = path="/"*/}
+                <Route path="/exception" element={<ExceptionPage />} />
                 <Route path="/accessUser" element={<AccessUser/>}/>
                 <Route path="/accessUser/add" element={<AddPage/>}/>
                 <Route path="/accessUser/modify" element={<ModifyForm/>}/>
@@ -705,8 +708,6 @@ export function AppRoutes(){
                 <Route path="/DoctorVisitSearch/add" element={<AddPage/>}/>                
                 <Route path="/DoctorVisitSearch/modify" element={<DoctorVisitTabs/>}/>
 
-
-
                 <Route path="/InsurancePlan" element={<InsurancePlan/>}/> 
                 <Route path="/InsurancePlan/add" element={<AddPage/>}/>                
                 <Route path="/InsurancePlan/modify" element={<ModifyForm/>}/>
@@ -746,6 +747,24 @@ export function AppRoutes(){
                 <Route path="/DoctorVisitFollowupPeriod" element={<DoctorVisitFollowupPeriod/>}/> 
                 <Route path="/DoctorVisitFollowupPeriod/add" element={<AddPage/>}/>                
                 <Route path="/DoctorVisitFollowupPeriod/modify" element={<DoctorVisitTabs/>}/>
+
+                <Route path="/CoverageClinic" element={<CoverageClinic/>}/> 
+                <Route path="/CoverageClinic/add" element={<AddPage/>}/>                
+                <Route path="/CoverageClinic/modify" element={<ModifyForm/>}/>
+
+                <Route path="/InsuranceAuthorizationRequest" element={<InsuranceAuthorizationRequest/>}/> 
+                <Route path="/InsuranceAuthorizationRequest/add" element={<AddPage/>}/>                
+                <Route path="/InsuranceAuthorizationRequest/modify" element={<ModifyForm/>}/>
+
+                <Route path="/InsuranceAuthorizationType" element={<InsuranceAuthorizationType/>}/> 
+                <Route path="/InsuranceAuthorizationType/add" element={<AddPage/>}/>                
+                <Route path="/InsuranceAuthorizationType/modify" element={<ModifyForm/>}/>
+
+                <Route path="/InsuranceAuthorizationStatus" element={<InsuranceAuthorizationStatus/>}/> 
+                <Route path="/InsuranceAuthorizationStatus/add" element={<AddPage/>}/>                
+                <Route path="/InsuranceAuthorizationStatus/modify" element={<ModifyForm/>}/>
+
+                <Route path="/DoctorVisitTran" element={<DoctorVisitTran/>}/> 
 
             </Routes>
         </div>
