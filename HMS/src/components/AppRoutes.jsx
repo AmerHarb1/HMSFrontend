@@ -171,8 +171,7 @@ import { PatientVisitType } from '../pages/PatientVisitType';
 import { DoctorVisitFollowupPeriod } from '../pages/DoctorVisitFollowupPeriod';
 import { DoctorVisitTran } from '../pages/DoctorVisitTran';
 import { CoverageClinic } from '../pages/CoverageClinic';
-import { InsuranceAuthorizationRequest } from '../pages/InsuranceAuthorizationRequest36-cf91f1bbc3be&tag=9943_2024-08-29
-;
+import { InsuranceAuthorizationRequest } from '../pages/InsuranceAuthorizationRequest';
 import { InsuranceAuthorizationType } from '../pages/InsuranceAuthorizationType';
 import { InsuranceAuthorizationStatus } from '../pages/InsuranceAuthorizationStatus';
 

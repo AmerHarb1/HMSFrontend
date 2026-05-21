@@ -36,7 +36,7 @@ export function DoctorVisitTabs(props) {
         });
         return cleaned;
     }, [tabData]);
-//console.log(tabData)
+console.log(tabData)
     const fakeState =  useMemo(() => ({
         tabData: Object.keys(tabData),   // schema
         initialData: tabData,            // record
