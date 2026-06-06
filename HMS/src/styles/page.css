@@ -178,6 +178,10 @@
 	  font-size:1.4em;
 }
 
+.form-button:active{
+    transform: translateY(0.1rem);
+}
+
 .selectInput{
     font-size: 20px; 
     min-width: 100px;

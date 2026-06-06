@@ -46,7 +46,8 @@ console.log(tabData)
         payment:"doctorVisitTran",
         noNavigate:true,
         disabledFields: disabledFields,
-        excludeFields: {id: '', createdBy: '', createdDate: '', patientId: '', personId: '', bodyTemperature: '', pulseRate: '', respirationRate: '', bloodPressure: '', bloodSugar: '', weight: '', height: '', doctorNotes: '', nurseNotes: ''}
+        excludeFields: {id: '', createdBy: '', createdDate: '', patientId: '', personId: '', bodyTemperature: '', pulseRate: '', respirationRate: '', bloodPressure: '', bloodSugar: '', weight: '', height: '', doctorNotes: ''
+                        , nurseNotes: '', transactionId: '',grossAmount: '',netAmount: '',coPay: '',insurancePay: '',discount: ''}
 }), [tabData, cleanedRecord, disabledFields]);
 
     const vitalState = useMemo(() => ({
@@ -55,8 +56,8 @@ console.log(tabData)
         rec:doctorVisitData, 
         lnk: "doctorVisit",
         noNavigate:true,
-        disabledFields: disabledFields,
-        excludeFields: {id: '', createdBy: '', createdDate: '', patientId: '', personId: '', doctorVisitType: '', visitDate: '', patient: '', clinic: '', clinicRoom: '', doctor: '', paymentType: '', insuranceCompany: '', insuranceNumber: '', insuranceGroup: ''}
+        disabledFields: {transactionId: '',grossAmount: '',netAmount: '',coPay: '',insurancePay: '',discount: ''},
+        excludeFields: {id: '', createdBy: '', createdDate: '', patientId: '', personId: '', doctorVisitType: '', visitDate: '', patient: '', clinic: '', clinicRoom: '', doctor: '', paymentType: '', insuranceCompany: '', insurancePlan: '', insuranceNumber: '', insuranceGroup: ''}
     }), [doctorVisitData, disabledFields]);
 
     const demographicState = useMemo(() => ({

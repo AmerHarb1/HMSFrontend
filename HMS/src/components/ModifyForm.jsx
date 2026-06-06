@@ -73,7 +73,7 @@ export function ModifyForm(props){
     const navigate = useNavigate();
     const headers = getHeader();
 
-console.log(formData);
+//console.log(formData);
     /*  Amer on 02/15/2026
         modify form is populated by setting formData to the rec state variable passed from addButton.
         tabData and tabDataValues are populated from tabData and initialData state variables
@@ -352,7 +352,7 @@ useEffect(() => {
                             />
 
                     : isLov ? 
-                        <select name={fieldName} value={formData[fieldName] ?? ""} disabled={disabledFields?.includes(fieldName)} onChange={handleLovChange} className="selectInput" > 
+                        <select name={fieldName} value={formData[fieldName] ?? ""} disabled={fieldName in (disabledFields)} onChange={handleLovChange} className="selectInput" > 
                             <option value="">-- Select --</option> 
                             {Array.from(lovMap.get(fieldName) || localLovMap.get(fieldName) || []).map((opt) => ( 
                                 <option value={resolvePrimaryKey(opt)}> {opt.name || opt.username || opt.description} 
@@ -368,7 +368,7 @@ useEffect(() => {
                                             isDateTime(formData[fieldName]) ? "YYYY-MM-DD HH:mm:ss" : "YYYY-MM-DD"
                                             )
                                         : null}  
-                                    disabled={disabledFields?.includes(fieldName)} 
+                                    disabled={fieldName in (disabledFields)} 
                                     format={isDateTime(formData[fieldName]) ? "MM-DD-YYYY HH:mm:ss" : "MM-DD-YYYY"}
                                     onChange={(date) => 
                                         setFormData((prev) => (
@@ -390,7 +390,7 @@ useEffect(() => {
                                 id={fieldName}
                                 name={fieldName}
                                 checked={Boolean(formData[fieldName])}
-                                disabled={disabledFields?.includes(fieldName)}
+                                disabled={fieldName in (disabledFields)}
                                 onChange={(e) =>
                                     setFormData(prev => {
                                         const next = {
@@ -405,7 +405,7 @@ useEffect(() => {
                         </div>
                     )
                     : ( 
-                        <input type="text" id={fieldName} name={fieldName} value={formData[fieldName] ?? ""} disabled={disabledFields?.includes(fieldName)} onChange={handleChange} /> )} 
+                        <input type="text" id={fieldName} name={fieldName} value={formData[fieldName] ?? ""} disabled={fieldName in (disabledFields)} onChange={handleChange} /> )} 
                 </td> 
             </> 
         ); 

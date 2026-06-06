@@ -174,6 +174,14 @@ import { CoverageClinic } from '../pages/CoverageClinic';
 import { InsuranceAuthorizationRequest } from '../pages/InsuranceAuthorizationRequest';
 import { InsuranceAuthorizationType } from '../pages/InsuranceAuthorizationType';
 import { InsuranceAuthorizationStatus } from '../pages/InsuranceAuthorizationStatus';
+import { AppointmentSessionLength } from '../pages/AppointmentSessionLength';
+import { AppointmentStatus } from '../pages/AppointmentStatus';
+import { AppointmentSlot } from '../pages/AppointmentSlot';
+import { AppointmentHourSlot } from '../pages/AppointmentHourSlot';
+import { AppointmentDoctorDay } from '../pages/AppointmentDoctorDay';
+import { AppointmentDoctorHourBlockSlot } from '../pages/AppointmentDoctorHourBlockSlot';
+import { AppointmentDoctorHourBlock } from '../pages/AppointmentDoctorHourBlock';
+import { DoctorAppointmentParameter } from '../pages/DoctorAppointmentParameter';
 
 export function AppRoutes(){
     return(
@@ -765,10 +773,47 @@ export function AppRoutes(){
 
                 <Route path="/DoctorVisitTran" element={<DoctorVisitTran/>}/> 
 
+                <Route path="/AppointmentDoctorHourBlock" element={<AppointmentDoctorHourBlock/>}/> 
+                <Route path="/AppointmentDoctorHourBlock/add" element={<AddPage/>}/>                
+                <Route path="/AppointmentDoctorHourBlock/modify" element={<ModifyForm/>}/>
+
+                <Route path="/AppointmentDoctorHourBlockSlot" element={<AppointmentDoctorHourBlockSlot/>}/> 
+                <Route path="/AppointmentDoctorHourBlockSlot/add" element={<AddPage/>}/>                
+                <Route path="/AppointmentDoctorHourBlockSlot/modify" element={<ModifyForm/>}/>
+
+                <Route path="/AppointmentDoctorDay" element={<AppointmentDoctorDay/>}/> 
+                <Route path="/AppointmentDoctorDay/add" element={<AddPage/>}/>                
+                <Route path="/AppointmentDoctorDay/modify" element={<ModifyForm/>}/>
+
+                <Route path="/AppointmentHourSlot" element={<AppointmentHourSlot/>}/> 
+                <Route path="/AppointmentHourSlot/add" element={<AddPage/>}/>                
+                <Route path="/AppointmentHourSlot/modify" element={<ModifyForm/>}/>
+
+                <Route path="/AppointmentSlot" element={<AppointmentSlot/>}/> 
+                <Route path="/AppointmentSlot/add" element={<AddPage/>}/>                
+                <Route path="/AppointmentSlot/modify" element={<ModifyForm/>}/>
+
+                <Route path="/AppointmentStatus" element={<AppointmentStatus/>}/> 
+                <Route path="/AppointmentStatus/add" element={<AddPage/>}/>                
+                <Route path="/AppointmentStatus/modify" element={<ModifyForm/>}/>
+
+                <Route path="/AppointmentSessionLength" element={<AppointmentSessionLength/>}/> 
+                <Route path="/AppointmentSessionLength/add" element={<AddPage/>}/>                
+                <Route path="/AppointmentSessionLength/modify" element={<ModifyForm/>}/>
+
+                <Route path="/DoctorAppointmentParameter" element={<DoctorAppointmentParameter/>}/> 
+                <Route path="/DoctorAppointmentParameter/add" element={<AddPage/>}/>                
+                <Route path="/DoctorAppointmentParameter/modify" element={<ModifyForm/>}/>
             </Routes>
         </div>
     );
 }
+
+
+
+
+
+
 
 
 

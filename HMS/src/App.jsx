@@ -8,6 +8,7 @@ import { SideMenu } from './components/SideMenu';
 import { AppFooter } from './components/AppFooter';
 import { PageContent } from './components/PageContent';
 import { Register } from './pages/Register';
+import { Calendar } from './components/Calendar';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -19,8 +20,8 @@ function App() {
 
   return (
     <div className="App">
-      
-      {isAuthenticated ? (
+     111
+      {/*isAuthenticated ? (
             <>
               <AppHeader/>
               <Space className="SideMenuPageContent">
@@ -32,7 +33,8 @@ function App() {
             ) : (
               <Register onLoginSuccess={() => setIsAuthenticated(true)} populateUserMenu={getUserMenuData}/>
             )
-          }
+         */}
+         <Calendar></Calendar>
       
     </div>
   );
