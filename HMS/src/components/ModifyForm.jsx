@@ -42,8 +42,7 @@ export function ModifyForm(props){
 	
     const tabDataValues = state ? state.initialData : props.obj;
     const initialData = Object.values(state.rec); 
-    const backLink = state.backLink;   
-    
+    const backLink = state.backLink;
     const tabData = state?state.tabData:props.obj;
     const formName =state?state.page:null;
     const localLovMap = new Map();
@@ -209,10 +208,10 @@ export function ModifyForm(props){
             const value = row[key]; 
             const parent = value.substring(value.indexOf(String.fromCharCode(31)) + 1).trim(); //get string after chr(13), it's parent
             if (parent) { 
-                //console.log(key)
+//console.log(key)
+               // console.log(parent)
                 // parent can have multiple children; store as array 
                 const existing = localParentChildMap.get(parent) || []; 
-                //console.log(existing)
                 localParentChildMap.set(parent, [...existing, key]);    //localParentChildMap.set(parent, key);
             } 
         }
@@ -223,6 +222,7 @@ export function ModifyForm(props){
             const parent = value.substring(value.indexOf(String.fromCharCode(31)) + 1) .trim(); 
             if (!parent) { // Root LOV
                 const lov = await fetchInitLov(linkLov, key, headers, row[key].split(String.fromCharCode(31))[0]);
+                //console.log(lov)
                 localLovMap.set(key, lov);
             } 
         }
@@ -236,7 +236,7 @@ export function ModifyForm(props){
                 localLovMap.set(key, lov);
             } 
         }
-        //console.log(localLovMap);
+    //    console.log(localLovMap);
         // 5. Push final maps into React state 
         setLovMap(localLovMap); 
         setParentChildLovMap(localParentChildMap);
@@ -294,6 +294,7 @@ useEffect(() => {
             }
         });
         setTabDataNoChar(cleaned);
+        //setFormData(cleaned)
     }, [tabData]);     
 
     // get fields to be displayed 

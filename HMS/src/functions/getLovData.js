@@ -2,6 +2,15 @@ import {  fetchLov } from "./fetchLov.js";
 export function getLovData(tabData, tabDataValues, setParentChildLovMap, setLovMap, linkLov, headers, setDateCols) {
     //console.log(tabData)
     //console.log(tabDataValues)
+    if (!tabData || !Array.isArray(tabData)) {
+        console.warn("getLovData: tabData is undefined or not an array");
+        return;
+    }
+
+    if (!tabDataValues) {
+        console.warn("getLovData: tabDataValues is undefined");
+        return;
+    }
     let keys = tabData;
     const row = Array.isArray(tabDataValues) ? tabDataValues[0] : tabDataValues;
     const lovCols = keys.filter(

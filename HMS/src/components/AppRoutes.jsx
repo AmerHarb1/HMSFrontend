@@ -182,6 +182,23 @@ import { AppointmentDoctorDay } from '../pages/AppointmentDoctorDay';
 import { AppointmentDoctorHourBlockSlot } from '../pages/AppointmentDoctorHourBlockSlot';
 import { AppointmentDoctorHourBlock } from '../pages/AppointmentDoctorHourBlock';
 import { DoctorAppointmentParameter } from '../pages/DoctorAppointmentParameter';
+import { Appointment } from '../pages/Appointment';
+import { Hospital } from '../pages/Hospital';
+import { AdmissionReferral } from '../pages/AdmissionReferral';
+import { AdmissionRequest } from '../pages/AdmissionRequest';
+import { AdmissionRequestStatus } from '../pages/AdmissionRequestStatus';
+import { Admission } from '../pages/Admission';
+import { AdmissionType } from '../pages/AdmissionType';
+import { AdmissionStatus } from '../pages/AdmissionStatus';
+import { AdmissionReferralReason } from '../pages/AdmissionReferralReason';
+import { OrgType } from '../pages/OrgType';
+import { InPatientDoctor } from '../pages/InPatientDoctor';
+import { PersonRelationType } from '../pages/PersonRelationType';
+import { PersonNextOfKin } from '../pages/PersonNextOfKin';
+import { InPatientDoctorAssignmentType } from '../pages/InPatientDoctorAssignmentType';
+import { InPatientVisitType } from '../pages/InPatientVisitType';
+import { OutOfRoomType } from '../pages/OutOfRoomType';
+
 
 export function AppRoutes(){
     return(
@@ -804,12 +821,72 @@ export function AppRoutes(){
                 <Route path="/DoctorAppointmentParameter" element={<DoctorAppointmentParameter/>}/> 
                 <Route path="/DoctorAppointmentParameter/add" element={<AddPage/>}/>                
                 <Route path="/DoctorAppointmentParameter/modify" element={<ModifyForm/>}/>
+
+                <Route path="/Appointment" element={<Appointment/>}/> 
+
+                <Route path="/Hospital" element={<Hospital/>}/> 
+                <Route path="/Hospital/add" element={<AddPage/>}/>                
+                <Route path="/Hospital/modify" element={<ModifyForm/>}/>
+
+                <Route path="/AdmissionReferral" element={<AdmissionReferral/>}/> 
+                <Route path="/AdmissionReferral/add" element={<AddPage/>}/>                
+                <Route path="/AdmissionReferral/modify" element={<ModifyForm/>}/>
+
+                <Route path="/AdmissionRequest" element={<AdmissionRequest/>}/> 
+                <Route path="/AdmissionRequest/add" element={<AddPage/>}/>                
+                <Route path="/AdmissionRequest/modify" element={<ModifyForm/>}/>
+
+                <Route path="/AdmissionRequestStatus" element={<AdmissionRequestStatus/>}/> 
+                <Route path="/AdmissionRequestStatus/add" element={<AddPage/>}/>                
+                <Route path="/AdmissionRequestStatus/modify" element={<ModifyForm/>}/>
+
+                <Route path="/Admission" element={<Admission/>}/> 
+                <Route path="/Admission/add" element={<AddPage/>}/>                
+                <Route path="/Admission/modify" element={<ModifyForm/>}/>
+
+                <Route path="/AdmissionType" element={<AdmissionType/>}/> 
+                <Route path="/AdmissionType/add" element={<AddPage/>}/>                
+                <Route path="/AdmissionType/modify" element={<ModifyForm/>}/>
+
+                <Route path="/AdmissionStatus" element={<AdmissionStatus/>}/> 
+                <Route path="/AdmissionStatus/add" element={<AddPage/>}/>                
+                <Route path="/AdmissionStatus/modify" element={<ModifyForm/>}/>
+
+                <Route path="/AdmissionReferralReason" element={<AdmissionReferralReason/>}/> 
+                <Route path="/AdmissionReferralReason/add" element={<AddPage/>}/>                
+                <Route path="/AdmissionReferralReason/modify" element={<ModifyForm/>}/>
+
+                <Route path="/OrgType" element={<OrgType/>}/> 
+                <Route path="/OrgType/add" element={<AddPage/>}/>                
+                <Route path="/OrgType/modify" element={<ModifyForm/>}/>
+
+                <Route path="/InPatientDoctorAssignmentType" element={<InPatientDoctorAssignmentType/>}/> 
+                <Route path="/InPatientDoctorAssignmentType/add" element={<AddPage/>}/>                
+                <Route path="/InPatientDoctorAssignmentType/modify" element={<ModifyForm/>}/>
+
+                <Route path="/PersonNextOfKin" element={<PersonNextOfKin/>}/> 
+                <Route path="/PersonNextOfKin/add" element={<AddPage/>}/>                
+                <Route path="/PersonNextOfKin/modify" element={<ModifyForm/>}/>
+
+                <Route path="/InPatientDoctor" element={<InPatientDoctor/>}/> 
+                <Route path="/InPatientDoctor/add" element={<AddPage/>}/>                
+                <Route path="/InPatientDoctor/modify" element={<ModifyForm/>}/>
+                
+                <Route path="/PersonRelationType" element={<PersonRelationType/>}/> 
+                <Route path="/PersonRelationType/add" element={<AddPage/>}/>                
+                <Route path="/PersonRelationType/modify" element={<ModifyForm/>}/>
+
+                <Route path="/InPatientVisitType" element={<InPatientVisitType/>}/> 
+                <Route path="/InPatientVisitType/add" element={<AddPage/>}/>                
+                <Route path="/InPatientVisitType/modify" element={<ModifyForm/>}/>
+
+                <Route path="/OutOfRoomType" element={<OutOfRoomType/>}/> 
+                <Route path="/OutOfRoomType/add" element={<AddPage/>}/>                
+                <Route path="/OutOfRoomType/modify" element={<ModifyForm/>}/>
             </Routes>
         </div>
     );
 }
-
-
 
 
 

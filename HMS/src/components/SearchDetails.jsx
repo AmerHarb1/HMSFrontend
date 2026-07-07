@@ -1,6 +1,7 @@
 import { Table, Space} from 'antd';
 import axios from 'axios';
 import React,{ useState, useEffect} from 'react';
+import { useNavigate, useLocation} from 'react-router';
 import { AddButton } from '../components/AddButton';
 import '../styles/page.css';
 import 'antd/dist/reset.css'; // for AntD v5
@@ -31,7 +32,8 @@ export function SearchDetails(props) {
     const disabledFields = props.disabledFields;
     const excludeFields = props.excludeFields;
 
-    
+    const location = useLocation();
+
     const getData = async(page, pageSize, sortField, sortOrder, filters={}) => {
     setloading(true);
     // Build filter query string
@@ -70,7 +72,7 @@ export function SearchDetails(props) {
             const cols = Object.keys(tabData[0])
                 .filter((key) => {
                     const type = getValueType(tabData[0][key]);
-                    return (type !== "other" && !(key in excludeFields))   // 👈 exclude non simple types 
+                    return (type !== "other" && !(excludeFields ? key in excludeFields : false))   // 👈 exclude non simple types 
                 })
                 .map((key) => {
                     const col = {
@@ -113,6 +115,7 @@ export function SearchDetails(props) {
                                                 formTabLink={formTabLink} 
                                                 disabledFields={disabledFields}
                                                 excludeFields={excludeFields}
+                                                parentState={location.state}
                                     >
                                         {display}
                                     </AddButton>

@@ -1,14 +1,13 @@
 import { useState, useEffect, useMemo} from 'react';
 import { useLocation} from 'react-router';
 import { AddForm } from '../components/AddForm';
-import { AddTable } from '../components/AddTable';
 import { ModifyForm } from '../components/ModifyForm';
 import { AddModifyTableForm } from '../components/AddModifyTableForm';
 import { Tabs } from '../components/Tabs';
 import { Tab } from '../components/Tab';
 import {  fetchRecordById } from "../functions/fetchRecordById.js";
 
-export function DoctorVisitTabs(props) {
+export function InPatientTabs(props) {
     const { state } = useLocation();
 
     const link = state?state.formTabLink:props.formTabLink;
@@ -24,7 +23,6 @@ export function DoctorVisitTabs(props) {
     const [doctorVisitData, setDoctorVisitData] = useState({});
     const [demographicsData, setDemographicsData] = useState({});
     const [admissionRequestData, setAdmissionRequestData] = useState({});
-    const [nextOfKinData, setNextOfKinData] = useState({});
     const [loading, setLoading] = useState(true);
 
     const cleanedRecord = useMemo(() => {
@@ -83,17 +81,6 @@ export function DoctorVisitTabs(props) {
         excludeFields: {id: '', createdBy: '', createdDate: '', admissionRequestStatus: ''}
     }), [admissionRequestData, disabledFields]);
 
-    const nextOfKinState = useMemo(() => ({
-        tabData: Object.keys(nextOfKinData),   // schema
-        initialData: nextOfKinData,            // record
-        rec: nextOfKinData, 
-        lnk: "personNextOfKin",
-        noNavigate:true,
-        disabledFields: disabledFields,
-        excludeFields: {id: '', createdBy: '', createdDate: '', admissionRequestStatus: ''}
-    }), [admissionRequestData, disabledFields]);
-
-
     const tabs = [
         {label: 'Demographics',  content:   <Tab title= 'Demographics'>
                                                 <ModifyForm state={demographicState}/>
@@ -111,11 +98,7 @@ export function DoctorVisitTabs(props) {
         
         {label: 'Admission Request',  content:   <Tab title= 'Admission Request'>
                                                 <ModifyForm state={admissionRequestState}/>
-                                            </Tab>},
-        {label: 'Next Of Kin',  content:   <Tab title= 'Next Of Kin'>
-                                                <AddTable name= "Next Of Kin" lnk="personNextOfKin" entryView="view" state={nextOfKinState}/>
                                             </Tab>}
-                                            
     ];
 
     useEffect(() => {
@@ -132,17 +115,22 @@ export function DoctorVisitTabs(props) {
             let person
             let admissionRequest
             console.log(formTabId) 
-            doctorVisit = await fetchRecordById(link, formTabId);   //link would be doctorVisit
-            person = await fetchRecordById(patientLink, doctorVisit.patientId);
-            console.log(person) 
-            admissionRequest = await fetchRecordById('admissionRequestByDoctorVisit', doctorVisit.id);
-            const kin = await fetchRecordById('personNextOfKin', person.id);
+            if(formTabEntity === 'doctorVisit'){
+                doctorVisit = await fetchRecordById(link, formTabId);   //link would be doctorVisit
+                person = await fetchRecordById(patientLink, doctorVisit.patientId);
+                admissionRequest = await fetchRecordById('admissionRequestByDoctorVisit', doctorVisit.id);
+            }else if(formTabEntity === 'patient'){
+                doctorVisit = await fetchRecordById(link, formTabId);   //link would be doctorVisitPatient
+                person = await fetchRecordById(patientLink, formTabId);
+                console.log(person)
+                admissionRequest = await fetchRecordById('admissionRequestByDoctorVisit', doctorVisit.id);
+                console.log(admissionRequest)
+            }
             console.log(admissionRequest) 
             setTabData(doctorVisit || {});
             setDoctorVisitData(doctorVisit || {});
             setDemographicsData(person || {});
             setAdmissionRequestData(admissionRequest || {});
-            setNextOfKinData(kin);
             setLoading(false);
             
         }

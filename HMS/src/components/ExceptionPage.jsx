@@ -1,5 +1,6 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { Box, Typography, Button, Paper } from "@mui/material";
+import { blue, green } from "@mui/material/colors";
 
 export function ExceptionPage() {
   const { state } = useLocation();
@@ -11,17 +12,17 @@ export function ExceptionPage() {
 
   return (
     <Box sx={{ p: 4, display: "flex", justifyContent: "center" }}>
-      <Paper sx={{ p: 4, maxWidth: 700 }}>
-        <Typography variant="h5" color="error" gutterBottom>
+      <Paper sx={{ p: 4, maxWidth: 2000 }}>
+        <Typography variant="h3" color="error" gutterBottom>
           Backend Exception
         </Typography>
 
-        <Typography variant="body1" sx={{ mb: 2 }}>
+        <Typography variant="body1" sx={{ mb: 2, fontSize: "1.5rem" }}>
           {message}
         </Typography>
 
         {exceptionDate && (
-          <Typography variant="body2" sx={{ mb: 2 }}>
+          <Typography variant="body2" sx={{ mb: 2, fontSize: "1.25rem", color:blue }}>
             <strong>Time:</strong> {exceptionDate}
           </Typography>
         )}
@@ -35,7 +36,8 @@ export function ExceptionPage() {
               borderRadius: 1,
               whiteSpace: "pre-wrap",
               mb: 2,
-              fontFamily: "monospace"
+              fontFamily: "monospace",
+              fontSize: "1.3rem"
             }}
           >
             {stackTrace}

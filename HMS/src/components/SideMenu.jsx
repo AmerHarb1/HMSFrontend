@@ -12,6 +12,21 @@ export function SideMenu({menuItems}){
        // setOpenKeys(latestKey ? [latestKey] : []); 
        setOpenKeys(keys);
     };
+
+    function findMenuByKey(items, key) {
+        for (const item of items) {
+            if (item.key === key) {
+                return item;
+            }
+            if (item.children && item.children.length > 0) {
+                const found = findMenuByKey(item.children, key);
+            if (found) 
+                return found;
+            }
+        }
+        return null;
+    }
+
     return(
         <div className="SideMenu">
             <Menu className="SideMenu"
@@ -20,7 +35,8 @@ export function SideMenu({menuItems}){
                 openKeys={openKeys}
                 onOpenChange={onOpenChange}
                 onClick={(item)=>{
-                    navigate(item.key);
+                    const menu = findMenuByKey(menuItems, item.key);
+                    navigate(menu.link);
                     
                 }}>
             </Menu>

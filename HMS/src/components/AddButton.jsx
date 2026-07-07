@@ -1,5 +1,5 @@
 import { Button } from 'antd';
-import {useNavigate} from 'react-router';
+import { useNavigate, useLocation} from 'react-router';
 import '../styles/page.css';
 import  {Master } from '../components/Master';
 
@@ -30,6 +30,7 @@ export function AddButton(props){
 	const formTabEntity = props.formTabEntity;
 	const formTabId = props.formTabId;
    
+	const location = useLocation();
 	const navigate = useNavigate();
 
 	const buttonClicked = () => {		
@@ -40,7 +41,21 @@ export function AddButton(props){
 			keys = masterFields;
 		}
 
-		//console.log(props.rec)
+		const returnMode = location.state?.returnMode ?? props.parentState?.returnMode;
+		const returnField = location.state?.returnField ?? props.parentState?.returnField;
+
+		if (returnMode) {
+			// Return selected record back to previous screen
+			navigate("/appointment", {
+				state: {
+					selectedRecord: props.rec,
+					returnField: returnField
+				}
+			});
+			return;
+		}
+
+		console.log(props.actionLink)
 		navigate('/'+props.actionLink
 				,{state:{
 					initialData:tabData,

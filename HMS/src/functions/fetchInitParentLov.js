@@ -10,7 +10,9 @@ export async function fetchInitParentLov(linkLov, field, parentValue, headers) {
       const useNoDesc = isSingleChar || isPrefixSingleChar; 
       const endpoint = useNoDesc ? `${field}Lov/${parentValue}` : `${field}LovDesc/${parentValue}`;
 
-      const res = await axios.get(`${linkLov}${endpoint}`, { headers }); 
+      const parent = endpoint.includes(String.fromCharCode(31)) ? endpoint.substring(0, endpoint.indexOf(String.fromCharCode(31))) : endpoint;
+
+      const res = await axios.get(`${linkLov}${parent}`, { headers }); 
 
       return res.data; 
     }  

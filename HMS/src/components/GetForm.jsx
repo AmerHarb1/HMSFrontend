@@ -1,9 +1,9 @@
 import { Typography, Space, message, DatePicker} from 'antd';
-import axios from 'axios';
+import {  fetchRecordById } from "../functions/fetchRecordById.js";
 import { useState, useEffect} from 'react';
 import { useNavigate, useLocation} from 'react-router';
 import dayjs from "dayjs";
-import { GenericAutoFill } from './GenericAutoFill';
+import { GenericAutoFill } from './GenericAutoFill.jsx';
 //import { ProductAutoFill } from './ProductAutoFill';
 import { getAccessToken } from "../functions/getAccessToken.js";
 import {resolvePrimaryKey} from "../functions/resolvePrimaryKey.js";
@@ -13,16 +13,16 @@ import {  getCheckBoxData } from "../functions/getCheckBoxData.js";
 import {  lovChange } from "../functions/lovChange.js";
 import {isDateTime} from "../functions/isDateTime.js";
 import { toSpacedWords } from "../functions/toSpacedWords.js";
-import { getHeader } from "../functions/getHeader";
+import { getHeader } from "../functions/getHeader.js";
 import '../styles/page.css';
 
-export function AddForm(props){
+export function GetForm(props){
     const location = useLocation();
-    const state = props.state || location.state || {};
-    const masterId = state?state.masterId:props.masterId?props.masterId:null;
-    const forwardKey = state?state.forwardKey:props.forwardKey;
-    const accessToken = getAccessToken();    
-    const serviceFormData = state.serviceFormData;
+    const state = props.state || {};
+
+    const navState = location.state || {};
+
+    const accessToken = getAccessToken(); 
     const [formData, setFormData] = useState(() => { 
         const schema = state.tabData || [];
         const raw = state.initialData || {};
@@ -35,31 +35,24 @@ export function AddForm(props){
 
         return base;
     });
-   // 
-   // const [formData, setFormData] = useState(serviceFormData);
-    //const obj = { ...tabData.reduce((o, key) => ({ ...o, [key]: formData[key] }), {}), serviceProductId: formData.serviceProductId };
+
 
     const tabData = state ? state.tabData : props.obj;
-
-    const backLink = state ? state.backLink:props.backLink;
-    const backId = state ? state.backId:props.backId;
-    
     const tabDataValues = state ? state.initialData : props.obj;
+
+    const submitButton = state ? state.submitButton:props.submitButton;
+    const search = state ? state.search : null;
+
+    
     const formName = state ? state.page : props.name;
     const lnk = state ? state.lnk : props.lnk;
+    const searchLink = state ? state.searchLink : props.searchLink;
     //const excludeFields = state ? state.excludeFields:props.excludeFields;
-    const detailExcludeFields = state.detailExcludeFields;
-    const masterFields=state?state.masterFields:props.masterFields;
-    const masterCode=state?state.masterCode:props.masterCode;
-    const masterCodeValue=state?state.masterCodeValue:props.masterCodeValue;
-    const masterLocalLovMap = state?state.masterLocalLovMap:props.masterLocalLovMap;
+    const id = state.id;
+    
     const [disabledFields, setDisabledFields] = useState(state?state.disabledFields: null);
     const [excludeFields, setExcludeFields] = useState(state?state.excludeFields: null);
-    const [initialLovApplied, setInitialLovApplied] = useState(false);  // used to stop infinit reloading when AddForm is invoked in the main tab
-    const detail = props.detail;
-    const payment = state?state.payment : null; //used to collect payment before proceeding with standard behavior of addForm
-    const noNavigate = state?state.noNavigate : null;
-    //setFormData(prev => ({ ...prev, serviceProductId: tabDataValues?.serviceProductId ?? "" }));
+    const [initialLovApplied, setInitialLovApplied] = useState(false);  // used to stop infinit reloading when AddForm is invoked in the main tab    
     
     const navigate = useNavigate();
     const linkLov = "http://localhost:9002/hms/";
@@ -67,7 +60,7 @@ export function AddForm(props){
     const [checkBoxMap, setCheckBoxMap] = useState([]);
     const [dateCols, setDateCols] = useState([]);
     const [parentChildLovMap, setParentChildLovMap] = useState(new Map());
-    const link = "http://localhost:9002/hms/" + lnk;
+    
     const autoFill = state?state.autoFill: null;
     const autoFillLink = state?state.autoFillLink: null;
     const base = (autoFill || "").replace(/Description$/, "");
@@ -81,37 +74,49 @@ export function AddForm(props){
         withCredentials: true,
     };
 
-
     const cancelClicked = () => navigate("/" + history.back());
 
-    async function paymentClicked () {
-        const headers = getHeader();
-        const payLink = linkLov + payment;
-        console.log(payLink)
-        console.log(payment)
-        try {
-            const res = await axios.post(payLink, formData,{headers: headers});
-            console.log(res.data);
-            navigate("/"+payment, {
-                state: {                
-                    tabData: Object.keys(res.data),   // schema from blank object
-                    initialData: res.data,            // raw blank record
-                    bodyData: res.data,
-                    lnk,
-                    excludeFields: {id: '', createdBy: '', createdDate: '', patientId: '', personId: '', bodyTemperature: '', pulseRate: '', respirationRate: ''
-                                  , bloodPressure: '', bloodSugar: '', weight: '', height: '', doctorNotes: '', nurseNotes: ''
-                                  , doctorVisitType: '', visitDate: '', patient: '', clinic: '', clinicRoom: '', doctor: '', paymentType: '', insuranceCompany: ''
-                                  , insuranceNumber: '', insuranceGroup: '', transactionId: '', insurancePlan: ''}
-                }
-            });
-        } catch (err) {
-            navigate("/exception", {
-                state: {
-                message: err.response?.data?.message,
-                stackTrace: err.response?.data?.stackTrace,
-                exceptionDate: err.response?.data?.exceptionDate
-                }
-            });   
+    function searchClicked (){
+        navigate("/"+search.searchLink, {
+            state: {
+                tabData: tabData,
+                tabDataValues: tabDataValues,
+                searchFields: ['PatientId','FirstName', 'LastName', 'BithDate'],
+                searchValues: {PatientId: '', FirstName: '', LastName: '', BirthDate: ''},
+                lnk: search.searchLink,
+                searchLink: search.afterSearchLink,
+                formTabLink: search.formTabLink,
+                returnMode: search.returnMode,          // <— NEW
+                returnField: search.formTabEntity     // <— NEW
+            }
+        })
+    }
+
+    useEffect(() => {
+        if (navState?.selectedRecord && navState?.returnField) {
+            setFormData(prev => ({
+                ...prev,
+                [navState.returnField]: navState.selectedRecord.id + ' - ' +navState.selectedRecord.person,
+                ['searchId']: navState.selectedRecord.id
+            }));
+        }
+    }, [navState.selectedRecord, navState.returnField]);
+
+    
+    async function handleSubmit () {
+        event.preventDefault();        
+        const response = await fetchRecordById(lnk, formData[id]);
+        props.onSaved(response, formData['AppointmentDate']);
+        if (typeof props.setSelectedDate === "function") {
+            props.setSelectedDate(formData['AppointmentDate']);
+        }if (typeof props.setClinic === "function") {
+            props.setClinic(formData[id]);
+        }
+        if (typeof props.setPatientId === "function") {
+            props.setPatientId(formData['searchId']);
+        }
+        if (typeof props.setPerson === "function") {
+            props.setPerson(formData[navState.returnField]);
         }
     }
 
@@ -127,121 +132,15 @@ export function AddForm(props){
         lovChange(updatedFormData, name, parentChildLovMap, setLovMap, headers, linkLov);
     };
 
-    const handleSubmit = async (event) => {
-        event.preventDefault();
-        const obj = tabData.reduce((o, key) => ({ ...o, [key]: formData[key] }), {});
-
-        try {
-            const response = await axios.post(link, obj, { headers });
-
-            // Now response.data contains the saved object
-            if (props.onSaved) {
-                console.log(response.data.id);
-                props.onSaved(response.data.id);
-            }
-
-            if (!noNavigate) {
-                if (backLink) {
-                    if (backLink === 'back') {
-                        navigate(-1, {
-                            state: {
-                                backId,
-                                masterId,
-                                excludeFields,
-                                detailExcludeFields,
-                                detail,
-                                tabData,
-                                rec: serviceFormData,
-                                masterFields,
-                                masterCode,
-                                masterCodeValue,
-                                masterLocalLovMap,
-                                backLink,
-                                title: formName,
-                                from: formName
-                            }
-                        });
-                    } else {
-                        navigate("/" + backLink, {
-                            state: {
-                                backId,
-                                masterId,
-                                excludeFields,
-                                detailExcludeFields,
-                                detail,
-                                tabData,
-                                rec: serviceFormData,
-                                masterFields,
-                                masterCode,
-                                masterCodeValue,
-                                masterLocalLovMap,
-                                backLink,
-                                title: formName,
-                                from: formName
-                            }
-                        });
-                    }
-                } else {
-                    navigate("/" + lnk, {
-                        state: { serviceFormData: obj }
-                    });
-                }
-            }
-
-            } catch (err) {
-                navigate("/exception", {
-                    state: {
-                    message: err.response?.data?.message,
-                    stackTrace: err.response?.data?.stackTrace,
-                    exceptionDate: err.response?.data?.exceptionDate
-                    }
-                });
-            }
-        };
-
-  useEffect(() => {
-    if (!Array.isArray(tabData) || tabData.length === 0) {
-        return; // stop early, nothing to process
-    }
-
-    if (!tabDataValues) {
-        return; // also stop early
-    }
-    getLovData(tabData, tabDataValues, setParentChildLovMap, setLovMap, linkLov, headers, setDateCols);
-    getCheckBoxData(tabData, tabDataValues, setCheckBoxMap)
-  }, [tabData, tabDataValues]);
-
-  useEffect(() => {
-    setDisabledFields(disabledFields)
-  }, [disabledFields]);
-
     useEffect(() => {
-        setExcludeFields(excludeFields)
-    }, [excludeFields]);
-
-  useEffect(() => {
-    setFormData((prev) => ({ ...prev, [forwardKey]: masterId }));
-  }, [forwardKey, tabDataValues]);
-
-  useEffect(() => {
-        if (!tabDataValues || Object.keys(tabDataValues).length === 0) return;
-
-        const cleaned = {};
-        Object.entries(tabDataValues).forEach(([key, value]) => {
-            if (typeof value === "string" && value.includes(String.fromCharCode(31))) {
-                cleaned[key] = value.substring(0, value.indexOf(String.fromCharCode(31)));
-            } else {
-                cleaned[key] = value;
-            }
-        });
-
-        setFormData(prev => ({ ...prev, ...cleaned }));
-    }, [tabDataValues]);
+        getLovData(tabData, tabDataValues, setParentChildLovMap, setLovMap, linkLov, headers, setDateCols);
+        getCheckBoxData(tabData, tabDataValues, setCheckBoxMap)
+    }, [tabData]);
 
     useEffect(() => {
         if (!formData) return;
         if (!formData[autoFillId] && !formData[autoFill]) return;
-
+        
         setInitialAutoFill({
             autoFillObjId: formData[autoFillId],
             autoFillObjCode: formData[autoFillCode],
@@ -374,7 +273,25 @@ export function AddForm(props){
                         </div>
                     )
                     : ( 
-                        <input type="text" id={fieldName} name={fieldName} value={formData[fieldName] ?? ""} disabled={disabledFields?.includes(fieldName)} onChange={handleChange} /> )} 
+                        <div>
+                            <input  type="text" 
+                                    id={fieldName} 
+                                    name={fieldName} 
+                                    value={formData[fieldName] ?? ""} 
+                                    disabled={disabledFields?.includes(fieldName)} onChange={handleChange} 
+                            /> 
+                            {search ? 
+                                    search.formTabEntity === fieldName ? 
+                                            
+                                                <button className="form-button-field" onClick={searchClicked}>Search</button>
+                                          
+                                        :null
+                                    : null
+                            }
+                        </div>
+                        
+                        
+                    )} 
                 </td> 
             </> 
         ); 
@@ -406,26 +323,10 @@ export function AddForm(props){
                                 </tr>
                             ))}	
                             <tr className="button-row">
-                                
-                                    <td>
-                                        <div className="button-group">
-                                            <button className="form-button" type="submit">Submit</button>
-                                        </div>
-                                    </td> 
-                                    {payment
-                                        ?<td>
-                                            <div className="button-group">
-                                                <button className="form-button" type="button" onClick={paymentClicked}>Payment</button>
-                                            </div>    
-                                        </td>
-                                        :null
-                                    }                                    
-                                    <td>
-                                        <div className="button-group">
-                                            <button className="form-button" onClick={cancelClicked}>Cancel</button>
-                                        </div>    
-                                    </td>
-                                
+                                <div className="button-group">
+                                    <td><button className="form-button" type="submit">{submitButton}</button></td>                                    
+                                    <td><button className="form-button" onClick={cancelClicked}>Cancel</button></td>
+                                </div>
                             </tr>
                         </tbody>
                     </table>

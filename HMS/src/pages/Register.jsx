@@ -59,12 +59,12 @@ export function Register({ onLoginSuccess, populateUserMenu }){
                 <table >
                     <tbody className="inputs">                                               
                         <tr className="input">	
-                            <FaUser className="icon-img"/>				  	
-                            <td key="username"><input type="text"  id="username" name="username" placeholder='username' onChange={handleChange}/></td>
+                            				  	
+                            <td key="username"><FaUser className="icon-img"/><input type="text"  id="username" name="username" placeholder='username' onChange={handleChange}/></td>
                         </tr> 				  	
                         <tr className="input">
-                            <TbLockPassword className="icon-img"/>
-                            <td key="password"><input type="password"  id="password" name="password" placeholder='password' onChange={handleChange}/></td>
+                            
+                            <td key="password"><TbLockPassword className="icon-img"/><input type="password"  id="password" name="password" placeholder='password' onChange={handleChange}/></td>
                         </tr>
                     <tr className="submit-container">
                         <td><button className="submit" type="submit">Submit</button></td>

@@ -11,26 +11,31 @@ import { toSpacedWords } from "../functions/toSpacedWords.js";
 import '../styles/page.css';
 
 export function Search(props) {
-    const { state } = useLocation();
+    const { state } = useLocation();    
+
     const [ready, setReady] = useState(false);
-    const searchFields = props.searchFields; 
-    const searchValues = props.searchValues;
-    const [tabData, setTabData] = useState(props.searchFields);   
+    const searchFields  = state ? state.searchFields    : props.searchFields;
+    const searchValues  = state ? state.searchValues    : props.searchValues;
+    const searchLink    = state ? state.searchLink      : props.searchLink;
+    const formTabLink   = state ? state.formTabLink     : props.formTabLink;
+    const formTabEntity = state ? state.formTabEntity   : props.formTabEntity;
+    const lnk           = state ? state.lnk             : props.lnk;
+    const title         = state ? state.title           : props.title?props.title:props.name;
+    const disabledFields = state ? state.disabledFields : props.disabledFields;
+    const excludeFields = state ? state.excludeFields   : props.excludeFields;
+
+    const [tabData, setTabData] = useState(searchFields);   
     const [lovMap, setLovMap] = useState(new Map());
     const [parentChildLovMap, setParentChildLovMap] = useState(new Map());//create map that holds the parent child
     const [dateCols, setDateCols] = useState([]);
-    const disabledFields = props.disabledFields;
-    const excludeFields = props.excludeFields;
+    
     const [searchCriteria, setSearchCriteria] = useState({});
-    const formTabLink = props.formTabLink;
-    const formTabEntity = props.formTabEntity;
+    
     const headers = getHeader();
     const linkLov = "http://localhost:9002/hms/";
-    const lnk = props.lnk?props.lnk:state.lnk;
-    const title = props.title?props.title:props.name;
     const [formData, setFormData] = useState({});  
     
-    const searchLink = props.searchLink;
+    
 
     useEffect(() => {
             getLovData(tabData, searchValues, setParentChildLovMap, setLovMap, linkLov, headers, setDateCols);
@@ -59,7 +64,6 @@ export function Search(props) {
 
     const handleSubmit = (event) => {
         event.preventDefault();
-        console.log(searchCriteria)
         setReady(true);     
     };
 
@@ -132,6 +136,7 @@ export function Search(props) {
                             </tbody>
                         </table>
                         {/* ✅ Render the Search Detail rows */}
+                        
                         {ready? (                    
                             <SearchDetails  searchCriteria={searchCriteria} 
                                             lnk={lnk}

@@ -59,7 +59,11 @@ export function AddModifyTableForm(props){
 
         const link = 'http://localhost:9002/hms/'+lnk + 'Get' + '?page=' + page + '&size=' + pageSize+ '&sort=' + sortField+ ',' + sortOrder + '&filterParams=' + filterParams ;	
 
-        axios.post(link,lnkId,{headers: headers}
+
+        axios.post(link,lnkId,{headers: {
+        "Content-Type": "text/plain",
+        "Authorization": headers.Authorization 
+    }}
             ).then(res => {                                
                 setTabData(res.data.content);   //res.data.content is an array of objects
                 setFormData(res.data.content);

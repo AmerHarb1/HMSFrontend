@@ -5,6 +5,10 @@ export function Tabs(props){
     const [activeIndex, setActiveIndex] = useState(0);
     const tabs = props.tabs;
 
+    if (!tabs || tabs.length === 0) {
+        return <div>No tabs available</div>;
+    }
+
     return (
         <div className="tabContainer">
             <div className="tabHeader">
