@@ -10,7 +10,7 @@ import { getValueType } from '../functions/getValueType.js';
 import { getHeader } from "../functions/getHeader";
 import { PlusOutlined } from '@ant-design/icons';
 
-export function ServiceProductDetail(props) {
+export function ProductComponentDetail(props) {
   const [loading, setloading ] = useState(true);
   const headers = getHeader();
   const [tabData, setTabData] = useState([]);
@@ -26,7 +26,7 @@ export function ServiceProductDetail(props) {
   const [sortField, setSortField] = useState('');//chaged to comments from id, because all tables have field comments but not id
   const [sortOrder, setSortOrder] = useState('asc');
   const excludeFields = props.excludeFields;
-  const lnk = 'serviceProductDetail'
+  const lnk = 'productComponentDetail'
   //setServiceFormData(props.serviceFormData);
   const actionLink = lnk+'/add';
   const modifyLink = lnk+'/modify';

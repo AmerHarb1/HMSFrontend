@@ -1,5 +1,5 @@
 import {  fetchLov } from "./fetchLov.js";
-export function getLovData(tabData, tabDataValues, setParentChildLovMap, setLovMap, linkLov, headers, setDateCols) {
+export function getLovData(tabData, tabDataValues, setParentChildLovMap, setLovMap, linkLov, headers) {
     //console.log(tabData)
     //console.log(tabDataValues)
     if (!tabData || !Array.isArray(tabData)) {
@@ -13,7 +13,7 @@ export function getLovData(tabData, tabDataValues, setParentChildLovMap, setLovM
     }
     let keys = tabData;
     const row = Array.isArray(tabDataValues) ? tabDataValues[0] : tabDataValues;
-    const lovCols = keys.filter(
+    const lovCols = keys.filter(    //get LOV fields
         (key) => typeof row[key] === "string" &&
             row[key].includes(String.fromCharCode(31)) //filter fields that their value includes ascii char 31, they are the Lov fields
             
@@ -35,12 +35,6 @@ export function getLovData(tabData, tabDataValues, setParentChildLovMap, setLovM
            //console.log(key)
             fetchLov(linkLov, key, headers, setLovMap, row[key].split(String.fromCharCode(31))[0]);
             
-        }
-    });
-
-    keys.forEach((k) => {
-        if (k.endsWith("Date")) {
-            setDateCols((prev) => [...prev, k]);
         }
     });
 }

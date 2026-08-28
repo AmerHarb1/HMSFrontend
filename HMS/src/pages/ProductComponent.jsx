@@ -2,14 +2,14 @@ import  {Master } from '../components/Master';
 
 import '../styles/report.css';
 
-export function ServiceProduct() {
+export function ProductComponent() {
 
     return (
         <div >  	
-            <Master title= "Service Product" 
-                    lnk="serviceProduct" 
+            <Master title= "Product Component" 
+                    lnk="productComponent" 
                     detail="Detail"
-                    forwardKey="serviceProductId"
+                    forwardKey="productComponentId"
                     excludeFields={{id: '', createdBy: '', createdDate: ''}}
                     detailExcludeFields={{id: '', createdBy: '', createdDate: ''}}
                     masterFields = {['id','productType', 'productDivision', 'productGroup', 'productCategory', 'itemNumber']}

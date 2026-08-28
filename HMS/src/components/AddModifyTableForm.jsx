@@ -34,18 +34,19 @@ export function AddModifyTableForm(props){
     const navigate = useNavigate();
     
     const excludeFields = props.excludeFields?props.excludeFields:{id: '', createdBy: '', createdDate: ''};
-    
+    const showInitialData = props.showInitialData;
     const detailExcludeFields = props.detailExcludeFields;
     const lnk = props.lnk;
-    const lnkId = props.lnkId;    //used with Tabs to pass an id to the api to get data for that id
+    const lnkId = props.lnkId ? props.lnkId : 999999999999999;    //used with Tabs to pass an id to the api to get data for that id
     const disabledFieldsRaw = props.disabledFields; 
     const disabledFields = Array.isArray(disabledFieldsRaw) ? disabledFieldsRaw : Object.keys(disabledFieldsRaw || {}); // if you used object-as-set    //used to dislay the included fields as disabled
     const entryView = props.entryView;         
     const modifyView = props.modifyView;
   	const actionLink = props.lnk+'/add';
     const modifyLink = props.lnk+'/modify';  
-    const autoFill = props.autoFill; 
-    const autoFillLink = props.autoFillLink;  
+    const autoFill = props.autoFill;            //used as the field name to apply autoFill
+    const autoFillLink = props.autoFillLink;    //used as the link to perform autoFill
+    const autoFillParent = props.autoFillParent;//used as the parent for auto fill 
 
     const getData = async(page, pageSize, sortField, sortOrder,lnkId, filters={}) => {
         setloading(true);
@@ -60,15 +61,16 @@ export function AddModifyTableForm(props){
         const link = 'http://localhost:9002/hms/'+lnk + 'Get' + '?page=' + page + '&size=' + pageSize+ '&sort=' + sortField+ ',' + sortOrder + '&filterParams=' + filterParams ;	
 
 
-        axios.post(link,lnkId,{headers: {
-        "Content-Type": "text/plain",
-        "Authorization": headers.Authorization 
-    }}
+        const result = axios.post(link,lnkId,{headers: {
+                "Content-Type": "text/plain",
+                "Authorization": headers.Authorization 
+            }}
             ).then(res => {                                
                 setTabData(res.data.content);   //res.data.content is an array of objects
                 setFormData(res.data.content);
                 setTotalPages(res.data.totalPages);
                 setTotalRecords(res.data.totalElements);
+                //console.log(res.data)
                 })
             .catch((err) => {
                 navigate("/exception", {
@@ -126,6 +128,7 @@ export function AddModifyTableForm(props){
                         lnk,
                         autoFill: autoFill,
                         autoFillLink: autoFillLink,
+                        autoFillParent: autoFillParent,
                         noNavigate: true,
                         disabledFields,
                         excludeFields,
@@ -196,6 +199,8 @@ export function AddModifyTableForm(props){
 
     useEffect(() => {
         getData(0, 10, '', 'asc', lnkId);
+        setAddForm(false);  //used to reset the tab if another tab is clicked and both are AddModifyTableForm
+        setModifyForm(null);//used to reset the tab if another tab is clicked and both are AddModifyTableForm
     }, [lnk, lnkId]);
 
     //extracts unique values for each field from your dataset.
@@ -219,7 +224,9 @@ export function AddModifyTableForm(props){
             lnk,
             autoFill: autoFill,
             autoFillLink: autoFillLink,
+            autoFillParent: autoFillParent,
             noNavigate: true,
+            showInitialData:showInitialData,
             disabledFields,
             excludeFields: {
                 id: "",

@@ -62,8 +62,8 @@ import { AbcCategory } from '../pages/AbcCategory';
 import { LifeTimeType } from '../pages/LifeTimeType';
 import { StockingCondition } from '../pages/StockingCondition';
 import { XyzCategory } from '../pages/XyzCategory';
-import { ServiceProduct } from '../pages/ServiceProduct';
-import { ServiceProductDetail } from '../pages/ServiceProductDetail';
+import { ProductComponent } from '../pages/ProductComponent';
+import { ProductComponentDetail } from '../pages/ProductComponentDetail';
 import { Service } from '../pages/Service';
 import { ItemApprovalType } from '../pages/ItemApprovalType';
 import { ItemDespenseType } from '../pages/ItemDespenseType';
@@ -143,7 +143,9 @@ import { DrugRestriction } from '../pages/DrugRestriction';
 import { DoctorVisit } from '../pages/DoctorVisit';
 import { DoctorVisitOrder } from '../pages/DoctorVisitOrder';
 import { DoctorVisitDiagnoses } from '../pages/DoctorVisitDiagnoses';
+import { PatientMedicationSearch } from '../pages/PatientMedicationSearch';
 import { PatientMedication } from '../pages/PatientMedication';
+import { PatientMedicationDetail } from '../pages/PatientMedicationDetail';
 import { PatientDiagnoses } from '../pages/PatientDiagnoses';
 import { User } from '../pages/User';
 import { PatientSearch } from '../pages/PatientSearch';
@@ -188,17 +190,46 @@ import { AdmissionReferral } from '../pages/AdmissionReferral';
 import { AdmissionRequest } from '../pages/AdmissionRequest';
 import { AdmissionRequestStatus } from '../pages/AdmissionRequestStatus';
 import { Admission } from '../pages/Admission';
+import { AdmissionSearch } from '../pages/AdmissionSearch';
 import { AdmissionType } from '../pages/AdmissionType';
 import { AdmissionStatus } from '../pages/AdmissionStatus';
 import { AdmissionReferralReason } from '../pages/AdmissionReferralReason';
 import { OrgType } from '../pages/OrgType';
+import { InPatient } from '../pages/InPatient';
+import { InPatientTabs } from '../pages/InPatientTabs';
 import { InPatientDoctor } from '../pages/InPatientDoctor';
 import { PersonRelationType } from '../pages/PersonRelationType';
 import { PersonNextOfKin } from '../pages/PersonNextOfKin';
 import { InPatientDoctorAssignmentType } from '../pages/InPatientDoctorAssignmentType';
 import { InPatientVisitType } from '../pages/InPatientVisitType';
 import { OutOfRoomType } from '../pages/OutOfRoomType';
-
+import { ProductComponentType } from '../pages/ProductComponentType';
+import { SpecimenType } from '../pages/SpecimenType';
+import { InPatientLabOrderNoRequestSearch } from '../pages/InPatientLabOrderNoRequestSearch';
+import { OutPatientLabOrderNoRequestSearch } from '../pages/OutPatientLabOrderNoRequestSearch';
+import { InPatientLabOrderNoRequest } from '../pages/InPatientLabOrderNoRequest';
+import { OutPatientLabOrderNoRequest } from '../pages/OutPatientLabOrderNoRequest';
+import { LabTest } from '../pages/LabTest';
+import { LabRequest } from '../pages/LabRequest';
+import { LabResult } from '../pages/LabResult';
+import { LabResultUnitType } from '../pages/LabResultUnitType';
+import { InPatientXrayOrderNoRequestSearch } from '../pages/InPatientXrayOrderNoRequestSearch';
+import { OutPatientXrayOrderNoRequestSearch } from '../pages/OutPatientXrayOrderNoRequestSearch';
+import { InPatientXrayOrderNoRequest } from '../pages/InPatientXrayOrderNoRequest';
+import { OutPatientXrayOrderNoRequest } from '../pages/OutPatientXrayOrderNoRequest';
+import { XrayTest } from '../pages/XrayTest';
+import { XrayRequest } from '../pages/XrayRequest';
+import { XrayResult } from '../pages/XrayResult';
+import { Drug } from '../pages/Drug';
+import { PatientDrugRestriction } from '../pages/PatientDrugRestriction';
+import { XrayDoctorReport } from '../pages/XrayDoctorReport';
+import { XrayResultStatus } from '../pages/XrayResultStatus';
+import { ImageType } from '../pages/ImageType';
+import { ProductInventoryComponent } from '../pages/ProductInventoryComponent';
+import { ProductInventoryComponentSearch } from '../pages/ProductInventoryComponentSearch';
+import { ProductInventoryComponentDetail } from '../pages/ProductInventoryComponentDetail';
+import { ProductSearch } from '../pages/ProductSearch';
+import { SearchTarget } from './SearchTarget';
 
 export function AppRoutes(){
     return(
@@ -342,12 +373,14 @@ export function AppRoutes(){
                 <Route path="/productDivision/add" element={<AddPage/>}/>
                 <Route path="/productGroup/add" element={<AddPage/>}/>
                 <Route path="/productCategory/add" element={<AddPage/>}/>
-                <Route path="/serviceProduct" element={<ServiceProduct/>}/>                
-                <Route path="/serviceProduct/add" element={<AddPage/>}/>
-                <Route path="/serviceProduct/modify" element={<ModifyForm/>}/>
-                <Route path="/serviceProductDetail" element={<ServiceProductDetail/>}/>
-                <Route path="/serviceProductDetail/add" element={<AddPage/>}/>
-                <Route path="/serviceProductDetail/modify" element={<ModifyForm/>}/>
+
+                <Route path="/ProductComponent" element={<ProductComponent/>}/>                
+                <Route path="/ProductComponent/add" element={<AddPage/>}/>
+                <Route path="/ProductComponent/modify" element={<ModifyForm/>}/>
+
+                <Route path="/ProductComponentDetail" element={<ProductComponent/>}/>
+                <Route path="/ProductComponentDetail/add" element={<AddPage/>}/>
+                <Route path="/ProductComponentDetail/modify" element={<ModifyForm/>}/>
                 <Route path="/unitOfMeasure/add" element={<AddPage/>}/>                
                 <Route path="/stockingCondition/add" element={<AddPage/>}/>
                 <Route path="/abcCategory/add" element={<AddPage/>}/>
@@ -656,10 +689,16 @@ export function AppRoutes(){
                 <Route path="/PatientDiagnoses" element={<PatientDiagnoses/>}/> 
                 <Route path="/PatientDiagnoses/add" element={<AddPage/>}/>                
                 <Route path="/PatientDiagnoses/modify" element={<ModifyForm/>}/>
+
+                <Route path="/PatientMedicationSearch" element={<PatientMedicationSearch/>}/>
                 
                 <Route path="/PatientMedication" element={<PatientMedication/>}/> 
-                <Route path="/PatientMedication/add" element={<AddPage/>}/>                
-                <Route path="/PatientMedication/modify" element={<ModifyForm/>}/>
+                <Route path="/PatientMedication/add" element={<Master/>}/>                
+                <Route path="/PatientMedication/modify" element={<Master/>}/>
+
+                <Route path="/PatientMedicationDetail" element={<PatientMedicationDetail/>}/> 
+                <Route path="/PatientMedicationDetail/add" element={<PatientMedicationDetail/>}/>                
+                <Route path="/PatientMedicationDetail/modify" element={<PatientMedicationDetail/>}/>
 
                 <Route path="/ProductDrugDetail" element={<ProductDrugDetail/>}/> 
                 <Route path="/ProductDrugDetail/add" element={<AddPage/>}/>                
@@ -840,7 +879,8 @@ export function AppRoutes(){
                 <Route path="/AdmissionRequestStatus/add" element={<AddPage/>}/>                
                 <Route path="/AdmissionRequestStatus/modify" element={<ModifyForm/>}/>
 
-                <Route path="/Admission" element={<Admission/>}/> 
+                <Route path="/AdmissionSearch" element={<AdmissionSearch/>}/>
+                <Route path="/Admission" element={<Admission/>}/>  
                 <Route path="/Admission/add" element={<AddPage/>}/>                
                 <Route path="/Admission/modify" element={<ModifyForm/>}/>
 
@@ -859,6 +899,9 @@ export function AppRoutes(){
                 <Route path="/OrgType" element={<OrgType/>}/> 
                 <Route path="/OrgType/add" element={<AddPage/>}/>                
                 <Route path="/OrgType/modify" element={<ModifyForm/>}/>
+
+                <Route path="/InPatient" element={<InPatient/>}/> 
+                <Route path="/InPatientTabs" element={<InPatientTabs/>}/> 
 
                 <Route path="/InPatientDoctorAssignmentType" element={<InPatientDoctorAssignmentType/>}/> 
                 <Route path="/InPatientDoctorAssignmentType/add" element={<AddPage/>}/>                
@@ -883,10 +926,100 @@ export function AppRoutes(){
                 <Route path="/OutOfRoomType" element={<OutOfRoomType/>}/> 
                 <Route path="/OutOfRoomType/add" element={<AddPage/>}/>                
                 <Route path="/OutOfRoomType/modify" element={<ModifyForm/>}/>
+
+                <Route path="/ProductComponentType" element={<ProductComponentType/>}/> 
+                <Route path="/ProductComponentType/add" element={<AddPage/>}/>                
+                <Route path="/ProductComponentType/modify" element={<ModifyForm/>}/>
+
+                <Route path="/SpecimenType" element={<SpecimenType/>}/> 
+                <Route path="/SpecimenType/add" element={<AddPage/>}/>                
+                <Route path="/SpecimenType/modify" element={<ModifyForm/>}/>
+
+                <Route path="/LabTest" element={<LabTest/>}/> 
+                <Route path="/LabTest/add" element={<AddPage/>}/>                
+                <Route path="/LabTest/modify" element={<ModifyForm/>}/>
+
+                <Route path="/LabRequest" element={<LabRequest/>}/> 
+                <Route path="/LabRequest/add" element={<AddPage/>}/>                
+                <Route path="/LabRequest/modify" element={<ModifyForm/>}/>
+
+                <Route path="/LabResult" element={<LabResult/>}/> 
+                <Route path="/LabResult/add" element={<AddPage/>}/>                
+                <Route path="/LabResult/modify" element={<ModifyForm/>}/>
+
+                <Route path="/LabResultUnitType" element={<LabResultUnitType/>}/> 
+                <Route path="/LabResultUnitType/add" element={<AddPage/>}/>                
+                <Route path="/LabResultUnitType/modify" element={<ModifyForm/>}/>
+
+                <Route path="/InPatientLabOrderNoRequestSearch" element={<InPatientLabOrderNoRequestSearch/>}/> 
+                <Route path="/OutPatientLabOrderNoRequestSearch" element={<OutPatientLabOrderNoRequestSearch/>}/> 
+
+                <Route path="/InPatientLabOrderNoRequest" element={<InPatientLabOrderNoRequest/>}/>     
+                <Route path="/InPatientLabOrderNoRequest/modify" element={<Master/>}/>
+
+                <Route path="/OutPatientLabOrderNoRequest" element={<OutPatientLabOrderNoRequest/>}/>     
+                <Route path="/OutPatientLabOrderNoRequest/modify" element={<Master/>}/>
+
+                <Route path="/XrayTest" element={<XrayTest/>}/> 
+                <Route path="/XrayTest/add" element={<AddPage/>}/>                
+                <Route path="/XrayTest/modify" element={<ModifyForm/>}/>
+
+                <Route path="/XrayRequest" element={<XrayRequest/>}/> 
+                <Route path="/XrayRequest/add" element={<AddPage/>}/>                
+                <Route path="/XrayRequest/modify" element={<ModifyForm/>}/>
+
+                <Route path="/XrayResult" element={<XrayResult/>}/> 
+                <Route path="/XrayResult/add" element={<AddPage/>}/>                
+                <Route path="/XrayResult/modify" element={<ModifyForm/>}/>
+
+                <Route path="/InPatientXrayOrderNoRequestSearch" element={<InPatientXrayOrderNoRequestSearch/>}/> 
+                <Route path="/OutPatientXrayOrderNoRequestSearch" element={<OutPatientXrayOrderNoRequestSearch/>}/> 
+
+                <Route path="/InPatientXrayOrderNoRequest" element={<InPatientXrayOrderNoRequest/>}/>     
+                <Route path="/InPatientXrayOrderNoRequest/modify" element={<Master/>}/>
+
+                <Route path="/OutPatientXrayOrderNoRequest" element={<OutPatientXrayOrderNoRequest/>}/>     
+                <Route path="/OutPatientXrayOrderNoRequest/modify" element={<Master/>}/>
+
+                <Route path="/Drug" element={<Drug/>}/> 
+                <Route path="/Drug/add" element={<AddPage/>}/>                
+                <Route path="/Drug/modify" element={<ModifyForm/>}/>
+
+                <Route path="/PatientDrugRestriction" element={<PatientDrugRestriction/>}/> 
+                <Route path="/PatientDrugRestriction/add" element={<AddPage/>}/>                
+                <Route path="/PatientDrugRestriction/modify" element={<ModifyForm/>}/>
+
+                <Route path="/XrayDoctorReport" element={<XrayDoctorReport/>}/> 
+                <Route path="/XrayDoctorReport/add" element={<AddPage/>}/>                
+                <Route path="/XrayDoctorReport/modify" element={<ModifyForm/>}/>
+
+                <Route path="/XrayResultStatus" element={<XrayResultStatus/>}/> 
+                <Route path="/XrayResultStatus/add" element={<AddPage/>}/>                
+                <Route path="/XrayResultStatus/modify" element={<ModifyForm/>}/>
+
+                <Route path="/ImageType" element={<ImageType/>}/> 
+                <Route path="/ImageType/add" element={<AddPage/>}/>                
+                <Route path="/ImageType/modify" element={<ModifyForm/>}/>
+
+                <Route path="/ProductInventoryComponentDetail" element={<ProductInventoryComponentDetail/>}/> 
+                <Route path="/ProductInventoryComponentDetail/add" element={<AddPage/>}/>                
+                <Route path="/ProductInventoryComponentDetail/modify" element={<ModifyForm/>}/>
+
+                <Route path="/ProductInventoryComponent" element={<ProductInventoryComponent/>}/> 
+                <Route path="/ProductInventoryComponent/add" element={<Master/>}/>                
+                <Route path="/ProductInventoryComponent/modify" element={<Master/>}/>
+
+                <Route path="/ProductSearch" element={<ProductSearch/>}/> 
+                <Route path="/SearchTarget" element={<SearchTarget/>}/> 
+                <Route path="/ProductInventoryComponentSearch" element={<ProductInventoryComponentSearch/>}/> 
+
             </Routes>
         </div>
     );
 }
+
+
+
 
 
 

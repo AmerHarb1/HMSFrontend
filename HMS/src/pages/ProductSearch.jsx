@@ -1,10 +1,10 @@
 import  {Search } from '../components/Search';
 
-export function PatientSearch() {
+export function ProductSearch() {
   return (
     <div >  	
-        <Search name= "Patient Search" 
-                lnk="patientSearch"
+        <Search name= "Product Search" 
+                lnk="productSearch"
                 searchLink="doctorVisit"
                 searchFields = {['PatientId','FirstName', 'LastName', 'BithDate']}
                 searchValues = {{PatientId: '', FirstName: '', LastName: '', BirthDate: ''}}

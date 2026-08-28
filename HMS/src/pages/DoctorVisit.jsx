@@ -10,7 +10,7 @@ export function DoctorVisit() {
                 formTabEntity="patient"
                 searchFields = {['PatientId','FirstName', 'LastName', 'BithDate']}
                 searchValues = {{PatientId: '', FirstName: '', LastName: '', BirthDate: ''}}
-                disabledFields={'patient'}
+                disabledFields={['patient']}
                 excludeFields={{ createdBy: '', createdDate: ''}}
         />
     </div>

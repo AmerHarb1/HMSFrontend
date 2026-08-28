@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo} from 'react';
 import { useLocation} from 'react-router';
 import { AddForm } from '../components/AddForm';
 import { AddTable } from '../components/AddTable';
+import { TableTable } from '../components/TableTable';
 import { ModifyForm } from '../components/ModifyForm';
 import { AddModifyTableForm } from '../components/AddModifyTableForm';
 import { Tabs } from '../components/Tabs';
@@ -24,7 +25,6 @@ export function DoctorVisitTabs(props) {
     const [doctorVisitData, setDoctorVisitData] = useState({});
     const [demographicsData, setDemographicsData] = useState({});
     const [admissionRequestData, setAdmissionRequestData] = useState({});
-    const [nextOfKinData, setNextOfKinData] = useState({});
     const [loading, setLoading] = useState(true);
 
     const cleanedRecord = useMemo(() => {
@@ -47,6 +47,7 @@ export function DoctorVisitTabs(props) {
         page: "Doctor Visit",
         lnk: "doctorVisit",
         payment:"doctorVisitTran",
+        showInitialData:"yes",   // shows the initial data in AddForm
         noNavigate:true,
         disabledFields: disabledFields,
         excludeFields: {id: '', createdBy: '', createdDate: '', patientId: '', personId: '', bodyTemperature: '', pulseRate: '', respirationRate: '', bloodPressure: '', bloodSugar: '', weight: '', height: '', doctorNotes: ''
@@ -83,66 +84,61 @@ export function DoctorVisitTabs(props) {
         excludeFields: {id: '', createdBy: '', createdDate: '', admissionRequestStatus: ''}
     }), [admissionRequestData, disabledFields]);
 
-    const nextOfKinState = useMemo(() => ({
-        tabData: Object.keys(nextOfKinData),   // schema
-        initialData: nextOfKinData,            // record
-        rec: nextOfKinData, 
-        lnk: "personNextOfKin",
-        noNavigate:true,
-        disabledFields: disabledFields,
-        excludeFields: {id: '', createdBy: '', createdDate: '', admissionRequestStatus: ''}
-    }), [admissionRequestData, disabledFields]);
-
-
     const tabs = [
+        {label: 'Next Of Kin',  content:   <Tab title= 'Next Of Kin'>
+                                                <AddTable lnk="personNextOfKin" entryView="view" modifyView="view"  lnkId = {demographicsData.personId}/>
+                                            </Tab>},
         {label: 'Demographics',  content:   <Tab title= 'Demographics'>
                                                 <ModifyForm state={demographicState}/>
                                             </Tab>},
         {label: 'Vital Signs',  content:    <Tab title= 'Vital Signs'>
-                                                <AddModifyTableForm key={doctorVisitData.id} lnk="doctorVisitVitals" lnkId = {doctorVisitData.id} />
+                                                <AddModifyTableForm key={doctorVisitData.id} lnk="doctorVisitVitals" lnkId = {doctorVisitData.id} showInitialData="yes"/>
                                             </Tab>},
         {label: 'Visit Diagnoses',    content:    <Tab title= 'Visit Diagnoses'>
-                                                <AddModifyTableForm key={doctorVisitData.id} lnk="doctorVisitDiagnoses" lnkId = {doctorVisitData.id} autoFill = "diagnosesDescription" autoFillLink = "diagnosesAutoFill"/>
+                                                <AddModifyTableForm key={doctorVisitData.id} 
+                                                                    lnk="doctorVisitDiagnoses" 
+                                                                    lnkId = {doctorVisitData.id} 
+                                                                    autoFill = "diagnosesDescription" 
+                                                                    autoFillLink = "diagnosesAutoFill"
+                                                                    showInitialData="yes"/>
                                             </Tab>},
         {label: 'Visit Orders',  content:    <Tab title= 'Visit Orders'>
-                                                <AddModifyTableForm key={doctorVisitData.id} lnk="doctorVisitOrder" lnkId = {doctorVisitData.id} autoFill = "product" autoFillLink = "productAutoFill"/>
+                                                <AddModifyTableForm key={doctorVisitData.id} 
+                                                                    lnk="doctorVisitOrder" 
+                                                                    lnkId = {doctorVisitData.id} 
+                                                                    autoFill = "product" 
+                                                                    autoFillLink = "productAutoFill" 
+                                                                    showInitialData="yes"/>
                                             </Tab>},
-        {label: 'Medications',  content:    <Tab title= 'Medications'></Tab>},
+        {label: 'Medications',  content:    <Tab title= 'Medications'>
+                                                
+                                                <TableTable lnk="patientMedicationDetailByPatient"  detailLnk="patientDrugRestriction" lnkId = {doctorVisitData.patientId} backLink = 'back'/>
+                                            </Tab>},
         
-        {label: 'Admission Request',  content:   <Tab title= 'Admission Request'>
-                                                <ModifyForm state={admissionRequestState}/>
-                                            </Tab>},
-        {label: 'Next Of Kin',  content:   <Tab title= 'Next Of Kin'>
-                                                <AddTable name= "Next Of Kin" lnk="personNextOfKin" entryView="view" state={nextOfKinState}/>
+        {label: 'Admission Request',  content:  <Tab title= 'Admission Request'>
+                                                    <ModifyForm state={admissionRequestState} showInitialData="yes"/>
+                                                </Tab>},
+        {label: 'Labs',  content:   <Tab title= 'Labs'>
+                                                <TableTable lnk="labRequest"  detailLnk="labResultByRequest" lnkId = {doctorVisitData.patientId} backLink = 'back'/>
+                                            </Tab>}, 
+        {label: 'Xrays',  content:   <Tab title= 'Xrays'>
+                                                <TableTable lnk="xrayRequest"  detailLnk="xrayResultByRequest" lnkId = {doctorVisitData.patientId} backLink = 'back'/>
                                             </Tab>}
                                             
     ];
-
-    useEffect(() => {
-        async function loadVisit() {
-            const visitDiagnoses = await fetchRecordById('doctorVisitDiagnoses', doctorVisitData.id); 
-
-        }
-        loadVisit();
-    }, [doctorVisitData]);
     
     useEffect(() => {
         async function load() {
-            let doctorVisit;
-            let person
-            let admissionRequest
-            console.log(formTabId) 
-            doctorVisit = await fetchRecordById(link, formTabId);   //link would be doctorVisit
-            person = await fetchRecordById(patientLink, doctorVisit.patientId);
-            console.log(person) 
-            admissionRequest = await fetchRecordById('admissionRequestByDoctorVisit', doctorVisit.id);
-            const kin = await fetchRecordById('personNextOfKin', person.id);
-            console.log(admissionRequest) 
+           
+            const doctorVisit = await fetchRecordById(link, formTabId);   //link would be doctorVisit
+            const patient = await fetchRecordById(patientLink, doctorVisit.patientId);
+            const docVstId = doctorVisit.id > 0 ? doctorVisit.id : 999999999999999
+            const admissionRequest = await fetchRecordById('admissionRequestByDoctorVisit', docVstId);
+
             setTabData(doctorVisit || {});
             setDoctorVisitData(doctorVisit || {});
-            setDemographicsData(person || {});
+            setDemographicsData(patient || {});
             setAdmissionRequestData(admissionRequest || {});
-            setNextOfKinData(kin);
             setLoading(false);
             
         }

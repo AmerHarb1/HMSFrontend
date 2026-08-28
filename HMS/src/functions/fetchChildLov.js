@@ -5,8 +5,8 @@ export async function fetchChildLov(linkLov, childKey, parentValue, headers, set
   try {  
   //  console.log(`${linkLov}${childKey}Lov/${parentValue}`); 
     const res = await axios.get(`${linkLov}${childKey}Lov/${parentValue}`, { headers }); 
-  /*  console.log(res)
-    setLovMap(prev => {
+  //  console.log(res)
+/*    setLovMap(prev => {
       const next = new Map(prev);   // clone existing
       next.set(childKey, res.data); // update child only
       return next;
@@ -36,11 +36,12 @@ export async function fetchChildLov(linkLov, childKey, parentValue, headers, set
    
   } catch (error) { 
     const backendError = error.response?.data;
-
+/*
     throw {
       message: backendError?.message || "Failed to load LOV",
       stackTrace: backendError?.stackTrace,
       exceptionDate: backendError?.exceptionDate
     }; 
+    */
   } 
 }

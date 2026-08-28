@@ -7,11 +7,12 @@ export async function fetchInitChildLov(linkLov, childKey, parentValue, headers)
     return res.data;   
   } catch (error) { 
     const backendError = error.response?.data;
-
+/*
     throw {
       message: backendError?.message || "Failed to load LOV",
       stackTrace: backendError?.stackTrace,
       exceptionDate: backendError?.exceptionDate
     }; 
+    */
   } 
 }

@@ -21,49 +21,150 @@ export function Master(props) {
     const localLovMapRef = useRef(new Map()); //once this page is visited, lovMap will be set up. when the page is submitted, lovMap wil be reseted, 
                                             // so not to reload it again, localLovMapRef is passed to the masterDetail and from it back to Master be reload lovMap 
     const safeFormData = state?.serviceFormData ?? {};
+    const initialData = state?.initialData ?? props.initialData ?? props.masterDefaultValues;
     const [ready, setReady] = useState(false);
     const [backReady, setBackReady] = useState(false);
-    const masterFields = state?state.masterFields:props.masterFields; 
-    const tabDataFields = (state?.tabData && typeof state.tabData === "object") ? state.tabData : (props.tabData && typeof props.tabData === "object") ? props.tabData : {};
-    const [tabData, setTabData] = useState(state?state.tabData:masterFields ? masterFields : props.masterFields?props.masterFields:state.masterFields);    
-    const masterDefaultValues = state?state.masterDefaultValues:props.masterDefaultValues;    
+    const showInitialData = props.showInitialData   // shows the initial data in AddForm
+    //const masterFields = state?state.masterFields??props.masterFields:props.tabData; 
+    //const tabDataFields = (state?.tabData && typeof state.tabData === "object") ? state.tabData : (props.tabData && typeof props.tabData === "object") ? props.tabData : {};
+    //const [tabData, setTabData] = useState(state?state.tabData:masterFields ? masterFields : props.masterFields?props.masterFields:state.masterFields); 
+    const normalizeRecord = (rec) => {
+        const cleaned = {};
+        Object.entries(rec || {}).forEach(([key, value]) => {
+            if (value && typeof value === "object" && !Array.isArray(value)) {
+                // LOV object → convert to display string
+                cleaned[key] = value.name ?? value.code ?? value.id ?? "";
+            } else {
+                cleaned[key] = value;
+            }
+        });
+        return cleaned;
+    }; 
+    const normalizedInitialData = normalizeRecord(initialData);
+    
+    const normalizeFields = (data) =>
+        Array.isArray(data)
+            ? data
+            : typeof data === "object" && data !== null
+                ? Object.keys(data)
+                : [];
+
+    const tabDataFields = normalizeFields(state?.tabData ?? props.tabData);
+    //const masterFields = normalizeFields(state?.masterFields ?? props.masterFields ?? props.tabData);
+    const [masterFields, setMasterFields] = useState(
+    normalizeFields(
+        state?.masterFields ??
+        props.masterFields ??
+        props.tabData ??
+        initialData   // fallback: derive keys from record
+    )
+    );
+    const [tabData, setTabData] = useState(
+            normalizeFields(state?.tabData ?? masterFields ?? props.tabData)
+        );   
+    const masterDefaultValues = normalizedInitialData ?? normalizedInitialData ?? state?.masterDefaultValues  ?? props.masterDefaultValues;    
     const [lovMap, setLovMap] = useState(new Map());
     const [parentChildLovMap, setParentChildLovMap] = useState(new Map());//create map that holds the parent child
     const [dateCols, setDateCols] = useState([]);
     const [serviceFormData, setServiceFormData] = useState(state?.serviceFormData ?? {});
     const [serviceAddFormData, setServiceAddFormData] = useState(state?.serviceFormData ?? {});
-    const [masterId, setMasterId] = useState(state?state.masterId : null);
+
+    const resolveBackLink = () => {
+        if (props.backLink !== undefined && props.backLink !== null) {
+            return props.backLink;
+        }
+        if (state?.backLink !== undefined) {
+            return state.backLink;
+        }
+        return undefined//state?.recId ?? null;
+    };
+//console.log("Master class:", props.class);    
     const headers = getHeader();
     const linkLov = "http://localhost:9002/hms/";
     const lnk = props.lnk?props.lnk:state.lnk;
-    const backLink = state?state.backLink:lnk;
+    const backLink = resolveBackLink();
     const detail = props.detail?props.detail:state?state.detail:null;
     const title = props.title?props.title:state.title;
     const masterCode = props.masterCode?props.masterCode:state?state.masterCode:null;
     const masterCodeValue = props.masterCodeValue?props.masterCodeValue:state?state.masterCodeValue:null;
-    const masterLocalLovMap = state?state.masterLocalLovMap:{}; 
-    const forwardKey = state?state.forwardKey: props.forwardKey;
-    const initialData = state?state.initialData: props.initialData;
+    const masterLocalLovMap = state?.masterLocalLovMap ?? {}; 
+    
+    const subDetailId = props.subDetailId;
+    
     //const tabData = ['productType', 'productDivision', 'productGroup', 'productCategory', 'itemNumber'];
     const excludeFields = state?.excludeFields ?? props.excludeFields; 
     const detailExcludeFields = state?.detailExcludeFields ?? props.detailExcludeFields;
-    const disabledFields = state?state.disabledFields: props.disabledFields;
-    const rec = JSON.parse(JSON.stringify(state?state.rec ?? {}:{}));
-    const [formData, setFormData] = useState(rec);    
-    let backId = state?state.backId:formData.id;
-    const detailChild = state?state.detailChild:null;
-    const createdBy = state?state.createdBy:{};
-  	const createdOn = state?state.createdOn:null;
-    const comments = state?state.comments:null;
-    const detailLink = state?state.detailLink:props.detailLink;
-    const entryView = state?state.entryView:props.entryView;
-    const updateMaster = state?state.updateMaster:props.updateMaster;
-    const apiLnk = `http://localhost:9002/hms/${lnk}/${masterId}`;
+    const disabledFields = props.disabledFields??state?.disabledFields?? {};
+    const rec = JSON.parse(JSON.stringify(props.rec?props.rec:state?state.rec ?? {}:{}));
+    
+    const [formData, setFormData] = useState(normalizeRecord(rec)); 
+    const [detailLink, setDetailLink] = useState(props.detailLink  ?? state?.detailLink); 
+    const [forwardKey, setForwardKey] = useState( props.forwardKey ?? state?.forwardKey);
+    const autoFill = props.autoFill;
+    const autoFillLink = props.autoFillLink;
+    const autoFillParent = props.autoFillParent;//used as the parent for auto fill
+    
+    const resolveMasterId = () => {
+        if (props.masterId !== undefined && props.masterId !== null) {
+            return props.masterId;
+        }
+        if (state?.masterId !== undefined) {
+            return state.masterId;
+        }
+        return undefined//state?.recId ?? null;
+    };
+
+    const [masterId, setMasterId] = useState(resolveMasterId());
+
+    // FIX: update masterId when props.masterId changes
+    useEffect(() => {
+        
+        if (props.masterId !== undefined && props.masterId !== null) {
+            setMasterId(props.masterId);
+        }
+    }, [props.masterId]);
+ 
+    useEffect(() => {
+        if (props.rec) {
+            setFormData(JSON.parse(JSON.stringify(props.rec)));
+        }
+    }, [props.rec]);
+
+    useEffect(() => {
+        if (props.tabData && props.tabData.length > 0) {
+            setMasterFields(props.tabData);
+        }
+    }, [props.tabData]);
+
+    useEffect(() => {
+        if (masterFields && masterFields.length > 0) {
+            setTabData(masterFields);
+        }
+    }, [masterFields]);
+
+    let backId = state?.backId ?? formData.id;
+    const detailChild = state?.detailChild ?? null;
+    const createdBy = state?.createdBy ?? {};
+  	const createdOn = state?.createdOn ?? null;
+    const comments = state?.comments ?? null;
+    const masterLink = state?.masterLink ?? props?.masterLink ?? lnk;
+    const detailSubmitLink = state?.detailSubmitLink ?? props.detailSubmitLink;
+    const masterSubmitButton = state?.masterSubmitButton ?? props.masterSubmitButton ?? "Details";
+    const detailSubmitButton = state?.detailSubmitButton ?? props.detailSubmitButton;
+    const entryView = state?.entryView??props.entryView;
+    const updateMaster = state?.updateMaster??props.updateMaster;
+    const api = state?.updateLink ?? lnk;
+    const apiLnk = `http://localhost:9002/hms/${api}/${masterId}`;  //added updateLink on 07/15/2026 to be used in Master as the update Link
+
     const navigate = useNavigate();
 
      if(masterLocalLovMap !== undefined && masterLocalLovMap.current !== undefined && masterLocalLovMap.current.size > 0){        
-         localLovMapRef.current = new Map(masterLocalLovMap.current);// If parent passed a ref, copy its contents, but DO NOT replace the ref object
-        console.log(localLovMapRef.current)
+        //localLovMapRef.current = new Map(masterLocalLovMap.current);// If parent passed a ref, copy its contents, but DO NOT replace the ref object
+        localLovMapRef.current.clear();
+        masterLocalLovMap.current.forEach((v, k) => {
+            localLovMapRef.current.set(k, v);
+        });
+     //   console.log(localLovMapRef.current)
      }
 
     useEffect(() => {
@@ -75,17 +176,27 @@ export function Master(props) {
             localLovMapRef.current = new Map(masterLocalLovMap.current);
         }
     }, []);
-console.log('backId = '+backId+'  masterId = '+masterId)
+
+    useEffect(() => {
+        setDetailLink(props.detailLink)
+    }, [props.detailLink]);
+
+    useEffect(() => {
+        setForwardKey(props.forwardKey)
+    }, [props.forwardKey]);
+
+    
+
     useEffect(() => { 
-        const run = async () => { 
-            console.log('Here10')
-            setBackReady(false);  
+        const run = async () => {
+            setBackReady(false); 
+        //    console.log(masterId);  
             if (backId || masterId) { 
                 if(localLovMapRef === undefined || localLovMapRef.current === undefined || localLovMapRef.current.size === 0){
-                    console.log('Here1')
-                    await populateMaster(formData);
+                    //console.log('Here1')
+                    await populateMaster(formData);//formData
                 }else{
-                    console.log('Here2')
+                    //console.log('Here2')
                     setLovMap(localLovMapRef.current);  //see comments on top for localLovMapRef
                 }
                  
@@ -96,9 +207,7 @@ console.log('backId = '+backId+'  masterId = '+masterId)
             } 
         }; 
         run(); 
-    }, [backId,masterId]);
-    
-    const masterLink = 'http://localhost:9002/hms/'+lnk;
+    }, [backId,masterId]); 
 
     const handleChange = (event) => {
         const { name, value } = event.target;
@@ -121,6 +230,10 @@ console.log('backId = '+backId+'  masterId = '+masterId)
 
     const handleSubmit = (event) => {
         event.preventDefault();
+        if(masterId === undefined){
+            console.log(formData.id)
+            setMasterId(formData.id)
+        }
         if(detail !== undefined && detail !== null && detail !== ""){   //real Master Detail
             if(localLovMapRef === undefined || localLovMapRef.current === undefined || localLovMapRef.current.size === 0){
                 const run = async () => {                     
@@ -128,7 +241,12 @@ console.log('backId = '+backId+'  masterId = '+masterId)
                 }; 
                 run();
             }
-            saveMaster();
+            if(formData.id > 0){
+                setBackReady(false);
+            }else{
+                saveMaster();
+            }
+            
         }else{                      //self Master and detail
             console.log(masterCode)
             getMasterByCode(getParentsFormValues(formData, masterCode))
@@ -214,7 +332,7 @@ console.log('backId = '+backId+'  masterId = '+masterId)
                     <td className="label-cell"> <label>{toSpacedWords(fieldName)}:</label> </td> 
                     <td className="input-cell"> 
                         {isLov ? ( 
-                            <select name={fieldName} value={formData[fieldName] ?? ""} disabled={disabledFields?.includes(fieldName)} onChange={handleLovChange} className="selectInput" > 
+                            <select name={fieldName} value={formData[fieldName] ?? ""} disabled={fieldName in disabledFields} onChange={handleLovChange} className="selectInput" > 
                                 <option value="">-- Select --</option> 
                                 {Array.from(lovMap.get(fieldName) || localLovMapRef.current.get(fieldName) || []).map((opt) => ( 
                                     <option key={resolvePrimaryKey(opt)} value={selectCodeDesc(opt, formData[fieldName])}>
@@ -226,17 +344,16 @@ console.log('backId = '+backId+'  masterId = '+masterId)
                             <DatePicker id={fieldName} 
                                         name={fieldName} 
                                         value={formData[fieldName] ? dayjs(formData[fieldName], "YYYY-MM-DD") : null} 
-                                        disabled={disabledFields?.includes(fieldName)} format="MM/DD/YYYY" 
+                                        disabled={fieldName in disabledFields} format="MM/DD/YYYY" 
                                         onChange={(date) => setFormData((prev) => ({ ...prev, [fieldName]: date ? date.format("YYYY-MM-DD") : null })) } 
                                         className="dateField" /> ) 
                         : ( 
-                            <input type="text" id={fieldName} name={fieldName} value={formData[fieldName] ?? ""} disabled={disabledFields?.includes(fieldName)} onChange={handleChange} /> )} 
+                            <input type="text" id={fieldName} name={fieldName} value={formData[fieldName] ?? ""} disabled={fieldName in disabledFields} onChange={handleChange} /> )} 
                     </td> 
                 </> 
             ); 
         };
-    
-    
+
     
         return ( 
             <div className="form-table"> 
@@ -265,17 +382,16 @@ console.log('backId = '+backId+'  masterId = '+masterId)
                           
                        
                                 <tr className="button-row">
-                                    {entryView !== "view"?
-                                    <td><button className="form-button" type="submit">Get Details</button></td>:null}
-
-                                    {entryView === "view" && updateMaster !== "no"?  
-                                    <td><button className="form-button" onClick={updateClicked}>Update</button></td>:null}
-                                    {masterId && entryView !== "view"?
-                                        <div>
-                                            <td><button className="form-button" onClick={updateClicked}>Update</button></td>
-                                            <td><button className="form-button" onClick={deleteClicked}>Delete</button></td>
+                                    <td td colSpan={4}>
+                                        <div className="button-group"> 
+                                            {entryView !== "view" || (masterSubmitButton !== undefined || masterSubmitButton !== null) ?
+                                            <button className="form-button" type="submit">{masterSubmitButton}</button>:null}
+                                            {updateMaster !== "no"?  
+                                            <button className="form-button" onClick={updateClicked}>Update</button>:null}
+                                            {masterId && entryView !== "view"?                                          
+                                            <button className="form-button" onClick={deleteClicked}>Delete</button>:null}
                                         </div>
-                                    :null}
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
@@ -284,6 +400,8 @@ console.log('backId = '+backId+'  masterId = '+masterId)
                             <MasterDetails  serviceFormData={formData} 
                                             forwardKey={forwardKey} 
                                             masterId={masterId}
+                                            detailSubmitLink={detailSubmitLink}
+                                            detailSubmitButton={detailSubmitButton}
                                             serviceAddFormData= {serviceAddFormData}
                                             backLink={backLink} 
                                             excludeFields={excludeFields}
@@ -295,11 +413,17 @@ console.log('backId = '+backId+'  masterId = '+masterId)
                                             entryView={entryView}
                                             detailChild={detailChild}
                                             title={title}
+                                            subDetailId={subDetailId}
                                             masterCode={masterCode} 
                                             masterCodeValue={detail === undefined?getParentsFormValues(formData, masterCode):null} 
                                             masterFields={masterFields}
                                             masterDefaultValues={masterDefaultValues}
-                                            masterLocalLovMap={localLovMapRef}/>
+                                            masterLocalLovMap={localLovMapRef}
+                                            autoFill= {autoFill}
+                                            autoFillLink= {autoFillLink}
+                                            autoFillParent= {autoFillParent}
+                                            showInitialData={showInitialData}
+                                            />
                         ):null}
                     </form>  
                 </Space>         	
@@ -309,16 +433,14 @@ console.log('backId = '+backId+'  masterId = '+masterId)
     function saveMaster() {
         const obj = tabData.reduce((o, key) => ({ ...o, [key]: formData[key] }), {});
         setBackReady(false);
-        console.log(obj)
-        console.log(masterLink)
+        const saveLink = 'http://localhost:9002/hms/'+masterLink;
 
         axios
-            .post(masterLink, obj, { headers })
+            .post(saveLink, obj, { headers })
             .then((res) => {
-                setFormData((prev) => ({ ...prev, [forwardKey]: res.data.id }));
+                setFormData((prev) => ({ ...prev, id: res.data.id }));//setFormData((prev) => ({ ...prev, [forwardKey]: res.data.id }));
                 setBackReady(true);
-                setMasterId(res.data.id)
-                console.log(res.data)
+                setMasterId(masterId?masterId:res.data.id)
             })
             .catch((error) => {
                 alert(error.response?.data);
@@ -366,7 +488,7 @@ console.log('backId = '+backId+'  masterId = '+masterId)
         const keys = Array.isArray(tabDataFields) && tabDataFields.length > 0?tabDataFields:masterFields;
 
         let row =  (Array.isArray(tabDataFields) && tabDataFields.length > 0
-                            ? initialData[0]
+                            ? normalizedInitialData[0]
                             : masterDefaultValues);
         const localLovMap = new Map();
     

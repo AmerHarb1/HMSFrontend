@@ -1,6 +1,7 @@
 import { Table, Typography, Space} from 'antd';
 import axios from 'axios';
 import React,{ useState, useEffect} from 'react';
+import { useNavigate, useLocation} from 'react-router';
 import { AddButton } from './AddButton';
 import '../styles/page.css';
 import 'antd/dist/reset.css'; // for AntD v5
@@ -13,8 +14,8 @@ import { PlusOutlined } from '@ant-design/icons';
 
 
 export function AddTable(props){
-//    console.log('in Add table' +props.name);
-//    console.log(props.lnk);
+    const location = useLocation();
+    const state = props.state || location.state || {};
     const [loading, setloading ] = useState(true);
     const headers = getHeader();
     const [tabData, setTabData] = useState([]);
@@ -37,29 +38,36 @@ export function AddTable(props){
     const detail = props.detail;
     const pageTitle = props.name;
     const backLink = props.backLink;
-    const lnk = props.lnk;
-    const lnkId = props.lnkId;    //used with Tabs to pass an id to the api to get data for that id
+    const lnk = props.lnk?props.lnk:state ? state.lnk:null;
+    const lnkId = props.lnkId?props.lnkId:state ? state.lnkId:null;    //used with Tabs to pass an id to the api to get data for that id
     const formTabLink = props.formTabLink;    //used with Tabs as the link with an id to the api to get data for that id
     const formTabEntity = props.formTabEntity;    //used to identify the entity of the record 
     const disabledFieldsRaw = props.disabledFields; 
-    const disabledFields = Array.isArray(disabledFieldsRaw) ? disabledFieldsRaw : Object.keys(disabledFieldsRaw || {}); // if you used object-as-set    //used to dislay the included fields as disabled
-
-    
-    const detailLink = props.detailLink;        //used in master detail to retrieve the detail data where some List Master pages are not the real or strait master (e.g., Approve Material Request).
+    const disabledFields = props.disabledFields; 
+    //const disabledFields = Array.isArray(disabledFieldsRaw) ? disabledFieldsRaw : Object.keys(disabledFieldsRaw || {}); // if you used object-as-set    //used to dislay the included fields as disabled
+    const formTabId = props.formTabId;         //used in Tabs
+    const updateLink = props.updateLink;       //added on 07/15/2026 to be used in Master as the update Link
+    const showInitialData = state?state.showInitialData : props.showInitialData;   // shows the initial data in AddForm
     const entryView = props.entryView;          //used with value view to not disply the add button on table and master detail
-    const modifyView = props.modifyView;         //used with value view to not disply the modify link on table and master detail
-    const updateMaster = props.updateMaster;    //used to determine if update buttons shows for master
+    const modifyView = props.modifyView;        //used with value view to not disply the modify link on table and master detail
+    const updateMaster = props.updateMaster;    //used to determine if update buttons shows for master          
+    const masterLink = state?.masterLink ?? props?.masterLink ?? lnk;//used to set the link used by master to save the master data if it's different from the lnk
+    const detailLink = state?.detailLink ?? props.detailLink;   //used in master detail to retrieve the detail data where some List Master pages are not the real or strait master (e.g., Approve Material Request).
+    const detailSubmitLink = state?.detailSubmitLink ?? props.detailSubmitLink;        //used to optionaly add a submit functionality in the masterDetail
+    const masterSubmitButton = state?.masterSubmitButton ?? props.masterSubmitButton ?? "Detail";//used to set the text in the submit button
+    const detailSubmitButton = state?.detailSubmitButton ?? props.detailSubmitButton ;//used to set the text in the detail submit button
+    const autoFill = props.autoFill?props.autoFill:state ? state.autoFill:null;
+    const autoFillLink = state?.autoFillLink ??props.autoFillLink;
+    const autoFillParent = state?.autoFillParent ?? props.autoFillParent;//used as the parent for auto fill
   	const actionLink = props.lnk+'/add';
     const modifyLink = props.lnk+'/modify';
     const detailChild = props.detailChild;      //for a child of master detail pages, where the enry and modification need to be on the child fields and the master detail id is one of the child fields (e.g., Product Issuance). 
-     
-                                               // also used as an alternative lnk to get the master detail data joined with child data to be displayed together in the master detail data.
-                                             
-
+                                       // also used as an alternative lnk to get the master detail data joined with child data to be displayed together in the master detail data.
     const getData = async(page, pageSize, sortField, sortOrder,lnkId, filters={}) => {
         setloading(true);
         //console.log('page = ' + page +' pageSize = ' + pageSize + ' sortField = ' + sortField + '  sortOrder = ' + sortOrder);
 
+        //   console.log(lnkId)
         // Build filter query string
         const filterParams = Object.entries(filters)
             .filter(([_, value]) => value && value.length > 0)
@@ -67,7 +75,7 @@ export function AddTable(props){
             .join("&");
 
         if(typeof lnkId === "number" && lnkId > 0){
-            console.log(lnkId)
+        //    console.log(lnkId)
             const link = 'http://localhost:9002/hms/'+lnk + 'Get' + '?page=' + page + '&size=' + pageSize+ '&sort=' + sortField+ ',' + sortOrder + '&filterParams=' + filterParams ;	
 
             axios.post(link,lnkId,{headers: headers}
@@ -75,7 +83,7 @@ export function AddTable(props){
                     setTabData(res.data.content);   //res.data.content is an array of objects
                     setTotalPages(res.data.totalPages);
                     setTotalRecords(res.data.totalElements);
-
+                    //console.log(res.data.content)
                     })
                 .catch((error) => {
                     console.warn("response", error.response?.data);                
@@ -102,6 +110,7 @@ export function AddTable(props){
     }
 
     useEffect(() => {
+        //console.log(lnkId)
 	    getData(0,10,'','asc',lnkId);
 	  }, []);
 
@@ -157,7 +166,11 @@ export function AddTable(props){
                                             title= {pageTitle} 
                                             btn_type='link' 
                                             lnk={lnk} 
+                                            masterLink={masterLink}
                                             detailLink={detailLink}
+                                            detailSubmitLink={detailSubmitLink}
+                                            masterSubmitButton={masterSubmitButton}
+                                            detailSubmitButton={detailSubmitButton}
                                             backLink={backLink} 
                                             excludeFields={excludeFields} 
                                             actionLink={modifyLink} 
@@ -177,7 +190,12 @@ export function AddTable(props){
                                             formTabId={record.id}
                                             formTabLink={formTabLink}
                                             formTabEntity={formTabEntity}
+                                            updateLink={updateLink}
                                             rec= {record} 
+                                            autoFill= {autoFill}
+                                            autoFillLink= {autoFillLink}
+                                            autoFillParent= {autoFillParent}
+                                            showInitialData={showInitialData}
                                             createdBy={record.createdBy} 
                                             createdOn={record.createdOn} 
                                             comments={record.comments}>
@@ -199,6 +217,10 @@ export function AddTable(props){
     useEffect(() => {
 	//    console.log('totalRecords =' + totalRecords);
 	  }, [totalRecords]);
+
+    const cancelClicked = () => {
+        history.back(); //history.go(-1)
+    };
 
     useEffect(() => {
         //console.log(tabData)
@@ -278,10 +300,14 @@ export function AddTable(props){
                                 masterFields = {masterFields}
                                 masterDefaultValues = {masterDefaultValues}
                                 disabledFields={disabledFields}
+                                autoFill= {autoFill}
+                                autoFillLink= {autoFillLink}
+                                autoFillParent= {autoFillParent}
+                                showInitialData={showInitialData}
                                 icon={<PlusOutlined/>} 
                                 btn_type='primary'>
                     </AddButton>:null}
-                
+                {backLink === 'back' ?<td><button className="form-button" onClick={cancelClicked}>Back</button></td>:null}
             </Space>
         </div>
     );

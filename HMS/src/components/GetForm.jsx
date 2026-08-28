@@ -220,7 +220,7 @@ export function GetForm(props){
                             />
 
                     :  isLov ? ( 
-                        <select name={fieldName} value={formData[fieldName] ?? ""} disabled={disabledFields?.includes(fieldName)} onChange={handleLovChange} className="selectInput" > 
+                        <select name={fieldName} value={formData[fieldName] ?? ""} disabled={fieldName in (disabledFields)} onChange={handleLovChange} className="selectInput" > 
                             <option value="">-- Select --</option> 
                             
                             {Array.from(lovMap.get(fieldName)  || []).map((opt) => ( 
@@ -237,7 +237,7 @@ export function GetForm(props){
                                                 isDateTime(headers[fieldName]) ? "YYYY-MM-DD HH:mm:ss" : "YYYY-MM-DD"
                                                 )
                                             : null} 
-                                    disabled={disabledFields?.includes(fieldName)} 
+                                    disabled={fieldName in (disabledFields)} 
                                     format={isDateTime(headers[fieldName]) ? "MM/DD/YYYY HH:mm:ss" : "MM/DD/YYYY"}
                                     onChange={(date) => 
                                         setFormData((prev) => (
@@ -258,7 +258,7 @@ export function GetForm(props){
                                 id={fieldName}
                                 name={fieldName}
                                 checked={formData[fieldName] === true}
-                                disabled={disabledFields?.includes(fieldName)}
+                                disabled={fieldName in (disabledFields)}
                                 onChange={(e) =>
                                     setFormData(prev => {
                                         const next = {
@@ -278,7 +278,7 @@ export function GetForm(props){
                                     id={fieldName} 
                                     name={fieldName} 
                                     value={formData[fieldName] ?? ""} 
-                                    disabled={disabledFields?.includes(fieldName)} onChange={handleChange} 
+                                    disabled={fieldName in (disabledFields)} onChange={handleChange} 
                             /> 
                             {search ? 
                                     search.formTabEntity === fieldName ? 
@@ -321,7 +321,7 @@ export function GetForm(props){
                                         </>
                                     )}
                                 </tr>
-                            ))}	
+                            ))}
                             <tr className="button-row">
                                 <div className="button-group">
                                     <td><button className="form-button" type="submit">{submitButton}</button></td>                                    

@@ -23,6 +23,7 @@ export function Search(props) {
     const title         = state ? state.title           : props.title?props.title:props.name;
     const disabledFields = state ? state.disabledFields : props.disabledFields;
     const excludeFields = state ? state.excludeFields   : props.excludeFields;
+    const tableExcludeFields = state ? state.tableExcludeFields   : props.tableExcludeFields;
 
     const [tabData, setTabData] = useState(searchFields);   
     const [lovMap, setLovMap] = useState(new Map());
@@ -33,10 +34,12 @@ export function Search(props) {
     
     const headers = getHeader();
     const linkLov = "http://localhost:9002/hms/";
-    const [formData, setFormData] = useState({});  
-    
-    
-
+    const [formData, setFormData] = useState({});
+    const masterLink = props.masterLink;                    //used to set the link used by master to save the master data if it's different from the lnk
+    const detailSubmitLink = props.detailSubmitLink;        //used to optionaly add a submit functionality in the masterDetail
+    const masterSubmitButton = props.masterSubmitButton;    //used to set the text in the submit button
+    const detailLink = props.detailLink; 
+//console.log(masterSubmitButton)
     useEffect(() => {
             getLovData(tabData, searchValues, setParentChildLovMap, setLovMap, linkLov, headers, setDateCols);
         }, [searchValues]);
@@ -69,8 +72,10 @@ export function Search(props) {
 
     // Build pairs for 2-column layout 
     const fieldPairs = [];
-    for (let i = 0; i < searchFields.length; i += 2){ 
-        fieldPairs.push(searchFields.slice(i, i + 2));
+    if(searchFields){
+        for (let i = 0; i < searchFields.length; i += 2){ 
+            fieldPairs.push(searchFields.slice(i, i + 2));
+        }
     }
 
     // Helper to render label + input cells 
@@ -142,10 +147,15 @@ export function Search(props) {
                                             lnk={lnk}
                                             searchLink={searchLink}
                                             title={title}
+                                            masterLink={masterLink}
+                                            detailLink={detailLink}
+                                            detailSubmitLink={detailSubmitLink}
+                                            masterSubmitButton={masterSubmitButton}
                                             formTabLink={formTabLink}
                                             formTabEntity={formTabEntity}
                                             disabledFields={disabledFields}
                                             excludeFields={excludeFields}
+                                            tableExcludeFields={tableExcludeFields}
                             />
                         ):null}
                     </form>  

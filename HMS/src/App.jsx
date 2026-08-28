@@ -7,14 +7,14 @@ import { AppHeader } from './components/AppHeader';
 import { SideMenu } from './components/SideMenu';
 import { AppFooter } from './components/AppFooter';
 import { PageContent } from './components/PageContent';
-import { Register } from './pages/Register';
+import { Login } from './pages/Login';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userMenu, setUserMenu] = useState(null);
   const getUserMenuData = (userMenu) =>{  //use back a prop from a called function
     setUserMenu(userMenu);
-    console.log('from app ' + userMenu);
+    //console.log('from app ' + userMenu);
   }
 
   return (
@@ -30,7 +30,7 @@ function App() {
 
             </>
             ) : (
-              <Register onLoginSuccess={() => setIsAuthenticated(true)} populateUserMenu={getUserMenuData}/>
+              <Login onLoginSuccess={() => setIsAuthenticated(true)} populateUserMenu={getUserMenuData}/>
             )
           }
       

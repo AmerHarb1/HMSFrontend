@@ -13,6 +13,7 @@ export function AddButton(props){
 	const masterCode=props.masterCode;
 	const masterCodeValue=props.masterCodeValue;
 	const excludeFields = props.excludeFields;
+	const tableExcludeFields = props.tableExcludeFields;
 	const serviceFormData=props.serviceFormData;
 	const detailExcludeFields = props.detailExcludeFields;
 	const detail = props.detail;	
@@ -29,10 +30,19 @@ export function AddButton(props){
 	const formTabLink = props.formTabLink;
 	const formTabEntity = props.formTabEntity;
 	const formTabId = props.formTabId;
-   
+	const updateLink = props.updateLink;
+	const masterLink = props.masterLink;   
+	const detailSubmitLink = props.detailSubmitLink;   
+	const masterSubmitButton = props.masterSubmitButton;
+	const detailSubmitButton = props.detailSubmitButton;
+	const rec = props.rec??null;
+	const recId = rec?rec.id:null;
+	const autoFill = props.autoFill;            //used as the field name to apply autoFill
+    const autoFillLink = props.autoFillLink;    //used as the link to perform autoFill
+    const autoFillParent = props.autoFillParent;//used as the parent for auto fill
+	const showInitialData = props.showInitialData   // shows the initial data in AddForm
 	const location = useLocation();
 	const navigate = useNavigate();
-
 	const buttonClicked = () => {		
 		let keys = [];
 		if (tabData !== null && Array.isArray(tabData) && tabData.length > 0) {
@@ -55,21 +65,26 @@ export function AddButton(props){
 			return;
 		}
 
-		console.log(props.actionLink)
 		navigate('/'+props.actionLink
 				,{state:{
-					initialData:tabData,
+					initialData:tabData,      // single record
 					tabData:keys,						
 					page:page,
 					lnk:props.lnk,
 					rec:props.rec,
+					recId:recId,
 					excludeFields:excludeFields,
+					tableExcludeFields:tableExcludeFields,
 					detailExcludeFields:detailExcludeFields,
 					name:props.name,
 					serviceFormData:serviceFormData,
 					backLink:backLink,
 					masterId:masterId,
 					backId:masterId,
+					masterLink:masterLink,
+					detailSubmitLink:detailSubmitLink,
+					masterSubmitButton:masterSubmitButton,
+					detailSubmitButton:detailSubmitButton,
 					masterFields:masterFields,
 					masterCode:masterCode,
 					masterCodeValue:masterCodeValue,
@@ -88,7 +103,13 @@ export function AddButton(props){
 					masterLocalLovMap:localLovMapRef,
 					formTabLink:formTabLink,
 					formTabEntity:formTabEntity,
-					formTabId:formTabId
+					formTabId:formTabId,
+					lnkId:formTabId,
+					updateLink:updateLink,
+					autoFill: autoFill,
+					autoFillLink: autoFillLink,
+					autoFillParent: autoFillParent,
+					showInitialData:showInitialData
 				}
 			});
 		

@@ -9,6 +9,7 @@ export function GenericAutoFill({
   value,            // initial selected object
   onSelect,         // callback when user selects
   labelField,       // field to display (e.g., "productDescription")
+  autoFillParent    // used as the parent for auto fill
 }) {
   const [query, setQuery] = useState("");
   const [options, setOptions] = useState([]);
@@ -40,8 +41,7 @@ export function GenericAutoFill({
       return () => clearTimeout(delay);
     }, [query]);
 
-    console.log(value)
-    console.log(options)
+    
     const selectedOption =
         options.find(opt =>
             (value?.id && opt.autoFillObjId === value.autoFillObjId) ||

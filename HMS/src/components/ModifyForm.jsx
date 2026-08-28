@@ -1,12 +1,13 @@
 
-import React from 'react';
-import { useState, useEffect} from 'react';
 import { Typography, Space, message, DatePicker} from 'antd';
 import axios from 'axios';
-import dayjs from "dayjs";
+import {useState, useEffect, useRef, useMemo} from 'react';
 import { useNavigate, useLocation} from 'react-router';
+import JoditEditor from 'jodit-react';
+import HTMLReactParser from 'html-react-parser';
+import dayjs from "dayjs";
 import { GenericAutoFill } from './GenericAutoFill';
-//import { ProductAutoFill } from './ProductAutoFill';
+import { AutoFillParent } from './AutoFillParent';
 import { getAccessToken } from "../functions/getAccessToken.js";
 import { fetchInitLov } from "../functions/fetchInitLov.js";
 import {resolvePrimaryKey} from "../functions/resolvePrimaryKey.js";
@@ -15,6 +16,8 @@ import {  lovChange } from "../functions/lovChange.js";
 import {  getCheckBoxData } from "../functions/getCheckBoxData.js";
 import {  normalizeBoolean } from "../functions/normalizeBoolean.js";
 import {  lovInit } from "../functions/lovInit.js";
+import {  getTextAreaFields } from "../functions/getTextAreaFields.js";
+import {  getDateFields } from "../functions/getDateFields.js";
 import { getHeader } from "../functions/getHeader";
 import { toSpacedWords } from "../functions/toSpacedWords.js";
 import {isDateTime} from "../functions/isDateTime.js";
@@ -25,13 +28,16 @@ export function ModifyForm(props){
     const state = props.state || location.state || {};
     const accessToken = getAccessToken();
 
+    const editor = useRef(null);
+    const [content, setContent] = useState('');
+
     const lnk =state?state.lnk:props.lnk;
     const  rec  = state?.rec || {};
     const [checkBoxMap, setCheckBoxMap] = useState([]);
     const [formData, setFormData] = useState(() => rec || {});
 
     const [lovMap, setLovMap] = useState(new Map());
-    
+    const [textAreaFields, setTextAreaFields] = useState([]); 
     const [parentChildLovMap, setParentChildLovMap] = useState(() => new Map());
     
   //const apiLnk ='http://localhost:9002/hms/' +lnk+'/'+ (rec.id == null ? rec.code? rec.id:null:null);
@@ -40,11 +46,11 @@ export function ModifyForm(props){
   	const createdOn = state.createdOn;
     const comments = state.comments;
 	
-    const tabDataValues = state ? state.initialData : props.obj;
+    const tabDataValues = state.initialData ?? props.obj;
     const initialData = Object.values(state.rec); 
-    const backLink = state.backLink;
-    const tabData = state?state.tabData:props.obj;
-    const formName =state?state.page:null;
+    const backLink = state ? state.backLink:props.backLink;
+    const tabData = state.tabData ?? props.obj;
+    const formName =state.page ?? null;
     const localLovMap = new Map();
     const excludeFields=state.excludeFields;
     const linkLov = "http://localhost:9002/hms/";
@@ -54,7 +60,7 @@ export function ModifyForm(props){
     const masterId = state?state.masterId : null;
     const backId = masterId;
     const detailExcludeFields = state.detailExcludeFields;
-    const disabledFields = state?state.disabledFields: null;
+    const disabledFields = state.disabledFields?? {};
     const masterFields=state?state.masterFields:props.masterFields;
     const masterCode=state?state.masterCode:props.masterCode;
     const masterCodeValue=state?state.masterCodeValue:props.masterCodeValue;
@@ -63,8 +69,9 @@ export function ModifyForm(props){
     const detail = state.detail;
     const serviceFormData = state.serviceFormData;
     const noNavigate = state?state.noNavigate : null;
-    const autoFill = state?state.autoFill: null;
+    const autoFill = state?.autoFill ?? props.autoFillParent;
     const autoFillLink = state?state.autoFillLink: null;
+    const autoFillParent = state?.autoFillParent ?? props.autoFillParent;//used as the parent for auto fill
     const base = (autoFill || "").replace(/Description$/, "");
     const autoFillId = base+'Id';
     const autoFillCode = base+'Code';
@@ -72,7 +79,7 @@ export function ModifyForm(props){
     const navigate = useNavigate();
     const headers = getHeader();
 
-//console.log(formData);
+
     /*  Amer on 02/15/2026
         modify form is populated by setting formData to the rec state variable passed from addButton.
         tabData and tabDataValues are populated from tabData and initialData state variables
@@ -107,9 +114,10 @@ export function ModifyForm(props){
 														:key=="createdBy"?createdBy
 														:key=="createdon"?createdOn
                                                         :key=="comments"?comments
+                                                    //    :textAreaFields.includes(key) ? HTMLReactParser(formData[key])
 														: formData[key]
                                                 }), {})//Object.assign({}, ...Object.entries({...formObj}).map(([a,b]) => ({ [b]: formData[b] })))							
-                                                  
+        console.log(formData);                                          
 	  	const response =  axios.put(apiLnk,obj,{headers: headers}
   				).then(() => {
 
@@ -121,23 +129,26 @@ export function ModifyForm(props){
                         if (backLink) {
                             if(backLink === 'back'){
                                 navigate(-1, { 
-                                                    state: { 
-                                                        backId: backId, 
-                                                        masterId: masterId,
-                                                        excludeFields: excludeFields, 
-                                                        detailExcludeFields: detailExcludeFields,
-                                                        detail: detail,
-                                                        tabData:tabData,
-                                                        rec: serviceFormData,
-                                                        masterFields: masterFields,
-                                                        masterCode: masterCode,
-                                                        masterCodeValue:masterCodeValue,
-                                                        masterLocalLovMap:localLovMapRef,
-                                                        backLink:backLink,
-                                                        title:formName,
-                                                        entryView:entryView,                                
-                                                        from: formName } 
-                                                        });
+                                            state: { 
+                                                backId: backId, 
+                                                masterId: masterId,
+                                                excludeFields: excludeFields, 
+                                                detailExcludeFields: detailExcludeFields,
+                                                detail: detail,
+                                                tabData:tabData,
+                                                rec: serviceFormData,
+                                                masterFields: masterFields,
+                                                masterCode: masterCode,
+                                                masterCodeValue:masterCodeValue,
+                                                masterLocalLovMap:localLovMapRef,
+                                                backLink:backLink,
+                                                title:formName,
+                                                entryView:entryView,                                
+                                                from: formName ,
+                                                autoFill: autoFill,
+                                                autoFillLink: autoFillLink,
+                                                autoFillParent: autoFillParent} 
+                                                });
                             }else{
                                 navigate("/" + backLink, { 
                                     state: { 
@@ -155,7 +166,11 @@ export function ModifyForm(props){
                                         backLink:backLink,
                                         title:formName, 
                                         entryView:entryView,                               
-                                        from: formName } 
+                                        from: formName,
+                                        autoFill: autoFill,
+                                        autoFillLink: autoFillLink,
+                                        autoFillParent: autoFillParent
+                             } 
                                     
                                 });
                             } 
@@ -183,9 +198,31 @@ export function ModifyForm(props){
   		var answer = window.confirm("Are you sure you want to Delete data?");
     	if (answer) {
 		  // Save it!
-		  axios.delete(apiLnk,{headers: headers}
+		    axios.delete(apiLnk,{headers: headers}
   				).then(() => {navigate('/'+lnk);})
   				  .catch((error) => {console.warn("response", error.response?.data)});
+
+            navigate(-1, { 
+                                            state: { 
+                                                backId: backId, 
+                                                masterId: masterId,
+                                                excludeFields: excludeFields, 
+                                                detailExcludeFields: detailExcludeFields,
+                                                detail: detail,
+                                                tabData:tabData,
+                                                rec: serviceFormData,
+                                                masterFields: masterFields,
+                                                masterCode: masterCode,
+                                                masterCodeValue:masterCodeValue,
+                                                masterLocalLovMap:localLovMapRef,
+                                                backLink:backLink,
+                                                title:formName,
+                                                entryView:entryView,                                
+                                                from: formName ,
+                                                autoFill: autoFill,
+                                                autoFillLink: autoFillLink,
+                                                autoFillParent: autoFillParent} 
+                                                });
 		} else {
 		  // Do nothing!
 		  console.log('Thing was not saved to the database.');
@@ -240,12 +277,6 @@ export function ModifyForm(props){
         // 5. Push final maps into React state 
         setLovMap(localLovMap); 
         setParentChildLovMap(localParentChildMap);
-
-        keys.forEach((k)=>{
-            if(k.endsWith("Date")){
-               setDateCols((prev) => [...prev, k]); 
-            }
-        })   
     };
 
     useEffect(() => {
@@ -259,10 +290,12 @@ export function ModifyForm(props){
         });
     }, [formData, autoFillId, autoFillCode, autoFill]);
 
-useEffect(() => { 
+    useEffect(() => { 
         (async () => { 
             await getLovData(); 
             getCheckBoxData(tabData, tabDataValues, setCheckBoxMap)
+            getDateFields(tabData, setDateCols)
+            getTextAreaFields(tabData, setTextAreaFields)
         })(); 
     }, [tabData, tabDataValues]);
 
@@ -322,15 +355,17 @@ useEffect(() => {
         const isLov = lovMap.has(fieldName) || lovMap.has(localLovMap); 
         const isDate = dateCols.includes(fieldName);
         const isBoolean = checkBoxMap.includes(fieldName);
+        const isTextArea = textAreaFields.includes(fieldName);
 
         return ( 
             <> 
                 <td className="label-cell"> <label>{toSpacedWords(fieldName)}:</label> </td> 
-                <td className="input-cell"> 
+                <td className="input-cell" {...(isTextArea ? { colSpan: 4 } : {})}> 
                     {autoFill && fieldName === autoFill ?
-                            <GenericAutoFill
+                            <AutoFillParent
                                 value={initialAutoFill}    // <-- send initial value
                                 autoFillLink={autoFillLink}
+                                autoFillParent={formData[autoFillParent]}
                                 labelField="autoFillObjDescription"
                                 onSelect={(product) => {
                                     if (!product) return;
@@ -383,6 +418,17 @@ useEffect(() => {
                                     )} 
                                     //onChange={(date) => setFormData((prev) => ({ ...prev, [fieldName]: date ? date.format("YYYY-MM-DD") : null })) } 
                                     className="dateField" /> ) 
+                    : isTextArea ? ( 
+                        <JoditEditor ref={editor} 
+                                    name={fieldName} 
+                                    value={formData[fieldName] ?? ""}
+                                    onChange={(newContent) =>
+                                        setFormData(prev => ({ ...prev, [fieldName]: newContent }))
+                                    }
+                                    config={{
+                                        height: 500,      // or 400, 500
+                                        minHeight: 400,   // optional, keeps it from shrinking
+                                    }} /> ) 
                     : isBoolean ? (
                         <div className="checkbox-wrapper">
                             <input
@@ -407,7 +453,7 @@ useEffect(() => {
                     )
                     : ( 
                         <input type="text" id={fieldName} name={fieldName} value={formData[fieldName] ?? ""} disabled={fieldName in (disabledFields)} onChange={handleChange} /> )} 
-                </td> 
+               </td>
             </> 
         ); 
     };
@@ -416,12 +462,7 @@ useEffect(() => {
 
     return ( 
         <>
-            {autoFill ? 
-                        <div className="AutoFillSection">
-                            {autoFill}
-                        </div> 
-                    : null
-            }
+            
             <div className="form-table"> 
                 <Space size={15} direction="vertical"> 
                     {formName ? 

@@ -1,4 +1,7 @@
 export function getParentsFormValues(formData, parents){
+    if (parents === undefined){
+        return null;
+    }
     const parentArray = parents.split('-');
     let values = ""
     Object.entries(formData).forEach(([key, value]) => {         

@@ -31,9 +31,14 @@ export function SearchDetails(props) {
     const formTabEntity = props.formTabEntity;
     const disabledFields = props.disabledFields;
     const excludeFields = props.excludeFields;
+    const tableExcludeFields = props.tableExcludeFields;
+    const detailLink = props.detailLink; 
+    const masterLink = props.masterLink;        //used to set the link used by master to save the master data if it's different from the lnk
+    const detailSubmitLink = props.detailSubmitLink;        //used to optionaly add a submit functionality in the masterDetail
+    const masterSubmitButton = props.masterSubmitButton;    //used to set the text in the submit button
 
     const location = useLocation();
-
+//console.log(masterLink)
     const getData = async(page, pageSize, sortField, sortOrder, filters={}) => {
     setloading(true);
     // Build filter query string
@@ -110,11 +115,18 @@ export function SearchDetails(props) {
                                                 name={ record.id ?? record.code ?? record.pk?.code ?? record.pk?.itemNumber ?? null }
                                                 rec= {record} 
                                                 formTabId= {record.id}
+                                                lnkId= {record.id}
+                                                masterId= {record.id}
                                                 actionLink={searchLink}
+                                                masterLink={masterLink}
+                                                detailLink={detailLink}
+                                                detailSubmitLink={detailSubmitLink}
+                                                masterSubmitButton={masterSubmitButton}
                                                 formTabEntity={formTabEntity}
                                                 formTabLink={formTabLink} 
                                                 disabledFields={disabledFields}
                                                 excludeFields={excludeFields}
+                                                tableExcludeFields={tableExcludeFields}
                                                 parentState={location.state}
                                     >
                                         {display}

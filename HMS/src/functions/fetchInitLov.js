@@ -6,7 +6,7 @@ export async function fetchInitLov(linkLov, key, headers, currentValue, localLov
     //console.log(`${linkLov}${key}Lov`)
     const res = await axios.get(`${linkLov}${key}Lov`, { headers });
     const lov = res.data
-  
+//  console.log(lov);
     localLovMapRef?localLovMapRef.current?localLovMapRef.current.set(key, lov):null:null;
    
   const today = dayjs();

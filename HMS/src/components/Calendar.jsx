@@ -96,7 +96,7 @@ export function Calendar(props) {
     const handleDayClicked = (day) => {
         const clickedDate = new Date(currentYear, currentMonth, day);
         const today = new Date();
-
+        setEvents([]);
         if(clickedDate !== selectedDate){
             if(clickedDate >= today || isSameDay(clickedDate,today) ){   //must be current or future date
                 setEvents([]);

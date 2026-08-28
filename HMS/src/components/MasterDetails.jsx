@@ -9,8 +9,9 @@ import {formatDate} from '../functions/formatDateVal.js';
 import { getValueType } from '../functions/getValueType.js';
 import { getHeader } from "../functions/getHeader";
 import { PlusOutlined } from '@ant-design/icons';
-import {removeChr31} from "../functions/removeChr31.js";
+import {fetchRecordById} from "../functions/fetchRecordById.js";
 import { toSpacedWords } from "../functions/toSpacedWords.js";
+
 
 export function MasterDetails(props) {
     const [loading, setloading ] = useState(true);
@@ -36,12 +37,28 @@ export function MasterDetails(props) {
     const modifyView = props.modifyView;     //usage of this field is dscribed in addTable
     const detailChild = props.detailChild;  //usage of this field is dscribed in addTable
     const detailLink = props.detailLink;    //usage of this field is dscribed in addTable
+    const detailSubmitLink = props.detailSubmitLink;    //used to add a submit button in detail, where it's value used as the link and the master id is the id passed with the link
+    const detailSubmitButton = props.detailSubmitButton;
+    const masterId = props.masterId; 
+    const showInitialData = props.showInitialData   // shows the initial data in AddForm
 
-    const lnk = detailChild?detailChild:detailLink?detailLink:props.lnk;
+    const resolveLink = () => {
+          if (props.detailChild !== undefined && props.detailChild !== null) {
+              return props.detailChild;
+          }
+          if (props.detailLink !== undefined && props.detailLink !== null) {
+              return props.detailLink;
+          }
+          if (props.lnk !== undefined && props.lnk !== null) {
+              return props.lnk;
+          }
+          return undefined//state?.recId ?? null;
+      };
+    const lnk = resolveLink();
 
     const detail = props.detail;
     const title = props.title;
-    const masterId = props.masterId;    
+       
     const childActionLink = lnk+'/entry';
     const actionLink = lnk+'/add';
     const modifyLink = detailChild?childActionLink:lnk+'/modify';
@@ -51,8 +68,10 @@ export function MasterDetails(props) {
     const masterCodeValue = props.masterCodeValue;
     const forwardKey = props.forwardKey;
     const localLovMapRef = props.masterLocalLovMap;
-
-    console.log(lnk)
+    const subDetailId = props.subDetailId;
+    const autoFill = props.autoFill;
+    const autoFillLink = props.autoFillLink;
+    const autoFillParent = props.autoFillParent;//used as the parent for auto fill
 
     const getData = async(page, pageSize, sortField, sortOrder, filters={}) => {
         setloading(true);
@@ -63,9 +82,10 @@ export function MasterDetails(props) {
             .join("&");
         
         const link = 'http://localhost:9002/hms/'+lnk + 'Get' + '?page=' + page + '&size=' + pageSize+ '&sort=' + sortField+ ',' + sortOrder + '&filterParams=' + filterParams ;	
-
+//console.log(link) 
         axios.post(link,masterId,{headers: headers}
-            ).then(res => {                                
+            ).then(res => {      
+                console.log(res.data.content)                       
                 setTabData(res.data.content);   //res.data.content is an array of objects
                 setTotalPages(res.data.totalPages);
                 setTotalRecords(res.data.totalElements);
@@ -86,9 +106,10 @@ export function MasterDetails(props) {
     // build columns whenever data or sort state changes
     useEffect(() => {
         //console.log(tabData)
-        if (tabData.length > 0) {
+        if (tabData?.length > 0 && tabData[0] && typeof tabData[0] === "object") {
         //    setTabDataNoChar(tabData);
-            const cols = Object.keys(tabData[0])
+            const firstRow = tabData[0] ?? {};
+            const cols = Object.keys(firstRow)
                 .filter((key) => {
                     const type = getValueType(tabData[0][key]);
                     return type !== "other";   // 👈 exclude non simple types 
@@ -122,12 +143,14 @@ export function MasterDetails(props) {
                                 record.code ??
                                 record.pk?.code ??
                                 record.pk?.itemNumber ??
-                                "";                   
+                                ""; 
+                                             
                             return(
                                 modifyView !== "view" || detailChild !== 'undefined'?
                                     <AddButton  class='AddLinkButton' 
                                                 page={title + ' ' + detail} 
-                                                btn_type='link' lnk={lnk} 
+                                                btn_type='link' 
+                                                lnk={lnk} 
                                                 excludeFields={excludeFields} 
                                                 detailExcludeFields={detailExcludeFields}
                                                 disabledFields={disabledFields} 
@@ -135,9 +158,10 @@ export function MasterDetails(props) {
                                                 name={ record.id ?? record.code ?? record.pk?.code ?? record.pk?.itemNumber ?? null } 
                                                 bodyData={tabData} 
                                                 rec= {record} 
+                                                detailLink={detailLink}
                                                 backLink={backLink}
                                                 backId={record.id}
-                                                masterId={masterId}
+                                                masterId={subDetailId ? record.id : masterId}
                                                 forwardKey={forwardKey}
                                                 entryView={entryView}
                                                 detail={detail}
@@ -148,6 +172,10 @@ export function MasterDetails(props) {
                                                 masterCodeValue={masterCodeValue}
                                                 masterDefaultValues={null}
                                                 masterLocalLovMap={localLovMapRef}
+                                                autoFill= {autoFill}
+                                                autoFillLink= {autoFillLink}
+                                                autoFillParent= {autoFillParent}
+                                                showInitialData={showInitialData}
                                                 createdBy={record.createdBy} 
                                                 createdOn={record.createdOn} 
                                                 comments={record.comments}>
@@ -165,9 +193,11 @@ export function MasterDetails(props) {
 
     useEffect(() => {
         if (!Array.isArray(tabData)) return;
-        const cleaned = tabData.map(row => {        //Builds a new cleaned array (cleaned) by iterating over the array and then over each object’s keys
-            const newRow = {};                      
-            Object.entries(row).forEach(([key, value]) => {     //Loops through each field (key → value) in that record.
+        const cleaned = tabData
+            .filter(row => row && typeof row === "object")   // 👈 guard each row
+            .map(row => {
+                const newRow = {};
+                Object.entries(row).forEach(([key, value]) =>  {     //Loops through each field (key → value) in that record.
                 if (typeof value === "string" && value.includes(String.fromCharCode(31))) {
                     newRow[key] = value.substring(0, value.indexOf(String.fromCharCode(31)));   //If the value contains ASCII 31, it strips everything after it.
                 } else {
@@ -186,6 +216,17 @@ export function MasterDetails(props) {
             .filter(val => val !== undefined && val !== null) // skip nulls
             .map(val => ({ text: String(val), value: val }));
     }
+
+    async function sendToMachine () {
+        axios.get(`http://localhost:9002/hms/${detailSubmitLink}/${masterId}`)
+            .then(() => {
+                console.log("Sent to machine successfully");
+            })
+            .catch(err => {
+                console.error(err);
+            });
+    }
+
 	const cancelClicked = () => {
         history.back(); //history.go(-1)
     };
@@ -197,7 +238,7 @@ export function MasterDetails(props) {
                     className="Tab"
                     columns={tabColumns}
                     dataSource={tabDataNoChar}
-                    rowKey="id"
+                    rowKey={(record) => record.id}
                     loading={loading}
                     pagination={{
                         pageSize: pageSize,
@@ -226,10 +267,13 @@ export function MasterDetails(props) {
                                 lnk={lnk} 
                                 actionLink={actionLink} 
                                 bodyData={tabData} 
+                                tabData={tabData} 
+                                rec={tabData} 
                                 backLink={backLink}
                                 backId={masterId}
-                                masterId={masterId}
+                                masterId={subDetailId ? tabData.id : masterId}
                                 forwardKey={forwardKey}
+                                detailLink={detailLink}
                                 detail={detail}
                                 title={title+ ' ' + detail}
                                 serviceFormData={props.serviceFormData} 
@@ -241,9 +285,14 @@ export function MasterDetails(props) {
                                 masterCodeValue={masterCodeValue}
                                 masterDefaultValues={masterDefaultValues}
                                 masterLocalLovMap={localLovMapRef}
+                                showInitialData={showInitialData}
+                                autoFill= {autoFill}
+                                autoFillLink= {autoFillLink}
+                                autoFillParent= {autoFillParent}
                                 icon={<PlusOutlined/>} 
                                 btn_type='primary'>
                     </AddButton>:null}
+                {detailSubmitLink !== undefined ?<td><button type="button" className="form-button" onClick={sendToMachine}>{detailSubmitButton}</button></td>:null}
                 {backLink === 'back' ?<td><button className="form-button" onClick={cancelClicked}>Back</button></td>:null}
             </Space>
         </div>

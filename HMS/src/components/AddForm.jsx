@@ -1,15 +1,19 @@
 import { Typography, Space, message, DatePicker} from 'antd';
 import axios from 'axios';
-import { useState, useEffect} from 'react';
+import {useState, useEffect, useRef, useMemo} from 'react';
 import { useNavigate, useLocation} from 'react-router';
+import JoditEditor from 'jodit-react';
+import HTMLReactParser from 'html-react-parser';
 import dayjs from "dayjs";
 import { GenericAutoFill } from './GenericAutoFill';
-//import { ProductAutoFill } from './ProductAutoFill';
+import { AutoFillParent } from './AutoFillParent';
 import { getAccessToken } from "../functions/getAccessToken.js";
 import {resolvePrimaryKey} from "../functions/resolvePrimaryKey.js";
 import {  selectCodeDesc } from "../functions/selectCodeDesc.js";
 import {  getLovData } from "../functions/getLovData.js";
 import {  getCheckBoxData } from "../functions/getCheckBoxData.js";
+import {  getTextAreaFields } from "../functions/getTextAreaFields.js";
+import {  getDateFields } from "../functions/getDateFields.js";
 import {  lovChange } from "../functions/lovChange.js";
 import {isDateTime} from "../functions/isDateTime.js";
 import { toSpacedWords } from "../functions/toSpacedWords.js";
@@ -19,25 +23,35 @@ import '../styles/page.css';
 export function AddForm(props){
     const location = useLocation();
     const state = props.state || location.state || {};
+    
+    const editor = useRef(null);
+    const [content, setContent] = useState('');
+
     const masterId = state?state.masterId:props.masterId?props.masterId:null;
     const forwardKey = state?state.forwardKey:props.forwardKey;
     const accessToken = getAccessToken();    
     const serviceFormData = state.serviceFormData;
-    const [formData, setFormData] = useState(() => { 
-        const schema = state.tabData || [];
-        const raw = state.initialData || {};
+    const showInitialData = state?state.showInitialData : null; // shows the initial data in AddForm
+//    console.log(showInitialData)
+    const [formData, setFormData] = useState(() => {
+        // Normalize initialData: convert array → object
+        const rawRecord = showInitialData   ? Array.isArray(state.initialData)
+                                                ? state.initialData[0] ?? {}
+                                                : state.initialData ?? {}
+                                            : {};
 
-        // Build formData from raw record (so LOV engine sees ASCII‑31)
+        const schema = state.tabData || [];
+
+    //    console.log(state.initialData)
+
+        // Build formData from rawRecord
         const base = schema.reduce((a, key) => ({
             ...a,
-            [key]: raw[key] ?? ""
+            [key]: rawRecord[key] ?? ""
         }), {});
 
-        return base;
+        return base;   // ✔ return the correct object
     });
-   // 
-   // const [formData, setFormData] = useState(serviceFormData);
-    //const obj = { ...tabData.reduce((o, key) => ({ ...o, [key]: formData[key] }), {}), serviceProductId: formData.serviceProductId };
 
     const tabData = state ? state.tabData : props.obj;
 
@@ -53,23 +67,30 @@ export function AddForm(props){
     const masterCode=state?state.masterCode:props.masterCode;
     const masterCodeValue=state?state.masterCodeValue:props.masterCodeValue;
     const masterLocalLovMap = state?state.masterLocalLovMap:props.masterLocalLovMap;
-    const [disabledFields, setDisabledFields] = useState(state?state.disabledFields: null);
-    const [excludeFields, setExcludeFields] = useState(state?state.excludeFields: null);
+    const [disabledFields, setDisabledFields] = useState(state.disabledFields?? {});
+    const [excludeFields, setExcludeFields] = useState(state.excludeFields?? {});
     const [initialLovApplied, setInitialLovApplied] = useState(false);  // used to stop infinit reloading when AddForm is invoked in the main tab
     const detail = props.detail;
     const payment = state?state.payment : null; //used to collect payment before proceeding with standard behavior of addForm
+    const noButtons = state?state.noButtons : null; //used to not show buttons
     const noNavigate = state?state.noNavigate : null;
     //setFormData(prev => ({ ...prev, serviceProductId: tabDataValues?.serviceProductId ?? "" }));
-    
+
+    const normalizedTabDataValues = Array.isArray(tabDataValues)
+        ? tabDataValues[0] ?? {}
+        : tabDataValues ?? {};
+
     const navigate = useNavigate();
     const linkLov = "http://localhost:9002/hms/";
     const [lovMap, setLovMap] = useState(new Map());
     const [checkBoxMap, setCheckBoxMap] = useState([]);
     const [dateCols, setDateCols] = useState([]);
+    const [textAreaFields, setTextAreaFields] = useState([]);
     const [parentChildLovMap, setParentChildLovMap] = useState(new Map());
     const link = "http://localhost:9002/hms/" + lnk;
     const autoFill = state?state.autoFill: null;
     const autoFillLink = state?state.autoFillLink: null;
+    const autoFillParent = state?.autoFillParent ?? props.autoFillParent;//used as the parent for auto fill
     const base = (autoFill || "").replace(/Description$/, "");
     const autoFillId = base+'Id';
     const autoFillCode = base+'Code';
@@ -81,6 +102,7 @@ export function AddForm(props){
         withCredentials: true,
     };
 
+//console.log(formData)
 
     const cancelClicked = () => navigate("/" + history.back());
 
@@ -136,7 +158,7 @@ export function AddForm(props){
 
             // Now response.data contains the saved object
             if (props.onSaved) {
-                console.log(response.data.id);
+                //console.log(response.data.id);
                 props.onSaved(response.data.id);
             }
 
@@ -158,7 +180,10 @@ export function AddForm(props){
                                 masterLocalLovMap,
                                 backLink,
                                 title: formName,
-                                from: formName
+                                from: formName,
+                                autoFill: autoFill,
+                                autoFillLink: autoFillLink,
+                                autoFillParent: autoFillParent
                             }
                         });
                     } else {
@@ -177,7 +202,10 @@ export function AddForm(props){
                                 masterLocalLovMap,
                                 backLink,
                                 title: formName,
-                                from: formName
+                                from: formName,
+                                autoFill: autoFill,
+                                autoFillLink: autoFillLink,
+                                autoFillParent: autoFillParent
                             }
                         });
                     }
@@ -207,8 +235,12 @@ export function AddForm(props){
     if (!tabDataValues) {
         return; // also stop early
     }
-    getLovData(tabData, tabDataValues, setParentChildLovMap, setLovMap, linkLov, headers, setDateCols);
+    getLovData(tabData, tabDataValues, setParentChildLovMap, setLovMap, linkLov, headers);
+    getDateFields(tabData, setDateCols)
+    getTextAreaFields(tabData, setTextAreaFields)
+    
     getCheckBoxData(tabData, tabDataValues, setCheckBoxMap)
+//    console.log(textAreaFields)
   }, [tabData, tabDataValues]);
 
   useEffect(() => {
@@ -220,14 +252,17 @@ export function AddForm(props){
     }, [excludeFields]);
 
   useEffect(() => {
-    setFormData((prev) => ({ ...prev, [forwardKey]: masterId }));
-  }, [forwardKey, tabDataValues]);
+    if (forwardKey) {
+        setFormData(prev => ({ ...prev, [forwardKey]: masterId }));
+    }
+  }, [forwardKey]);
 
-  useEffect(() => {
-        if (!tabDataValues || Object.keys(tabDataValues).length === 0) return;
+    useEffect(() => {
+        if (!showInitialData) return;   // ⭐ Prevent overwrite
+        if (!normalizedTabDataValues || Object.keys(normalizedTabDataValues).length === 0) return;
 
         const cleaned = {};
-        Object.entries(tabDataValues).forEach(([key, value]) => {
+        Object.entries(normalizedTabDataValues).forEach(([key, value]) => {
             if (typeof value === "string" && value.includes(String.fromCharCode(31))) {
                 cleaned[key] = value.substring(0, value.indexOf(String.fromCharCode(31)));
             } else {
@@ -236,7 +271,7 @@ export function AddForm(props){
         });
 
         setFormData(prev => ({ ...prev, ...cleaned }));
-    }, [tabDataValues]);
+    }, [normalizedTabDataValues]);
 
     useEffect(() => {
         if (!formData) return;
@@ -248,6 +283,10 @@ export function AddForm(props){
             autoFillObjDescription: formData[autoFill]
         });
     }, [formData, autoFillId, autoFillCode, autoFill]);
+
+    useEffect(() => {
+        setInitialAutoFill({});
+    }, []);
 
     useEffect(() => {
       //  if (initialLovApplied) return;                     // prevent loop
@@ -290,15 +329,17 @@ export function AddForm(props){
         const isLov = lovMap.has(fieldName) ; 
         const isDate = dateCols.includes(fieldName);
         const isBoolean = checkBoxMap.includes(fieldName);
+        const isTextArea = textAreaFields.includes(fieldName);
         
         return ( 
             <> 
                 <td className="label-cell"> <label>{toSpacedWords(fieldName)}:</label> </td> 
                 <td className={`input-cell ${isBoolean ? "bool-cell" : ""}`}> 
                     {autoFill && fieldName === autoFill ?
-                            <GenericAutoFill
+                            <AutoFillParent
                                 value={initialAutoFill}    // <-- send initial value
                                 autoFillLink={autoFillLink}
+                                autoFillParent={formData[autoFillParent]}
                                 labelField="autoFillObjDescription"
                                 onSelect={(product) => {
                                     if (!product) return;
@@ -321,7 +362,7 @@ export function AddForm(props){
                             />
 
                     :  isLov ? ( 
-                        <select name={fieldName} value={formData[fieldName] ?? ""} disabled={disabledFields?.includes(fieldName)} onChange={handleLovChange} className="selectInput" > 
+                        <select name={fieldName} value={formData[fieldName] ?? ""} disabled={fieldName in (disabledFields)} onChange={handleLovChange} className="selectInput" > 
                             <option value="">-- Select --</option> 
                             
                             {Array.from(lovMap.get(fieldName)  || []).map((opt) => ( 
@@ -338,7 +379,7 @@ export function AddForm(props){
                                                 isDateTime(headers[fieldName]) ? "YYYY-MM-DD HH:mm:ss" : "YYYY-MM-DD"
                                                 )
                                             : null} 
-                                    disabled={disabledFields?.includes(fieldName)} 
+                                    disabled={fieldName in (disabledFields)} 
                                     format={isDateTime(headers[fieldName]) ? "MM/DD/YYYY HH:mm:ss" : "MM/DD/YYYY"}
                                     onChange={(date) => 
                                         setFormData((prev) => (
@@ -351,6 +392,17 @@ export function AddForm(props){
                                         )
                                     )} 
                                     className="dateField" /> ) 
+                    : isTextArea ? ( 
+                        <JoditEditor ref={editor} 
+                                    name={fieldName} 
+                                    value={formData[fieldName] ?? ""}
+                                    onChange={(newContent) =>
+                                        setFormData(prev => ({ ...prev, [fieldName]: newContent }))
+                                    } 
+                                    config={{
+                                        height: 500,      // or 400, 500
+                                        minHeight: 400,   // optional, keeps it from shrinking
+                                    }} /> ) 
                     : isBoolean ? (
                         <div className="checkbox-wrapper">
                             <input
@@ -359,7 +411,7 @@ export function AddForm(props){
                                 id={fieldName}
                                 name={fieldName}
                                 checked={formData[fieldName] === true}
-                                disabled={disabledFields?.includes(fieldName)}
+                                disabled={fieldName in (disabledFields)}
                                 onChange={(e) =>
                                     setFormData(prev => {
                                         const next = {
@@ -374,7 +426,7 @@ export function AddForm(props){
                         </div>
                     )
                     : ( 
-                        <input type="text" id={fieldName} name={fieldName} value={formData[fieldName] ?? ""} disabled={disabledFields?.includes(fieldName)} onChange={handleChange} /> )} 
+                        <input type="text" id={fieldName} name={fieldName} value={formData[fieldName] ?? ""} disabled={fieldName in (disabledFields)} onChange={handleChange} /> )} 
                 </td> 
             </> 
         ); 
@@ -405,28 +457,28 @@ export function AddForm(props){
                                     )}
                                 </tr>
                             ))}	
-                            <tr className="button-row">
-                                
-                                    <td>
+                        {!noButtons?
+                            <tr className="button-row">                   
+                                <td>
+                                    <div className="button-group">
+                                        <button className="form-button" type="submit">Submit</button>
+                                    </div>
+                                </td> 
+                                {payment
+                                    ?<td>
                                         <div className="button-group">
-                                            <button className="form-button" type="submit">Submit</button>
-                                        </div>
-                                    </td> 
-                                    {payment
-                                        ?<td>
-                                            <div className="button-group">
-                                                <button className="form-button" type="button" onClick={paymentClicked}>Payment</button>
-                                            </div>    
-                                        </td>
-                                        :null
-                                    }                                    
-                                    <td>
-                                        <div className="button-group">
-                                            <button className="form-button" onClick={cancelClicked}>Cancel</button>
+                                            <button className="form-button" type="button" onClick={paymentClicked}>Payment</button>
                                         </div>    
                                     </td>
-                                
+                                    :null
+                                }                                    
+                                <td>
+                                    <div className="button-group">
+                                        <button className="form-button" onClick={cancelClicked}>Cancel</button>
+                                    </div>    
+                                </td>                     
                             </tr>
+                            :null}
                         </tbody>
                     </table>
                 </form>
